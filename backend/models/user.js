@@ -8,6 +8,7 @@ const UserSchema = mongoose.Schema({
   location: { type: String, default: "" },
   website: { type: String, default: "" },
   joinedDate: { type: Date, default: Date.now() },
+  notificationEnabled: { type: Boolean, default: false },
 });
 
 export default mongoose.model("User", UserSchema);

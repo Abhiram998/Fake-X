@@ -18,6 +18,8 @@ import TweetCard from "./TweetCard";
 import { Card, CardContent } from "./ui/card";
 import Editprofile from "./Editprofile";
 import axiosInstance from "@/lib/axiosInstance";
+import { requestNotificationPermission } from "@/lib/notificationService";
+import { Label } from "./ui/label";
 
 interface Tweet {
   id: string;
@@ -99,7 +101,7 @@ const tweets: Tweet[] = [
   },
 ];
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, toggleNotifications } = useAuth();
   const [activeTab, setActiveTab] = useState("posts");
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -121,7 +123,19 @@ export default function ProfilePage() {
     fetchTweets();
   }, []);
   // Filter tweets by current user
-  const userTweets = tweets.filter((tweet: any) => tweet.author._id === user._id);
+  const userTweets = tweets.filter(
+    (tweet: any) => tweet.author._id === user._id
+  );
+
+  const handleToggleNotifications = async () => {
+    if (!user) return;
+    const newStatus = !user.notificationEnabled;
+    if (newStatus) {
+      const granted = await requestNotificationPermission();
+      if (!granted) return;
+    }
+    await toggleNotifications(newStatus);
+  };
 
   return (
     <div className="min-h-screen">
@@ -230,6 +244,29 @@ export default function ProfilePage() {
             </span>
           </div>
         </div>
+
+        {/* Notification Toggle */}
+        <div className="flex items-center justify-between p-4 bg-gray-900/50 rounded-xl border border-gray-800 mt-4">
+          <div className="space-y-0.5">
+            <Label className="text-white font-semibold flex items-center gap-2">
+              <Settings className="w-4 h-4 text-blue-400" />
+              Enable Keyword Notifications
+            </Label>
+            <p className="text-sm text-gray-400">
+              Receive alerts for "cricket" or "science" tweets
+            </p>
+          </div>
+          <button
+            onClick={handleToggleNotifications}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${user.notificationEnabled ? "bg-blue-600" : "bg-gray-700"
+              }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${user.notificationEnabled ? "translate-x-6" : "translate-x-1"
+                }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -269,7 +306,7 @@ export default function ProfilePage() {
 
         <TabsContent value="posts" className="mt-0">
           <div className="divide-y divide-gray-800">
-            { loading ? (
+            {loading ? (
               <Card className="bg-black border-none">
                 <CardContent className="py-12 text-center">
                   <div className="text-gray-400">
@@ -281,7 +318,7 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
             ) : (
-              userTweets.map((tweet:any) => (
+              userTweets.map((tweet: any) => (
                 <TweetCard key={tweet._id} tweet={tweet} />
               ))
             )}

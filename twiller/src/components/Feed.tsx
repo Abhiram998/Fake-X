@@ -5,6 +5,8 @@ import LoadingSpinner from "./loading-spinner";
 import TweetCard from "./TweetCard";
 import TweetComposer from "./TweetComposer";
 import axiosInstance from "@/lib/axiosInstance";
+import { triggerTweetNotification } from "@/lib/notificationService";
+import { useAuth } from "@/context/AuthContext";
 
 interface Tweet {
   id: string;
@@ -86,24 +88,63 @@ const tweets: Tweet[] = [
   },
 ];
 const Feed = () => {
+  const { user } = useAuth();
   const [tweets, setTweets] = useState<any>([]);
   const [loading, setloading] = useState(false);
-  const fetchTweets = async () => {
+  const [lastProcessedTweetId, setLastProcessedTweetId] = useState<string | null>(null);
+
+  const fetchTweets = async (isInitial = false) => {
     try {
-      setloading(true);
+      if (isInitial) setloading(true);
       const res = await axiosInstance.get("/post");
-      setTweets(res.data);
+      const fetchedTweets = res.data;
+
+      if (fetchedTweets.length > 0) {
+        // If it's not the initial load and notifications are enabled, process new tweets
+        if (!isInitial && user?.notificationEnabled) {
+          // Identify tweets that are newer than the last processed one
+          // Since they are sorted by timestamp: -1, we can check tweets at the beginning
+          const newTweets = [];
+          for (const tweet of fetchedTweets) {
+            if (tweet._id === lastProcessedTweetId) break;
+            newTweets.push(tweet);
+          }
+
+          // Trigger notifications for new tweets
+          newTweets.forEach((tweet) => triggerTweetNotification(tweet));
+        }
+
+        // Update the last processed tweet ID to the newest one
+        setLastProcessedTweetId(fetchedTweets[0]._id);
+      }
+
+      setTweets(fetchedTweets);
     } catch (error) {
       console.error(error);
     } finally {
-      setloading(false);
+      if (isInitial) setloading(false);
     }
   };
+
   useEffect(() => {
-    fetchTweets();
-  }, []);
+    fetchTweets(true);
+
+    // Polling for real-time updates (every 10 seconds)
+    const interval = setInterval(() => {
+      fetchTweets(false);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [user?.notificationEnabled, lastProcessedTweetId]); // Re-run if preference changes or last processed ID changes
+
   const handlenewtweet = (newtweet: any) => {
     setTweets((prev: any) => [newtweet, ...prev]);
+    // Also process manually posted tweets for notifications if they match keywords? 
+    // Usually, you don't notify yourself of your own tweet, but let's fulfill the keyword requirement.
+    if (user?.notificationEnabled) {
+      triggerTweetNotification(newtweet);
+    }
+    setLastProcessedTweetId(newtweet._id);
   };
   return (
     <div className="min-h-screen">
@@ -129,7 +170,7 @@ const Feed = () => {
           </TabsList>
         </Tabs>
       </div>
-      <TweetComposer onTweetPosted={handlenewtweet}/>
+      <TweetComposer onTweetPosted={handlenewtweet} />
       <div className="divide-y divide-gray-800">
         {loading ? (
           <Card className="bg-black border-none">

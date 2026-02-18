@@ -22,6 +22,7 @@ interface User {
   email: string;
   website: string;
   location: string;
+  notificationEnabled: boolean;
 }
 
 interface AuthContextType {
@@ -43,6 +44,7 @@ interface AuthContextType {
   logout: () => void;
   isLoading: boolean;
   googlesignin: () => void;
+  toggleNotifications: (enabled: boolean) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -234,6 +236,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         logout,
         isLoading,
         googlesignin,
+        toggleNotifications: async (enabled: boolean) => {
+          if (!user) return;
+          try {
+            const res = await axiosInstance.patch(`/userupdate/${user.email}`, {
+              notificationEnabled: enabled,
+            });
+            if (res.data) {
+              const updatedUser = { ...user, notificationEnabled: enabled };
+              setUser(updatedUser);
+              localStorage.setItem("twitter-user", JSON.stringify(updatedUser));
+            }
+          } catch (err) {
+            console.error("Failed to update notifications preference:", err);
+          }
+        },
       }}
     >
       {children}
