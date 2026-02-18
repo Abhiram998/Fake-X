@@ -16,13 +16,14 @@ app.get("/", (req, res) => {
 const port = process.env.PORT || 5000;
 const url = process.env.MONGODB_URL || process.env.MONOGDB_URL; // Check both for compatibility
 
+app.listen(port, "0.0.0.0", () => {
+  console.log(`🚀 Server running on port ${port}`);
+});
+
 mongoose
   .connect(url)
   .then(() => {
     console.log("✅ Connected to MongoDB");
-    app.listen(port, () => {
-      console.log(`🚀 Server running on port ${port}`);
-    });
   })
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err.message);
