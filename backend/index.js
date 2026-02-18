@@ -32,7 +32,11 @@ mongoose
 //Register
 app.post("/register", async (req, res) => {
   try {
-    const existinguser = await User.findOne({ email: req.body.email });
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).send({ error: "Email is required" });
+    }
+    const existinguser = await User.findOne({ email });
     if (existinguser) {
       return res.status(200).send(existinguser);
     }
@@ -40,6 +44,7 @@ app.post("/register", async (req, res) => {
     await newUser.save();
     return res.status(201).send(newUser);
   } catch (error) {
+    console.error("Registration error:", error);
     return res.status(400).send({ error: error.message });
   }
 });

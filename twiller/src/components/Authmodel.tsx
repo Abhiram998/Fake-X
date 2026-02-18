@@ -81,8 +81,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
       onClose();
       setFormData({ email: '', password: '', username: '', displayName: '' });
       setErrors({});
-    } catch (error) {
-      setErrors({ general: 'Authentication failed. Please try again.' });
+    } catch (error: any) {
+      console.error("Auth Error:", error);
+      const backendError = error.response?.data?.error || error.response?.data?.message;
+      setErrors({
+        general: backendError
+          ? `Registration failed: ${backendError}`
+          : 'Authentication failed. Please check your connection and try again.'
+      });
     }
   };
 
