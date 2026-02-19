@@ -48,7 +48,10 @@ const upload = multer({
 });
 
 // Resend Configuration
-const resend = new Resend(process.env.RESEND_API_KEY);
+if (!process.env.RESEND_API_KEY) {
+  console.log("⚠️ WARNING: RESEND_API_KEY is not defined in environment variables!");
+}
+const resend = new Resend(process.env.RESEND_API_KEY || "temporary_key_to_prevent_crash");
 
 // Socket.io connection handling
 io.on("connection", (socket) => {
