@@ -21,24 +21,32 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
     return permission === "granted";
 };
 
-export const showNotification = (title: string, body: string, icon?: string) => {
-    if (checkNotificationPermission() === "granted") {
-        try {
-            const notification = new Notification(title, {
-                body,
-                icon: icon || "/favicon.ico",
-                badge: "/favicon.ico", // Android support
-                tag: "tweet-alert",    // Group related notifications
-                vibrate: [200, 100, 200], // Mobile vibration pattern
-            } as any);
+export const showNotification = async (title: string, body: string, icon?: string) => {
+    if (checkNotificationPermission() !== "granted") return;
 
-            notification.onclick = () => {
-                window.focus();
-                notification.close();
-            };
-        } catch (error) {
-            console.error("Error creating notification:", error);
+    const options = {
+        body,
+        icon: icon || "/favicon.ico",
+        badge: "/favicon.ico",
+        tag: "tweet-alert",
+        vibrate: [200, 100, 200],
+        renotify: true, // Overwrite previous notification with same tag
+    };
+
+    try {
+        // Try using Service Worker first (Better for mobile/Android)
+        if ("serviceWorker" in navigator) {
+            const registration = await navigator.serviceWorker.ready;
+            if (registration) {
+                await registration.showNotification(title, options);
+                return;
+            }
         }
+
+        // Fallback to standard Notification (Desktop)
+        new Notification(title, options);
+    } catch (error) {
+        console.error("Error creating notification:", error);
     }
 };
 
