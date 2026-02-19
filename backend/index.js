@@ -93,10 +93,10 @@ const validateTimeWindow = (req, res, next) => {
   const hour = nowIST.hour;
   const minute = nowIST.minute;
 
-  // TEMPORARY FOR TESTING: 2:00 PM (14:00) to 9:00 PM (21:00)
-  if (hour < 14 || (hour >= 21 && minute > 0)) {
+  // TEMPORARY FOR TESTING: 2:00 PM (14:00) to 11:00 PM (23:00)
+  if (hour < 14 || (hour >= 23 && minute > 0)) {
     return res.status(403).send({
-      error: "Audio tweets are allowed only between 2:00 PM and 9:00 PM IST (Testing Window).",
+      error: "Audio tweets are allowed only between 2:00 PM and 11:00 PM IST (Testing Window).",
     });
   }
   next();
