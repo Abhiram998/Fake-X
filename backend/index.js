@@ -198,6 +198,41 @@ app.post("/forgot-password", async (req, res) => {
   }
 });
 
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).send({ error: "Email and password are required" });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: cleanEmail });
+
+    if (!user) {
+      return res.status(404).send({ error: "User not found" });
+    }
+
+    // Check if the user has a password set (new system)
+    if (!user.password) {
+      return res.status(400).send({
+        error: "This account uses Google Login or hasn't set a password yet. Please use Google or reset your password."
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).send({ error: "Invalid credentials" });
+    }
+
+    // Return the user data (normally we'd return a JWT, but this project uses email-based lookup)
+    res.status(200).send(user);
+
+  } catch (error) {
+    console.error("❌ Login Error:", error);
+    res.status(500).send({ error: "Login failed. Please try again." });
+  }
+});
+
 app.post("/upload-audio", validateTimeWindow, upload.single("audio"), async (req, res) => {
   try {
     const { email, duration } = req.body;
@@ -249,7 +284,13 @@ app.post("/register", async (req, res) => {
     if (existinguser) {
       return res.status(200).send(existinguser);
     }
-    const newUser = new User(req.body);
+
+    const userData = { ...req.body };
+    if (userData.password) {
+      userData.password = await bcrypt.hash(userData.password, 10);
+    }
+
+    const newUser = new User(userData);
     await newUser.save();
     return res.status(201).send(newUser);
   } catch (error) {

@@ -64,7 +64,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
+    // Check local storage first for persistence
+    const savedUser = localStorage.getItem("twitter-user");
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+        setIsLoading(false);
+      } catch (e) {
+        console.error("Failed to parse saved user", e);
+      }
+    }
+
+    // Secondary check for Firebase session
     const unsubcribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser?.email) {
         try {
@@ -77,11 +88,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             localStorage.setItem("twitter-user", JSON.stringify(res.data));
           }
         } catch (err) {
-          console.log("Failed to fetch user:", err);
+          console.log("Failed to fetch user after Firebase login:", err);
         }
-      } else {
+      } else if (!localStorage.getItem("twitter-user")) {
+        // Only clear if we don't have a backend session
         setUser(null);
-        localStorage.removeItem("twitter-user");
       }
       setIsLoading(false);
     });
@@ -90,25 +101,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
-    // Mock authentication - in real app, this would call an API
-    const usercred = await signInWithEmailAndPassword(auth, email, password);
-    const firebaseuser = usercred.user;
-    const res = await axiosInstance.get("/loggedinuser", {
-      params: { email: firebaseuser.email },
-    });
-    if (res.data) {
-      setUser(res.data);
-      localStorage.setItem("twitter-user", JSON.stringify(res.data));
+    try {
+      // Step 1: Try backend login first (for password resets)
+      const res = await axiosInstance.post("/login", { email, password });
+
+      if (res.data) {
+        setUser(res.data);
+        localStorage.setItem("twitter-user", JSON.stringify(res.data));
+
+        // Step 2: Sync with Firebase in the background (Optional/Silent)
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+        } catch (fbErr) {
+          console.log("Firebase sync skipped or failed, using backend session.");
+        }
+      }
+    } catch (error: any) {
+      console.error("Login Error:", error);
+      // Fallback to Firebase for existing accounts that haven't reset password
+      try {
+        const usercred = await signInWithEmailAndPassword(auth, email, password);
+        const firebaseuser = usercred.user;
+        const res = await axiosInstance.get("/loggedinuser", {
+          params: { email: firebaseuser.email },
+        });
+        if (res.data) {
+          setUser(res.data);
+          localStorage.setItem("twitter-user", JSON.stringify(res.data));
+        }
+      } catch (fbErr: any) {
+        throw fbErr; // Re-throw to show in UI
+      }
+    } finally {
+      setIsLoading(false);
     }
-    // const mockUser: User = {
-    //   id: '1',
-    //   username: 'johndoe',
-    //   displayName: 'John Doe',
-    //   avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400',
-    //   bio: 'Software developer passionate about building great products',
-    //   joinedDate: 'April 2024'
-    // };
-    setIsLoading(false);
   };
 
   const signup = async (
@@ -118,33 +144,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     displayName: string
   ) => {
     setIsLoading(true);
-    // Mock authentication - in real app, this would call an API
-    const usercred = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-    const user = usercred.user;
-    const newuser: any = {
-      username,
-      displayName,
-      avatar: user.photoURL || "https://images.pexels.com/photos/1139743/pexels-photo-1139743.jpeg?auto=compress&cs=tinysrgb&w=400",
-      email: user.email,
-    };
-    const res = await axiosInstance.post("/register", newuser);
-    if (res.data) {
-      setUser(res.data);
-      localStorage.setItem("twitter-user", JSON.stringify(res.data));
+    try {
+      // Step 1: Create in Firebase
+      const usercred = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = usercred.user;
+
+      // Step 2: Register in MongoDB
+      const newuser: any = {
+        username,
+        displayName,
+        avatar: user.photoURL || "https://images.pexels.com/photos/1139743/pexels-photo-1139743.jpeg?auto=compress&cs=tinysrgb&w=400",
+        email: user.email,
+        password: password, // Save initial password to MongoDB as well
+      };
+
+      const res = await axiosInstance.post("/register", newuser);
+      if (res.data) {
+        setUser(res.data);
+        localStorage.setItem("twitter-user", JSON.stringify(res.data));
+      }
+    } catch (error: any) {
+      console.error("Signup Error:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-    // const mockUser: User = {
-    //   id: '1',
-    //   username,
-    //   displayName,
-    //   avatar: 'https://images.pexels.com/photos/1139743/pexels-photo-1139743.jpeg?auto=compress&cs=tinysrgb&w=400',
-    //   bio: '',
-    //   joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-    // };
-    setIsLoading(false);
   };
 
   const logout = async () => {
