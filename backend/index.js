@@ -49,11 +49,22 @@ const upload = multer({
 
 // Mail Transporter
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // true for 465, false for other ports
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+});
+
+// Verify transporter connection
+transporter.verify(function (error, success) {
+  if (error) {
+    console.log("❌ Mail Server Error:", error);
+  } else {
+    console.log("📧 Mail Server is ready to send messages");
+  }
 });
 
 // Socket.io connection handling
@@ -87,6 +98,7 @@ const validateTimeWindow = (req, res, next) => {
 app.post("/request-otp", async (req, res) => {
   try {
     const { email } = req.body;
+    console.log(`📩 OTP requested for: ${email}`);
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
     await Otp.deleteMany({ email }); // Delete old OTPs
