@@ -129,10 +129,10 @@ const Feed = () => {
     // Initial fetch
     fetchTweets(true);
 
-    // Polling for real-time updates (every 10 seconds)
+    // Polling for real-time updates (every 3 seconds for snappier notifications)
     const interval = setInterval(() => {
       fetchTweets(false);
-    }, 10000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [user?.notificationEnabled]); // Only re-run if notification preference changes
