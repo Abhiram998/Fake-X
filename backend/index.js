@@ -4,8 +4,14 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import User from "./models/user.js";
 import Tweet from "./models/tweet.js";
+import Otp from "./models/otp.js";
 import { Server } from "socket.io";
 import { createServer } from "http";
+import nodemailer from "nodemailer";
+import multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { DateTime } from "luxon";
 
 dotenv.config();
 const app = express();
@@ -20,6 +26,36 @@ const io = new Server(httpServer, {
 app.use(cors());
 app.use(express.json());
 
+// Cloudinary Config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "twiller_audio",
+    resource_type: "auto",
+    format: "mp3",
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
+});
+
+// Mail Transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
 // Socket.io connection handling
 io.on("connection", (socket) => {
   console.log("📡 User connected:", socket.id);
@@ -30,6 +66,86 @@ io.on("connection", (socket) => {
 
 app.get("/", (req, res) => {
   res.send("Twiller backend is running successfully");
+});
+
+// Middleware: IST Time Validation (2:00 PM - 7:00 PM)
+const validateTimeWindow = (req, res, next) => {
+  const nowIST = DateTime.now().setZone("Asia/Kolkata");
+  const hour = nowIST.hour;
+  const minute = nowIST.minute;
+
+  // 2:00 PM (14:00) to 7:00 PM (19:00)
+  if (hour < 14 || (hour >= 19 && minute > 0)) {
+    return res.status(403).send({
+      error: "Audio tweets are allowed only between 2:00 PM and 7:00 PM IST.",
+    });
+  }
+  next();
+};
+
+// OTP Endpoints
+app.post("/request-otp", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await Otp.deleteMany({ email }); // Delete old OTPs
+    const newOtp = new Otp({ email, code });
+    await newOtp.save();
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your Twiller Audio Verification Code",
+      text: `Your OTP for audio tweet verification is: ${code}. It expires in 5 minutes.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).send({ message: "OTP sent successfully" });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
+
+app.post("/verify-otp", async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    const otp = await Otp.findOne({ email, code });
+
+    if (!otp) {
+      return res.status(400).send({ error: "Invalid or expired OTP" });
+    }
+
+    otp.verified = true;
+    await otp.save();
+    res.status(200).send({ message: "OTP verified successfully" });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
+
+app.post("/upload-audio", validateTimeWindow, upload.single("audio"), async (req, res) => {
+  try {
+    const { email, duration } = req.body;
+
+    // Check if OTP was verified
+    const otp = await Otp.findOne({ email, verified: true });
+    if (!otp) {
+      return res.status(403).send({ error: "Please verify OTP before uploading." });
+    }
+
+    // Duration validation (300 seconds = 5 minutes)
+    if (parseFloat(duration) > 300) {
+      return res.status(400).send({ error: "Audio duration exceeds 5 minutes limit." });
+    }
+
+    // Single use OTP - consume it
+    await Otp.deleteMany({ email });
+
+    res.status(200).send({ audioUrl: req.file.path });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
 });
 
 const port = process.env.PORT || 5000;

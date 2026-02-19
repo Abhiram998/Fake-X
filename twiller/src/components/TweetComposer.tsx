@@ -4,32 +4,37 @@ import { Card, CardContent } from "./ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
-import { Image, Smile, Calendar, MapPin, BarChart3, Globe } from "lucide-react";
+import { Image, Smile, Calendar, MapPin, BarChart3, Globe, Mic, Music, X } from "lucide-react";
 import { Separator } from "./ui/separator";
 import axios from "axios";
 import axiosInstance from "@/lib/axiosInstance";
+import AudioTweetComposer from "./AudioTweetComposer";
 const TweetComposer = ({ onTweetPosted }: any) => {
   const { user } = useAuth();
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [imageurl, setimageurl] = useState("");
+  const [audiourl, setaudiourl] = useState("");
+  const [showAudioComposer, setShowAudioComposer] = useState(false);
   const maxLength = 200;
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    if(!user || !content.trim())return
+    if (!user || !content.trim()) return
     try {
-      const tweetdata={
-        author:user?._id,
+      const tweetdata = {
+        author: user?._id,
         content,
-        image:imageurl
+        image: imageurl,
+        audio: audiourl
       }
-      const res=await axiosInstance.post('/post',tweetdata)
+      const res = await axiosInstance.post('/post', tweetdata)
       onTweetPosted(res.data)
       setContent("")
       setimageurl("")
+      setaudiourl("")
     } catch (error) {
       console.log(error)
-    }finally{
+    } finally {
       setIsLoading(false)
     }
   };
@@ -77,6 +82,23 @@ const TweetComposer = ({ onTweetPosted }: any) => {
                 className="bg-transparent border-none text-xl text-white placeholder-gray-500 resize-none min-h-[120px] focus-visible:ring-0 focus-visible:ring-offset-0"
               />
 
+              {audiourl && (
+                <div className="mb-4 bg-blue-900/20 border border-blue-800 p-3 rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-blue-500 p-2 rounded-full">
+                      <Music className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-blue-100">Audio Tweet Attached</p>
+                      <audio src={audiourl} controls className="h-8 mt-1" />
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setaudiourl("")}>
+                    <X className="h-4 w-4 text-gray-400" />
+                  </Button>
+                </div>
+              )}
+
               <div className="flex items-center justify-between mt-4">
                 <div className="flex items-center space-x-4 text-blue-400">
                   <label
@@ -93,6 +115,15 @@ const TweetComposer = ({ onTweetPosted }: any) => {
                       disabled={isLoading}
                     />
                   </label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-2 rounded-full hover:bg-blue-900/20"
+                    type="button"
+                    onClick={() => setShowAudioComposer(true)}
+                  >
+                    <Mic className="h-5 w-5" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -151,27 +182,25 @@ const TweetComposer = ({ onTweetPosted }: any) => {
                               strokeWidth="2"
                               fill="none"
                               strokeDasharray={`${2 * Math.PI * 14}`}
-                              strokeDashoffset={`${
-                                2 *
+                              strokeDashoffset={`${2 *
                                 Math.PI *
                                 14 *
                                 (1 - characterCount / maxLength)
-                              }`}
+                                }`}
                               className={
                                 isOverLimit
                                   ? "text-red-500"
                                   : isNearLimit
-                                  ? "text-yellow-500"
-                                  : "text-blue-500"
+                                    ? "text-yellow-500"
+                                    : "text-blue-500"
                               }
                             />
                           </svg>
                         </div>
                         {isNearLimit && (
                           <span
-                            className={`text-sm ${
-                              isOverLimit ? "text-red-500" : "text-yellow-500"
-                            }`}
+                            className={`text-sm ${isOverLimit ? "text-red-500" : "text-yellow-500"
+                              }`}
                           >
                             {maxLength - characterCount}
                           </span>
@@ -185,7 +214,7 @@ const TweetComposer = ({ onTweetPosted }: any) => {
 
                     <Button
                       type="submit"
-                      disabled={!content.trim() || isOverLimit|| isLoading}
+                      disabled={!content.trim() || isOverLimit || isLoading}
                       className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-700 disabled:text-gray-500 text-white font-semibold rounded-full px-6"
                     >
                       Post
@@ -197,6 +226,17 @@ const TweetComposer = ({ onTweetPosted }: any) => {
           </div>
         </div>
       </CardContent>
+      {showAudioComposer && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <AudioTweetComposer
+            onAudioUploaded={(url) => {
+              setaudiourl(url);
+              setShowAudioComposer(false);
+            }}
+            onCancel={() => setShowAudioComposer(false)}
+          />
+        </div>
+      )}
     </Card>
   );
 };

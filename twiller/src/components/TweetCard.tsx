@@ -10,6 +10,7 @@ import {
   Repeat2,
   Share,
   MoreHorizontal,
+  Volume2,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import axiosInstance from "@/lib/axiosInstance";
@@ -112,6 +113,18 @@ export default function TweetCard({ tweet }: any) {
               </div>
             )}
 
+            {tweetstate.audio && (
+              <div className="mb-4 bg-gray-900/50 border border-gray-800 p-4 rounded-2xl">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="bg-blue-500/10 p-2 rounded-full">
+                    <Volume2 className="h-4 w-4 text-blue-400" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-200">Audio Tweet</span>
+                </div>
+                <audio src={tweetstate.audio} controls className="w-full h-10 custom-audio-player" />
+              </div>
+            )}
+
             <div className="flex items-center justify-between max-w-md">
               <Button
                 variant="ghost"
@@ -127,22 +140,20 @@ export default function TweetCard({ tweet }: any) {
               <Button
                 variant="ghost"
                 size="sm"
-                className={`flex items-center space-x-2 p-2 rounded-full hover:bg-green-900/20 group ${
-                  isRetweet
-                    ? "text-green-400"
-                    : "text-gray-500 hover:text-green-400"
-                }`}
+                className={`flex items-center space-x-2 p-2 rounded-full hover:bg-green-900/20 group ${isRetweet
+                  ? "text-green-400"
+                  : "text-gray-500 hover:text-green-400"
+                  }`}
                 onClick={(e) => {
                   e.stopPropagation();
                   retweetTweet(tweetstate._id);
                 }}
               >
                 <Repeat2
-                  className={`h-5 w-5 ${
-                    tweet.retweeted
-                      ? "text-green-400"
-                      : "group-hover:text-green-400"
-                  }`}
+                  className={`h-5 w-5 ${tweet.retweeted
+                    ? "text-green-400"
+                    : "group-hover:text-green-400"
+                    }`}
                 />
                 <span className="text-sm">
                   {formatNumber(tweetstate.retweets)}
@@ -152,20 +163,18 @@ export default function TweetCard({ tweet }: any) {
               <Button
                 variant="ghost"
                 size="sm"
-                className={`flex items-center space-x-2 p-2 rounded-full hover:bg-red-900/20 group ${
-                  isLiked ? "text-red-500" : "text-gray-500 hover:text-red-400"
-                }`}
+                className={`flex items-center space-x-2 p-2 rounded-full hover:bg-red-900/20 group ${isLiked ? "text-red-500" : "text-gray-500 hover:text-red-400"
+                  }`}
                 onClick={(e) => {
                   e.stopPropagation();
                   likeTweet(tweetstate._id);
                 }}
               >
                 <Heart
-                  className={`h-5 w-5 ${
-                    tweetstate.liked
-                      ? "text-red-500 fill-current"
-                      : "group-hover:text-red-400"
-                  }`}
+                  className={`h-5 w-5 ${tweetstate.liked
+                    ? "text-red-500 fill-current"
+                    : "group-hover:text-red-400"
+                    }`}
                 />
                 <span className="text-sm">
                   {formatNumber(tweetstate.likes)}
