@@ -185,10 +185,10 @@ app.post("/forgot-password", async (req, res) => {
 
     console.log(`🔑 PASSWORD RESET for ${cleanIdentity}: ${newPassword}`);
 
-    // Return success + new password (for demo purposes as requested)
+    // Return success
     res.status(200).send({
       message: "Password reset successful.",
-      newPassword: newPassword, // Show in UI for demo/internship testing
+      newPassword: newPassword, // Show in UI for demo
       identity: cleanIdentity
     });
 
@@ -206,7 +206,7 @@ app.post("/login", async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const user = await User.findOne({ email: cleanEmail });
+    const user = await User.findOne({ email: cleanEmail }).select('+password');
 
     if (!user) {
       return res.status(404).send({ error: "User not found" });
@@ -224,8 +224,10 @@ app.post("/login", async (req, res) => {
       return res.status(401).send({ error: "Invalid credentials" });
     }
 
-    // Return the user data (normally we'd return a JWT, but this project uses email-based lookup)
-    res.status(200).send(user);
+    // Sanitize response
+    const userObj = user.toObject();
+    delete userObj.password;
+    res.status(200).send(userObj);
 
   } catch (error) {
     console.error("❌ Login Error:", error);
@@ -292,7 +294,10 @@ app.post("/register", async (req, res) => {
 
     const newUser = new User(userData);
     await newUser.save();
-    return res.status(201).send(newUser);
+
+    const userObj = newUser.toObject();
+    delete userObj.password;
+    return res.status(201).send(userObj);
   } catch (error) {
     console.error("Registration error:", error);
     return res.status(400).send({ error: error.message });
@@ -323,7 +328,9 @@ app.patch("/userupdate/:email", async (req, res) => {
       { $set: req.body },
       { new: true, upsert: false }
     );
-    return res.status(200).send(updated);
+    const userObj = updated.toObject();
+    delete userObj.password;
+    return res.status(200).send(userObj);
   } catch (error) {
     return res.status(400).send({ error: error.message });
   }
