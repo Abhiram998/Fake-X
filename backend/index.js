@@ -11,7 +11,7 @@ import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { DateTime } from "luxon";
-import { Resend } from "resend";
+import sendOTP from "./utils/sendOTP.js";
 
 dotenv.config();
 const app = express();
@@ -47,11 +47,7 @@ const upload = multer({
   limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
 });
 
-// Resend Configuration
-if (!process.env.RESEND_API_KEY) {
-  console.log("⚠️ WARNING: RESEND_API_KEY is not defined in environment variables!");
-}
-const resend = new Resend(process.env.RESEND_API_KEY || "temporary_key_to_prevent_crash");
+// Email configuration moved to utils/sendOTP.js
 
 // Socket.io connection handling
 io.on("connection", (socket) => {
@@ -96,29 +92,14 @@ app.post("/request-otp", async (req, res) => {
     const newOtp = new Otp({ email: cleanEmail, code });
     await newOtp.save();
 
-    // Send via Resend API (Production-safe)
-    const { data, error } = await resend.emails.send({
-      from: 'Twiller <onboarding@resend.dev>', // Use verified domain in production if possible
-      to: [cleanEmail],
-      subject: 'Your Twiller Verification Code',
-      html: `
-        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-          <h2 style="color: #1d9bf0;">Audio Tweet Verification</h2>
-          <p>Your 6-digit verification code is:</p>
-          <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1d9bf0; margin: 20px 0;">
-            ${code}
-          </div>
-          <p style="color: #666; font-size: 14px;">This code will expire in 5 minutes and can only be used once.</p>
-        </div>
-      `
-    });
+    // Send via Brevo API (Production-safe)
+    const result = await sendOTP(cleanEmail, code);
 
-    if (error) {
-      console.error("❌ Resend API Error:", error);
-      // Fallback log for development
+    if (!result.success) {
+      // Return 200 to avoid blocking UI, but log the failure
       console.log(`🔥 [FALLBACK] CODE FOR ${cleanEmail}: ${code}`);
       return res.status(200).send({
-        message: "OTP generated. If you didn't receive an email, check server logs."
+        message: "OTP generated. Please check server logs if email is not received."
       });
     }
 

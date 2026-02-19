@@ -16,6 +16,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@getbrevo/brevo": "^3.0.1",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
@@ -28,7 +29,6 @@
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^8.0.1",
     "nodemon": "^3.1.10",
-    "resend": "^6.9.2",
     "socket.io": "^4.8.3"
   }
 }
