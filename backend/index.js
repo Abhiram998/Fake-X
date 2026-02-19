@@ -53,19 +53,17 @@ const upload = multer({
   limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
 });
 
-// Mail Transporter (Alternative Gmail SMTP setting for better IPv4 compatibility)
+// Mail Transporter (Strictly forced IPv4 and Port 465 for stability)
 const transporter = nodemailer.createTransport({
-  host: "smtp.googlemail.com",
-  port: 587,
-  secure: false, // TLS
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  tls: {
-    rejectUnauthorized: false, // Help with some hosting network restrictions
-    minVersion: 'TLSv1.2'
-  }
+  family: 4, // CRITICAL: Forces IPv4 to bypass Render's broken IPv6 routing
+  connectionTimeout: 15000,
 });
 
 // Verify transporter connection
