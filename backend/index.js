@@ -7,17 +7,11 @@ import Tweet from "./models/tweet.js";
 import Otp from "./models/otp.js";
 import { Server } from "socket.io";
 import { createServer } from "http";
-import nodemailer from "nodemailer";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { DateTime } from "luxon";
-import dns from "dns";
-
-// Fix for Render ENETUNREACH (Force IPv4)
-if (dns.setDefaultResultOrder) {
-  dns.setDefaultResultOrder("ipv4first");
-}
+import { Resend } from "resend";
 
 dotenv.config();
 const app = express();
@@ -53,27 +47,8 @@ const upload = multer({
   limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
 });
 
-// Mail Transporter (Strictly forced IPv4 and Port 465 for stability)
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  family: 4, // CRITICAL: Forces IPv4 to bypass Render's broken IPv6 routing
-  connectionTimeout: 15000,
-});
-
-// Verify transporter connection
-transporter.verify(function (error, success) {
-  if (error) {
-    console.log("❌ Mail Server Error:", error.message);
-  } else {
-    console.log("📧 Mail Server is ready to send messages");
-  }
-});
+// Resend Configuration
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Socket.io connection handling
 io.on("connection", (socket) => {
@@ -93,10 +68,10 @@ const validateTimeWindow = (req, res, next) => {
   const hour = nowIST.hour;
   const minute = nowIST.minute;
 
-  // TEMPORARY FOR TESTING: 2:00 PM (14:00) to 11:00 PM (23:00)
-  if (hour < 14 || (hour >= 23 && minute > 0)) {
+  // Final Production Window: 2:00 PM (14:00) to 7:00 PM (19:00)
+  if (hour < 14 || (hour >= 19 && minute > 0)) {
     return res.status(403).send({
-      error: "Audio tweets are allowed only between 2:00 PM and 11:00 PM IST (Testing Window).",
+      error: "Audio tweets are allowed only between 2:00 PM and 7:00 PM IST.",
     });
   }
   next();
@@ -107,30 +82,47 @@ app.post("/request-otp", async (req, res) => {
   try {
     const { email } = req.body;
     const cleanEmail = email.trim().toLowerCase();
-    console.log(`📩 OTP requested for: ${cleanEmail}`);
+
+    // Generate 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // DEV BYPASS: Log the code clearly so user can see it in Render logs
-    console.log("-----------------------------------------");
-    console.log(`🔥 CODE FOR ${cleanEmail} IS: ${code}`);
-    console.log("-----------------------------------------");
+    console.log(`📩 Generating OTP for: ${cleanEmail}`);
 
-    await Otp.deleteMany({ email: cleanEmail }); // Delete old OTPs
+    // Save to DB (Single-use logic: Delete existing before creating new)
+    await Otp.deleteMany({ email: cleanEmail });
     const newOtp = new Otp({ email: cleanEmail, code });
     await newOtp.save();
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Your Twiller Audio Verification Code",
-      text: `Your OTP for audio tweet verification is: ${code}. It expires in 5 minutes.`,
-    };
+    // Send via Resend API (Production-safe)
+    const { data, error } = await resend.emails.send({
+      from: 'Twiller <onboarding@resend.dev>', // Use verified domain in production if possible
+      to: [cleanEmail],
+      subject: 'Your Twiller Verification Code',
+      html: `
+        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+          <h2 style="color: #1d9bf0;">Audio Tweet Verification</h2>
+          <p>Your 6-digit verification code is:</p>
+          <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1d9bf0; margin: 20px 0;">
+            ${code}
+          </div>
+          <p style="color: #666; font-size: 14px;">This code will expire in 5 minutes and can only be used once.</p>
+        </div>
+      `
+    });
 
-    await transporter.sendMail(mailOptions);
+    if (error) {
+      console.error("❌ Resend API Error:", error);
+      // Fallback log for development
+      console.log(`🔥 [FALLBACK] CODE FOR ${cleanEmail}: ${code}`);
+      return res.status(200).send({
+        message: "OTP generated. If you didn't receive an email, check server logs."
+      });
+    }
+
     res.status(200).send({ message: "OTP sent successfully" });
   } catch (error) {
-    console.error("❌ Email failed to send:", error.message);
-    res.status(500).send({ error: "Failed to send email. Please try again." });
+    console.error("❌ Request OTP Error:", error);
+    res.status(200).send({ error: "Something went wrong. Please check logs." });
   }
 });
 
