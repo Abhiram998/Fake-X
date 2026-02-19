@@ -12,6 +12,8 @@ import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { DateTime } from "luxon";
 import sendOTP from "./utils/sendOTP.js";
+import bcrypt from "bcryptjs";
+import { generateSecureAlphabetPassword } from "./utils/passwordGenerator.js";
 
 dotenv.config();
 const app = express();
@@ -129,6 +131,70 @@ app.post("/verify-otp", async (req, res) => {
     res.status(200).send({ message: "OTP verified successfully" });
   } catch (error) {
     res.status(500).send({ error: error.message });
+  }
+});
+
+// Forgot Password Endpoint
+app.post("/forgot-password", async (req, res) => {
+  try {
+    const { identity } = req.body; // identity can be email or phone
+    if (!identity) {
+      return res.status(400).send({ error: "Email or Phone is required" });
+    }
+
+    const cleanIdentity = identity.trim().toLowerCase();
+
+    // Find user by email or phone
+    const user = await User.findOne({
+      $or: [
+        { email: cleanIdentity },
+        { phone: cleanIdentity }
+      ]
+    });
+
+    if (!user) {
+      // General response to avoid user enumeration (optional but good)
+      return res.status(200).send({
+        message: "If an account exists, your reset instructions have been processed."
+      });
+    }
+
+    // Restriction check: Once per day
+    const now = new Date();
+    if (user.lastResetRequest) {
+      const lastReset = new Date(user.lastResetRequest);
+      if (
+        lastReset.getDate() === now.getDate() &&
+        lastReset.getMonth() === now.getMonth() &&
+        lastReset.getFullYear() === now.getFullYear()
+      ) {
+        return res.status(403).send({
+          error: "You can use this option only one time per day."
+        });
+      }
+    }
+
+    // Reset Allowed: Generate alphabet-only password
+    const newPassword = generateSecureAlphabetPassword(12);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user
+    user.password = hashedPassword;
+    user.lastResetRequest = now;
+    await user.save();
+
+    console.log(`🔑 PASSWORD RESET for ${cleanIdentity}: ${newPassword}`);
+
+    // Return success + new password (for demo purposes as requested)
+    res.status(200).send({
+      message: "Password reset successful.",
+      newPassword: newPassword, // Show in UI for demo/internship testing
+      identity: cleanIdentity
+    });
+
+  } catch (error) {
+    console.error("❌ Forgot Password Error:", error);
+    res.status(500).send({ error: "Something went wrong. Please try again later." });
   }
 });
 

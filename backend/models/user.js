@@ -4,11 +4,14 @@ const UserSchema = mongoose.Schema({
   displayName: { type: String, required: true },
   avatar: { type: String, required: true },
   email: { type: String, required: true, unique: true },
+  phone: { type: String, unique: true, sparse: true },
+  password: { type: String }, // Hashed password
   bio: { type: String, default: "" },
   location: { type: String, default: "" },
   website: { type: String, default: "" },
   joinedDate: { type: Date, default: Date.now },
   notificationEnabled: { type: Boolean, default: false },
+  lastResetRequest: { type: Date }, // For "once per day" restriction
 });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);
