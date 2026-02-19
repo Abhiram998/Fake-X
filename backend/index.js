@@ -47,9 +47,12 @@ const upload = multer({
   limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
 });
 
-// Mail Transporter
+// Mail Transporter (SSL / Port 465 is often more reliable on restricted hosts)
 const transporter = nodemailer.createTransport({
   service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -59,7 +62,7 @@ const transporter = nodemailer.createTransport({
 // Verify transporter connection
 transporter.verify(function (error, success) {
   if (error) {
-    console.log("❌ Mail Server Error:", error);
+    console.log("❌ Mail Server Error:", error.message);
   } else {
     console.log("📧 Mail Server is ready to send messages");
   }
@@ -99,6 +102,11 @@ app.post("/request-otp", async (req, res) => {
     console.log(`📩 OTP requested for: ${email}`);
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
+    // DEV BYPASS: Log the code clearly so user can see it in Render logs
+    console.log("-----------------------------------------");
+    console.log(`🔥 YOUR OTP CODE IS: ${code}`);
+    console.log("-----------------------------------------");
+
     await Otp.deleteMany({ email }); // Delete old OTPs
     const newOtp = new Otp({ email, code });
     await newOtp.save();
@@ -113,7 +121,10 @@ app.post("/request-otp", async (req, res) => {
     await transporter.sendMail(mailOptions);
     res.status(200).send({ message: "OTP sent successfully" });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    console.error("❌ Email failed to send:", error.message);
+    // Even if email fails, we send 200 so the user isn't stuck "Sending..."
+    // They can then grab the code from the Render logs!
+    res.status(200).send({ message: "OTP generated (Check server logs if mail not received)" });
   }
 });
 
