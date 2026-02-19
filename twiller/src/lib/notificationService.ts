@@ -22,7 +22,12 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
 };
 
 export const showNotification = async (title: string, body: string, icon?: string) => {
-    if (checkNotificationPermission() !== "granted") return;
+    console.log("🔔 Attempting to show notification:", title);
+
+    if (checkNotificationPermission() !== "granted") {
+        console.warn("🚫 Notification permission not granted");
+        return;
+    }
 
     const options = {
         body,
@@ -30,23 +35,26 @@ export const showNotification = async (title: string, body: string, icon?: strin
         badge: "/favicon.ico",
         tag: "tweet-alert",
         vibrate: [200, 100, 200],
-        renotify: true, // Overwrite previous notification with same tag
+        renotify: true,
+        requireInteraction: false,
     };
 
     try {
-        // Try using Service Worker first (Better for mobile/Android)
+        // Method 1: Service Worker (Best for Android/Mobile)
         if ("serviceWorker" in navigator) {
             const registration = await navigator.serviceWorker.ready;
-            if (registration) {
+            if (registration && "showNotification" in registration) {
+                console.log("📱 Showing via Service Worker");
                 await registration.showNotification(title, options);
                 return;
             }
         }
 
-        // Fallback to standard Notification (Desktop)
+        // Method 2: Standard Notification API (Desktop/Fallback)
+        console.log("💻 Showing via standard API");
         new Notification(title, options);
     } catch (error) {
-        console.error("Error creating notification:", error);
+        console.error("❌ Error creating notification:", error);
     }
 };
 

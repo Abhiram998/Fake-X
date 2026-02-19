@@ -87,6 +87,10 @@ const tweets: Tweet[] = [
       "https://images.pexels.com/photos/196645/pexels-photo-196645.jpeg?auto=compress&cs=tinysrgb&w=800",
   },
 ];
+import { io } from "socket.io-client";
+
+const SOCKET_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+
 const Feed = () => {
   const { user } = useAuth();
   const [tweets, setTweets] = useState<any>([]);
@@ -100,20 +104,15 @@ const Feed = () => {
       const fetchedTweets = res.data;
 
       if (fetchedTweets.length > 0) {
-        // If it's not the initial load and notifications are enabled, process new tweets
+        // Polling fallback: process new tweets if they weren't caught by Socket.io
         if (!isInitial && user?.notificationEnabled) {
-          // Identify tweets that are newer than the last processed one
           const newTweets = [];
           for (const tweet of fetchedTweets) {
             if (tweet._id === lastProcessedTweetIdRef.current) break;
             newTweets.push(tweet);
           }
-
-          // Trigger notifications for new tweets
           newTweets.forEach((tweet) => triggerTweetNotification(tweet));
         }
-
-        // Update the last processed tweet ID ref to the newest one
         lastProcessedTweetIdRef.current = fetchedTweets[0]._id;
       }
 
@@ -126,16 +125,37 @@ const Feed = () => {
   };
 
   useEffect(() => {
-    // Initial fetch
     fetchTweets(true);
 
-    // Polling for real-time updates (every 3 seconds for snappier notifications)
+    // Socket.io for INSTANT updates
+    const socket = io(SOCKET_URL);
+
+    socket.on("connect", () => console.log("✅ Real-time connected"));
+
+    socket.on("new-tweet", (newTweet: any) => {
+      // Add the tweet to the list if it's not already there
+      setTweets((prev: any) => {
+        if (prev.some((t: any) => t._id === newTweet._id)) return prev;
+        return [newTweet, ...prev];
+      });
+
+      // Trigger notification instantly if keyword matches
+      if (user?.notificationEnabled) {
+        triggerTweetNotification(newTweet);
+      }
+      lastProcessedTweetIdRef.current = newTweet._id;
+    });
+
+    // Polling as a robust fallback (every 30 seconds instead of 3s now to save battery)
     const interval = setInterval(() => {
       fetchTweets(false);
-    }, 3000);
+    }, 30000);
 
-    return () => clearInterval(interval);
-  }, [user?.notificationEnabled]); // Only re-run if notification preference changes
+    return () => {
+      socket.disconnect();
+      clearInterval(interval);
+    };
+  }, [user?.notificationEnabled]);
 
   const handlenewtweet = (newtweet: any) => {
     setTweets((prev: any) => [newtweet, ...prev]);

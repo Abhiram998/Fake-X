@@ -270,7 +270,13 @@ export default function ProfilePage() {
               />
             </button>
           </div>
-
+          {user.notificationEnabled && (
+            <div className="pt-2 border-t border-gray-800/50">
+              <p className="text-[10px] text-gray-500 italic">
+                Mobile Tip: For background alerts, use "Add to Home Screen" (iOS) or keep the tab active (Android).
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

@@ -4,19 +4,38 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import User from "./models/user.js";
 import Tweet from "./models/tweet.js";
+import { Server } from "socket.io";
+import { createServer } from "http";
+
 dotenv.config();
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*", // Adjust this in production
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+  },
+});
+
 app.use(cors());
 app.use(express.json());
+
+// Socket.io connection handling
+io.on("connection", (socket) => {
+  console.log("📡 User connected:", socket.id);
+  socket.on("disconnect", () => {
+    console.log("🔌 User disconnected");
+  });
+});
 
 app.get("/", (req, res) => {
   res.send("Twiller backend is running successfully");
 });
 
 const port = process.env.PORT || 5000;
-const url = process.env.MONGODB_URL || process.env.MONOGDB_URL; // Check both for compatibility
+const url = process.env.MONGODB_URL || process.env.MONOGDB_URL;
 
-app.listen(port, "0.0.0.0", () => {
+httpServer.listen(port, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${port}`);
 });
 
@@ -86,6 +105,7 @@ app.post("/post", async (req, res) => {
     const tweet = new Tweet(req.body);
     await tweet.save();
     const populatedTweet = await Tweet.findById(tweet._id).populate("author");
+    io.emit("new-tweet", populatedTweet);
     return res.status(201).send(populatedTweet);
   } catch (error) {
     return res.status(400).send({ error: error.message });
