@@ -91,7 +91,7 @@ const Feed = () => {
   const { user } = useAuth();
   const [tweets, setTweets] = useState<any>([]);
   const [loading, setloading] = useState(false);
-  const [lastProcessedTweetId, setLastProcessedTweetId] = useState<string | null>(null);
+  const lastProcessedTweetIdRef = React.useRef<string | null>(null);
 
   const fetchTweets = async (isInitial = false) => {
     try {
@@ -103,10 +103,9 @@ const Feed = () => {
         // If it's not the initial load and notifications are enabled, process new tweets
         if (!isInitial && user?.notificationEnabled) {
           // Identify tweets that are newer than the last processed one
-          // Since they are sorted by timestamp: -1, we can check tweets at the beginning
           const newTweets = [];
           for (const tweet of fetchedTweets) {
-            if (tweet._id === lastProcessedTweetId) break;
+            if (tweet._id === lastProcessedTweetIdRef.current) break;
             newTweets.push(tweet);
           }
 
@@ -114,19 +113,20 @@ const Feed = () => {
           newTweets.forEach((tweet) => triggerTweetNotification(tweet));
         }
 
-        // Update the last processed tweet ID to the newest one
-        setLastProcessedTweetId(fetchedTweets[0]._id);
+        // Update the last processed tweet ID ref to the newest one
+        lastProcessedTweetIdRef.current = fetchedTweets[0]._id;
       }
 
       setTweets(fetchedTweets);
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching tweets:", error);
     } finally {
       if (isInitial) setloading(false);
     }
   };
 
   useEffect(() => {
+    // Initial fetch
     fetchTweets(true);
 
     // Polling for real-time updates (every 10 seconds)
@@ -135,16 +135,15 @@ const Feed = () => {
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [user?.notificationEnabled, lastProcessedTweetId]); // Re-run if preference changes or last processed ID changes
+  }, [user?.notificationEnabled]); // Only re-run if notification preference changes
 
   const handlenewtweet = (newtweet: any) => {
     setTweets((prev: any) => [newtweet, ...prev]);
-    // Also process manually posted tweets for notifications if they match keywords? 
-    // Usually, you don't notify yourself of your own tweet, but let's fulfill the keyword requirement.
+    // Manually triggered notifications for self-posts if enabled and keyword matches
     if (user?.notificationEnabled) {
       triggerTweetNotification(newtweet);
     }
-    setLastProcessedTweetId(newtweet._id);
+    lastProcessedTweetIdRef.current = newtweet._id;
   };
   return (
     <div className="min-h-screen">

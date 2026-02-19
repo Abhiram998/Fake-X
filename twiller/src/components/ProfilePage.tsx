@@ -8,7 +8,8 @@ import {
   Link as LinkIcon,
   MoreHorizontal,
   Camera,
-  Settings,
+  Bell,
+  Zap,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "./ui/button";
@@ -18,7 +19,7 @@ import TweetCard from "./TweetCard";
 import { Card, CardContent } from "./ui/card";
 import Editprofile from "./Editprofile";
 import axiosInstance from "@/lib/axiosInstance";
-import { requestNotificationPermission } from "@/lib/notificationService";
+import { requestNotificationPermission, showNotification, keywords } from "@/lib/notificationService";
 import { Label } from "./ui/label";
 
 interface Tweet {
@@ -137,6 +138,14 @@ export default function ProfilePage() {
     await toggleNotifications(newStatus);
   };
 
+  const sendTestNotification = () => {
+    showNotification(
+      "Test Notification",
+      "This is a test alert from Twiller. Keyword notifications are working!",
+      "/favicon.ico"
+    );
+  };
+
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -246,26 +255,42 @@ export default function ProfilePage() {
         </div>
 
         {/* Notification Toggle */}
-        <div className="flex items-center justify-between p-4 bg-gray-900/50 rounded-xl border border-gray-800 mt-4">
-          <div className="space-y-0.5">
-            <Label className="text-white font-semibold flex items-center gap-2">
-              <Settings className="w-4 h-4 text-blue-400" />
-              Enable Keyword Notifications
-            </Label>
-            <p className="text-sm text-gray-400">
-              Receive alerts for "cricket" or "science" tweets
-            </p>
-          </div>
-          <button
-            onClick={handleToggleNotifications}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${user.notificationEnabled ? "bg-blue-600" : "bg-gray-700"
-              }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${user.notificationEnabled ? "translate-x-6" : "translate-x-1"
+        <div className="flex flex-col space-y-4 p-4 bg-gray-900/40 rounded-2xl border border-gray-800 mt-6 backdrop-blur-sm">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label className="text-white text-base font-bold flex items-center gap-2">
+                <Bell className="w-5 h-5 text-blue-400" />
+                Keyword Notifications
+              </Label>
+              <p className="text-sm text-gray-400">
+                Watching for: {keywords.map(k => <span key={k} className="text-blue-300 font-medium mx-1">#{k}</span>)}
+              </p>
+            </div>
+            <button
+              onClick={handleToggleNotifications}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none ${user.notificationEnabled ? "bg-blue-500" : "bg-gray-700"
                 }`}
-            />
-          </button>
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${user.notificationEnabled ? "translate-x-6" : "translate-x-1"
+                  }`}
+              />
+            </button>
+          </div>
+
+          {user.notificationEnabled && (
+            <div className="pt-2 border-t border-gray-800/50">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={sendTestNotification}
+                className="text-gray-400 hover:text-white hover:bg-gray-800 rounded-full h-8 px-3 text-xs flex items-center gap-2"
+              >
+                <Zap className="w-3 h-3" />
+                Send test notification
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 

@@ -85,7 +85,8 @@ app.post("/post", async (req, res) => {
   try {
     const tweet = new Tweet(req.body);
     await tweet.save();
-    return res.status(201).send(tweet);
+    const populatedTweet = await Tweet.findById(tweet._id).populate("author");
+    return res.status(201).send(populatedTweet);
   } catch (error) {
     return res.status(400).send({ error: error.message });
   }
@@ -109,7 +110,8 @@ app.post("/like/:tweetid", async (req, res) => {
       tweet.likedBy.push(userId);
       await tweet.save();
     }
-    res.send(tweet);
+    const populated = await Tweet.findById(req.params.tweetid).populate("author");
+    res.send(populated);
   } catch (error) {
     return res.status(400).send({ error: error.message });
   }
@@ -124,7 +126,8 @@ app.post("/retweet/:tweetid", async (req, res) => {
       tweet.retweetedBy.push(userId);
       await tweet.save();
     }
-    res.send(tweet);
+    const populated = await Tweet.findById(req.params.tweetid).populate("author");
+    res.send(populated);
   } catch (error) {
     return res.status(400).send({ error: error.message });
   }

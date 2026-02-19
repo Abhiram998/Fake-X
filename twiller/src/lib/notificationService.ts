@@ -5,16 +5,15 @@
 export const keywords = ["cricket", "science"];
 
 export const checkNotificationPermission = (): NotificationPermission => {
-    if (!("Notification" in window)) {
-        console.warn("This browser does not support desktop notification");
+    if (typeof window === "undefined" || !("Notification" in window)) {
         return "denied";
     }
     return Notification.permission;
 };
 
 export const requestNotificationPermission = async (): Promise<boolean> => {
-    if (!("Notification" in window)) {
-        alert("This browser does not support desktop notification");
+    if (typeof window === "undefined" || !("Notification" in window)) {
+        alert("This browser does not support desktop notifications");
         return false;
     }
 
@@ -25,10 +24,17 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
 export const showNotification = (title: string, body: string, icon?: string) => {
     if (checkNotificationPermission() === "granted") {
         try {
-            new Notification(title, {
+            const notification = new Notification(title, {
                 body,
-                icon: icon || "/favicon.ico", // Fallback to a default logo if provided
+                icon: icon || "/favicon.ico",
+                badge: "/favicon.ico", // Android support
+                tag: "tweet-alert",    // Group related notifications
             });
+
+            notification.onclick = () => {
+                window.focus();
+                notification.close();
+            };
         } catch (error) {
             console.error("Error creating notification:", error);
         }
@@ -36,6 +42,7 @@ export const showNotification = (title: string, body: string, icon?: string) => 
 };
 
 export const shouldNotifyForTweet = (content: string): boolean => {
+    if (!content) return false;
     const lowercaseContent = content.toLowerCase();
     return keywords.some((keyword) => lowercaseContent.includes(keyword.toLowerCase()));
 };
@@ -47,10 +54,11 @@ export const triggerTweetNotification = (tweet: { _id: string; content: string; 
     if (notifiedTweets.has(tweet._id)) return;
 
     if (shouldNotifyForTweet(tweet.content)) {
+        const authorName = tweet.author?.displayName || "Someone";
         showNotification(
-            "New Tweet Alert",
-            tweet.content,
-            "/favicon.ico" // Replace with actual app logo path if available
+            `New Tweet from ${authorName}`,
+            tweet.content.length > 100 ? tweet.content.slice(0, 97) + "..." : tweet.content,
+            "/favicon.ico"
         );
         notifiedTweets.add(tweet._id);
     }
