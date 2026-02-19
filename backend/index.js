@@ -99,16 +99,17 @@ const validateTimeWindow = (req, res, next) => {
 app.post("/request-otp", async (req, res) => {
   try {
     const { email } = req.body;
-    console.log(`📩 OTP requested for: ${email}`);
+    const cleanEmail = email.trim().toLowerCase();
+    console.log(`📩 OTP requested for: ${cleanEmail}`);
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
     // DEV BYPASS: Log the code clearly so user can see it in Render logs
     console.log("-----------------------------------------");
-    console.log(`🔥 YOUR OTP CODE IS: ${code}`);
+    console.log(`🔥 CODE FOR ${cleanEmail} IS: ${code}`);
     console.log("-----------------------------------------");
 
-    await Otp.deleteMany({ email }); // Delete old OTPs
-    const newOtp = new Otp({ email, code });
+    await Otp.deleteMany({ email: cleanEmail }); // Delete old OTPs
+    const newOtp = new Otp({ email: cleanEmail, code });
     await newOtp.save();
 
     const mailOptions = {
@@ -131,12 +132,17 @@ app.post("/request-otp", async (req, res) => {
 app.post("/verify-otp", async (req, res) => {
   try {
     const { email, code } = req.body;
-    const otp = await Otp.findOne({ email, code });
+    const cleanEmail = email.trim().toLowerCase();
+    console.log(`🔍 Verifying OTP for: ${cleanEmail} with code: ${code}`);
+
+    const otp = await Otp.findOne({ email: cleanEmail, code: code.trim() });
 
     if (!otp) {
+      console.log("❌ No matching OTP found in database");
       return res.status(400).send({ error: "Invalid or expired OTP" });
     }
 
+    console.log("✅ OTP match found!");
     otp.verified = true;
     await otp.save();
     res.status(200).send({ message: "OTP verified successfully" });
