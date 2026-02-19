@@ -138,13 +138,6 @@ export default function ProfilePage() {
     await toggleNotifications(newStatus);
   };
 
-  const sendTestNotification = () => {
-    showNotification(
-      "Test Notification",
-      "This is a test alert from Twiller. Keyword notifications are working!",
-      "/favicon.ico"
-    );
-  };
 
   return (
     <div className="min-h-screen">
@@ -278,19 +271,6 @@ export default function ProfilePage() {
             </button>
           </div>
 
-          {user.notificationEnabled && (
-            <div className="pt-2 border-t border-gray-800/50">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={sendTestNotification}
-                className="text-gray-400 hover:text-white hover:bg-gray-800 rounded-full h-8 px-3 text-xs flex items-center gap-2"
-              >
-                <Zap className="w-3 h-3" />
-                Send test notification
-              </Button>
-            </div>
-          )}
         </div>
       </div>
 

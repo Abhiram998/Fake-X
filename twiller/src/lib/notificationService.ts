@@ -29,7 +29,8 @@ export const showNotification = (title: string, body: string, icon?: string) => 
                 icon: icon || "/favicon.ico",
                 badge: "/favicon.ico", // Android support
                 tag: "tweet-alert",    // Group related notifications
-            });
+                vibrate: [200, 100, 200], // Mobile vibration pattern
+            } as any);
 
             notification.onclick = () => {
                 window.focus();
