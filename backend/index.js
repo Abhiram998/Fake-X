@@ -12,6 +12,12 @@ import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { DateTime } from "luxon";
+import dns from "dns";
+
+// Fix for Render ENETUNREACH (Force IPv4)
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder("ipv4first");
+}
 
 dotenv.config();
 const app = express();
@@ -47,16 +53,16 @@ const upload = multer({
   limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
 });
 
-// Mail Transporter (SSL / Port 465 is often more reliable on restricted hosts)
+// Mail Transporter (Standard Gmail Service with timeouts)
 const transporter = nodemailer.createTransport({
   service: "gmail",
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 10000,
+  socketTimeout: 20000,
 });
 
 // Verify transporter connection
@@ -123,9 +129,7 @@ app.post("/request-otp", async (req, res) => {
     res.status(200).send({ message: "OTP sent successfully" });
   } catch (error) {
     console.error("❌ Email failed to send:", error.message);
-    // Even if email fails, we send 200 so the user isn't stuck "Sending..."
-    // They can then grab the code from the Render logs!
-    res.status(200).send({ message: "OTP generated (Check server logs if mail not received)" });
+    res.status(500).send({ error: "Failed to send email. Please try again." });
   }
 });
 
