@@ -1,13 +1,13 @@
-import bovo from '@getbrevo/brevo';
+import * as Brevo from '@getbrevo/brevo';
 
 const sendOTP = async (email, otpCode) => {
     try {
-        let apiInstance = new bovo.TransactionalEmailsApi();
+        let apiInstance = new Brevo.TransactionalEmailsApi();
 
         let apiKey = apiInstance.authentications['apiKey'];
         apiKey.apiKey = process.env.BREVO_API_KEY;
 
-        let sendSmtpEmail = new bovo.SendSmtpEmail();
+        let sendSmtpEmail = new Brevo.SendSmtpEmail();
 
         sendSmtpEmail.subject = "Your Twiller Audio Verification Code";
         sendSmtpEmail.htmlContent = `
@@ -28,7 +28,7 @@ const sendOTP = async (email, otpCode) => {
                 </div>
             </div>
         `;
-        sendSmtpEmail.sender = { "name": "Twiller", "email": "admin@twiller.com" }; // Brevo will use your verified sender
+        sendSmtpEmail.sender = { "name": "Twiller", "email": "abhiramptb@gmail.com" }; // Must be the email you used to sign up for Brevo
         sendSmtpEmail.to = [{ "email": email }];
 
         const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
