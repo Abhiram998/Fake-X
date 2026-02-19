@@ -34,8 +34,8 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
         const nowIST = DateTime.now().setZone("Asia/Kolkata");
         const hour = nowIST.hour;
         const minute = nowIST.minute;
-        // TEMPORARY FOR TESTING: 2:00 PM (14:00) to 11:00 PM (23:00)
-        if (hour < 14 || (hour >= 23 && minute > 0)) {
+        // TEMPORARY FOR TESTING: 2:00 PM (14:00) to 11:59 PM (23:59)
+        if (hour < 14) {
             return false;
         }
         return true;
@@ -43,7 +43,7 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
 
     useEffect(() => {
         if (!isTimeAllowed()) {
-            setError("Audio tweets are allowed only between 2:00 PM and 11:00 PM IST (Testing Window).");
+            setError("Audio tweets are allowed only between 2:00 PM and 11:59 PM IST (Testing Window).");
         }
     }, []);
 
