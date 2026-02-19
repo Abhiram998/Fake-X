@@ -12,6 +12,7 @@ import { Input } from './ui/input';
 import { Separator } from './ui/separator';
 import { useAuth } from '@/context/AuthContext';
 import TwitterLogo from './Twitterlogo';
+import Link from 'next/link';
 
 
 
@@ -32,6 +33,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
     displayName: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Reset mode to initialMode when modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+    }
+  }, [isOpen, initialMode]);
 
   if (!isOpen) return null;
 
@@ -221,6 +229,17 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
               </div>
               {errors.password && (
                 <p className="text-red-400 text-sm">{errors.password}</p>
+              )}
+              {mode === 'login' && (
+                <div className="flex justify-end mt-1">
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-blue-400 hover:text-blue-300 hover:underline"
+                    onClick={onClose}
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
               )}
             </div>
 
