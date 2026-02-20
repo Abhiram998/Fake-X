@@ -14,6 +14,7 @@ import { DateTime } from "luxon";
 import sendOTP from "./utils/sendOTP.js";
 import bcrypt from "bcryptjs";
 import { generateSecureAlphabetPassword } from "./utils/passwordGenerator.js";
+import webpush from "web-push";
 
 dotenv.config();
 const app = express();
@@ -34,6 +35,13 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+// Web Push Config
+webpush.setVapidDetails(
+  "mailto:example@yourdomain.com",
+  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY
+);
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
@@ -303,7 +311,7 @@ app.post("/register", async (req, res) => {
     return res.status(400).send({ error: error.message });
   }
 });
-// loggedinuser
+// Loggedinuser
 app.get("/loggedinuser", async (req, res) => {
   try {
     const { email } = req.query;
@@ -317,6 +325,50 @@ app.get("/loggedinuser", async (req, res) => {
     return res.status(200).send(user);
   } catch (error) {
     return res.status(400).send({ error: error.message });
+  }
+});
+
+// Push Subscription Endpoints
+app.post("/subscribe", async (req, res) => {
+  try {
+    const { userId, subscription } = req.body;
+    if (!userId || !subscription) {
+      return res.status(400).send({ error: "UserId and subscription are required" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).send({ error: "User not found" });
+
+    // Prevent duplicate subscriptions
+    const subExists = user.pushSubscriptions.some(
+      (s) => s.endpoint === subscription.endpoint
+    );
+
+    if (!subExists) {
+      user.pushSubscriptions.push(subscription);
+      await user.save();
+    }
+
+    res.status(201).json({ message: "Subscription added successfully" });
+  } catch (error) {
+    console.error("❌ Subscription error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/unsubscribe", async (req, res) => {
+  try {
+    const { userId, endpoint } = req.body;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).send({ error: "User not found" });
+
+    user.pushSubscriptions = user.pushSubscriptions.filter(
+      (s) => s.endpoint !== endpoint
+    );
+    await user.save();
+    res.status(200).json({ message: "Unsubscribed successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 // update Profile
@@ -344,6 +396,40 @@ app.post("/post", async (req, res) => {
     await tweet.save();
     const populatedTweet = await Tweet.findById(tweet._id).populate("author");
     io.emit("new-tweet", populatedTweet);
+
+    // KEYWORD DETECTION & PUSH NOTIFICATION
+    const keywords = ["cricket", "science"];
+    const content = populatedTweet.content.toLowerCase();
+    const matches = keywords.some((k) => content.includes(k));
+
+    if (matches) {
+      const users = await User.find({
+        notificationEnabled: true,
+        pushSubscriptions: { $exists: true, $not: { $size: 0 } },
+      });
+
+      const notificationPayload = JSON.stringify({
+        title: `New Tweet from ${populatedTweet.author.displayName}`,
+        body: populatedTweet.content.length > 100 ? populatedTweet.content.slice(0, 97) + "..." : populatedTweet.content,
+        url: "/",
+        icon: populatedTweet.author.avatar || "/favicon.ico",
+      });
+
+      users.forEach((user) => {
+        user.pushSubscriptions.forEach((sub) => {
+          webpush.sendNotification(sub, notificationPayload).catch(async (err) => {
+            console.error(`❌ Push failed for user ${user._id}:`, err.statusCode);
+            if (err.statusCode === 410 || err.statusCode === 404) {
+              // Remove expired subscription
+              await User.findByIdAndUpdate(user._id, {
+                $pull: { pushSubscriptions: { endpoint: sub.endpoint } },
+              });
+            }
+          });
+        });
+      });
+    }
+
     return res.status(201).send(populatedTweet);
   } catch (error) {
     return res.status(400).send({ error: error.message });

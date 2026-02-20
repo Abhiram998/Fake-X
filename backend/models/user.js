@@ -11,6 +11,7 @@ const UserSchema = mongoose.Schema({
   website: { type: String, default: "" },
   joinedDate: { type: Date, default: Date.now },
   notificationEnabled: { type: Boolean, default: false },
+  pushSubscriptions: { type: Array, default: [] },
   lastResetRequest: { type: Date }, // For "once per day" restriction
 });
 

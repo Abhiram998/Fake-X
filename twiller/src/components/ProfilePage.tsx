@@ -130,12 +130,7 @@ export default function ProfilePage() {
 
   const handleToggleNotifications = async () => {
     if (!user) return;
-    const newStatus = !user.notificationEnabled;
-    if (newStatus) {
-      const granted = await requestNotificationPermission();
-      if (!granted) return;
-    }
-    await toggleNotifications(newStatus);
+    await toggleNotifications(!user.notificationEnabled);
   };
 
 

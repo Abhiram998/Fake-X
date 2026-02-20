@@ -11,6 +11,7 @@ import {
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { auth } from "./firebase";
 import axiosInstance from "../lib/axiosInstance";
+import { subscribeUserToPush, unsubscribeUserFromPush, requestNotificationPermission } from "../lib/notificationService";
 
 interface User {
   _id: string;
@@ -267,6 +268,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         toggleNotifications: async (enabled: boolean) => {
           if (!user) return;
           try {
+            if (enabled) {
+              const granted = await requestNotificationPermission();
+              if (granted) {
+                await subscribeUserToPush(user._id);
+              } else {
+                return; // Don't enable if permission denied
+              }
+            } else {
+              await unsubscribeUserFromPush(user._id);
+            }
+
             const res = await axiosInstance.patch(`/userupdate/${user.email}`, {
               notificationEnabled: enabled,
             });

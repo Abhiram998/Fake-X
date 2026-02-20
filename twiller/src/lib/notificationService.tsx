@@ -1,5 +1,6 @@
 import toast from "react-hot-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
+import axiosInstance from "./axiosInstance";
 
 /**
  * Utility service for handling Hybrid Notifications
@@ -135,5 +136,77 @@ export const triggerTweetNotification = (tweet: any) => {
     if (shouldNotifyForTweet(tweet.content)) {
         showNotification(tweet);
         saveNotifiedTweet(tweet._id);
+    }
+};
+
+/**
+ * PRODUCTION WEB PUSH LOGIC
+ */
+
+const VAPID_PUBLIC_KEY = "BFtpjv5AmyMEoYgs-RN_uLelroymI5vtWVmCkm3WdFAyVXRSCSgsQklu8mY-Pfo-hVZZz86dRgbiTK3BmZGjQZY";
+
+function urlBase64ToUint8Array(base64String: string) {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+export const subscribeUserToPush = async (userId: string) => {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+        console.warn("Push messaging is not supported");
+        return;
+    }
+
+    try {
+        const registration = await navigator.serviceWorker.ready;
+
+        // Subscribe to push service
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        });
+
+        console.log("✅ Push Subscription successful:", subscription);
+
+        // Send to backend
+        await axiosInstance.post("/subscribe", {
+            userId,
+            subscription,
+        });
+
+        return subscription;
+    } catch (error) {
+        console.error("❌ Failed to subscribe user to push:", error);
+    }
+};
+
+export const unsubscribeUserFromPush = async (userId: string) => {
+    if (!("serviceWorker" in navigator)) return;
+
+    try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+
+        if (subscription) {
+            const endpoint = subscription.endpoint;
+            await subscription.unsubscribe();
+
+            // Remove from backend
+            await axiosInstance.post("/unsubscribe", {
+                userId,
+                endpoint
+            });
+
+            console.log("✅ Unsubscribed from push");
+        }
+    } catch (error) {
+        console.error("❌ Failed to unsubscribe from push:", error);
     }
 };
