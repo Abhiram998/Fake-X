@@ -5,16 +5,21 @@ import { useEffect } from "react";
 export default function SwRegistration() {
     useEffect(() => {
         if ("serviceWorker" in navigator) {
-            window.addEventListener("load", () => {
-                navigator.serviceWorker
-                    .register("/service-worker.js")
-                    .then((registration) => {
-                        console.log("SW registered:", registration);
-                    })
-                    .catch((error) => {
-                        console.log("SW registration failed:", error);
-                    });
-            });
+            const register = async () => {
+                try {
+                    const registration = await navigator.serviceWorker.register("/service-worker.js");
+                    console.log("✅ SW registered:", registration.scope);
+                } catch (error) {
+                    console.error("❌ SW registration failed:", error);
+                }
+            };
+
+            if (document.readyState === "complete") {
+                register();
+            } else {
+                window.addEventListener("load", register);
+                return () => window.removeEventListener("load", register);
+            }
         }
     }, []);
 

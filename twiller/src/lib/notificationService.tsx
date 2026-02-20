@@ -58,17 +58,29 @@ export const showNotification = async (tweet: any) => {
         };
 
         try {
-            if ("serviceWorker" in navigator) {
-                const registration = await navigator.serviceWorker.ready;
+            // Try Service Worker first but don't hang if it's not ready
+            if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+                const registration = await Promise.race([
+                    navigator.serviceWorker.ready,
+                    new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1000))
+                ]) as ServiceWorkerRegistration;
+
                 if (registration && "showNotification" in registration) {
                     await registration.showNotification(title, options);
                     return;
                 }
             }
+            // Fallback to standard Notification API
             new Notification(title, options);
-            return; // Success with native
+            return;
         } catch (error) {
-            console.error("❌ Native notification failed, falling back to toast:", error);
+            console.warn("⚠️ Native notification via SW failed/timed out, using fallback API:", error);
+            try {
+                new Notification(title, options);
+                return;
+            } catch (innerError) {
+                console.error("❌ Both native notification methods failed:", innerError);
+            }
         }
     }
 
@@ -168,7 +180,10 @@ export const subscribeUserToPush = async (userId: string) => {
     }
 
     try {
-        const registration = await navigator.serviceWorker.ready;
+        const registration = await Promise.race([
+            navigator.serviceWorker.ready,
+            new Promise((_, reject) => setTimeout(() => reject(new Error("SW Ready Timeout")), 2000))
+        ]) as ServiceWorkerRegistration;
 
         // Subscribe to push service
         const subscription = await registration.pushManager.subscribe({
@@ -187,6 +202,7 @@ export const subscribeUserToPush = async (userId: string) => {
         return subscription;
     } catch (error) {
         console.error("❌ Failed to subscribe user to push:", error);
+        throw error; // Throw so AuthContext knows it failed
     }
 };
 
