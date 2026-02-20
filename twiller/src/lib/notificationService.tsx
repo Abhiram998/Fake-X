@@ -33,53 +33,47 @@ const isMobileDevice = () => {
 export const showNotification = async (title: string, body: string, icon?: string) => {
     console.log("🔔 Notification triggered:", title);
 
-    // HYBRID LOGIC:
-    // 1. If mobile or browser doesn't support Native Notifications OR Permission Denied -> Use Toast
-    // 2. If Desktop & Granted -> Use Native
-
     const nativeSupported = typeof window !== "undefined" && "Notification" in window;
     const isMobile = isMobileDevice();
     const permission = checkNotificationPermission();
 
     if (isMobile || !nativeSupported || permission !== "granted") {
-        // Fallback to Toast (Safe for all devices)
         toast.custom((t) => (
-            <div className= {`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-blue-600 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 p-4`}>
-                <div className="flex-1 w-0" >
-                    <p className="text-sm font-bold text-white" > { title } </p>
-                        < p className = "mt-1 text-xs text-blue-100" > { body } </p>
-                            </div>
-                            </div>
+            <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-blue-600 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 p-4`}>
+                <div className="flex-1 w-0">
+                    <p className="text-sm font-bold text-white">{title}</p>
+                    <p className="mt-1 text-xs text-blue-100">{body}</p>
+                </div>
+            </div>
         ), {
-    duration: 4000,
-        position: "top-center",
+            duration: 4000,
+            position: "top-center",
         });
-return;
+        return;
     }
 
-// Native Desktop Logic
-const options = {
-    body,
-    icon: icon || "/favicon.ico",
-    badge: "/favicon.ico",
-    tag: "tweet-alert",
-    vibrate: [200, 100, 200],
-    renotify: true,
-    requireInteraction: false,
-};
+    const options = {
+        body,
+        icon: icon || "/favicon.ico",
+        badge: "/favicon.ico",
+        tag: "tweet-alert",
+        vibrate: [200, 100, 200],
+        renotify: true,
+        requireInteraction: false,
+    };
 
-try {
-    if ("serviceWorker" in navigator) {
-        const registration = await navigator.serviceWorker.ready;
-        if (registration && "showNotification" in registration) {
-            await registration.showNotification(title, options);
-            return;
+    try {
+        if ("serviceWorker" in navigator) {
+            const registration = await navigator.serviceWorker.ready;
+            if (registration && "showNotification" in registration) {
+                await registration.showNotification(title, options);
+                return;
+            }
         }
+        new Notification(title, options);
+    } catch (error) {
+        console.error("❌ Error creating native notification:", error);
     }
-    new Notification(title, options);
-} catch (error) {
-    console.error("❌ Error creating native notification:", error);
-}
 };
 
 export const shouldNotifyForTweet = (content: string): boolean => {
@@ -88,7 +82,6 @@ export const shouldNotifyForTweet = (content: string): boolean => {
     return keywords.some((keyword) => lowercaseContent.includes(keyword.toLowerCase()));
 };
 
-// Map to keep track of notified tweet IDs to prevent duplicates in current session
 const notifiedTweets = new Set<string>();
 
 export const triggerTweetNotification = (tweet: { _id: string; content: string; author?: { displayName: string } }) => {
