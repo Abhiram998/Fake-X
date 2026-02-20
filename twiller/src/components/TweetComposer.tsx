@@ -66,20 +66,20 @@ const TweetComposer = ({ onTweetPosted }: any) => {
   };
   return (
     <Card className="bg-black border-gray-800 border-x-0 border-t-0 rounded-none">
-      <CardContent className="p-4">
-        <div className="flex space-x-4">
-          <Avatar className="h-12 w-12">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex space-x-3 sm:space-x-4">
+          <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
             <AvatarImage src={user.avatar} alt={user.displayName} />
             <AvatarFallback>{user.displayName[0]}</AvatarFallback>
           </Avatar>
 
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <form onSubmit={handleSubmit}>
               <Textarea
                 placeholder="What's happening?"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="bg-transparent border-none text-xl text-white placeholder-gray-500 resize-none min-h-[120px] focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="bg-transparent border-none text-lg sm:text-xl text-white placeholder-gray-500 resize-none min-h-[100px] sm:min-h-[120px] focus-visible:ring-0 focus-visible:ring-offset-0 px-0"
               />
 
               {audiourl && (

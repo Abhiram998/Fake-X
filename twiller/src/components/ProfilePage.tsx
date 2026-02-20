@@ -143,17 +143,17 @@ export default function ProfilePage() {
     <div className="min-h-screen">
       {/* Header */}
       <div className="sticky top-0 bg-black/90 backdrop-blur-md border-b border-gray-800 z-10">
-        <div className="flex items-center px-4 py-3 space-x-8">
+        <div className="flex items-center px-4 py-2 sm:py-3 space-x-4 sm:space-x-8">
           <Button
             variant="ghost"
             size="sm"
-            className="p-2 rounded-full hover:bg-gray-900"
+            className="p-2 rounded-full hover:bg-gray-900 flex-shrink-0"
           >
             <ArrowLeft className="h-5 w-5 text-white" />
           </Button>
-          <div>
-            <h1 className="text-xl font-bold text-white">{user.displayName}</h1>
-            <p className="text-sm text-gray-400">{userTweets.length} posts</p>
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold text-white truncate">{user.displayName}</h1>
+            <p className="text-xs sm:text-sm text-gray-400">{userTweets.length} posts</p>
           </div>
         </div>
       </div>

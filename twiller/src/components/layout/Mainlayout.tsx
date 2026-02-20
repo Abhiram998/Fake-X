@@ -6,6 +6,8 @@ import Sidebar from "./Sidebar";
 import RightSidebar from "./Rightsidebar";
 import ProfilePage from "../ProfilePage";
 
+import MobileNav from "./MobileNav";
+
 const Mainlayout = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuth();
   const [currentPage, setCurrentPage] = useState("home");
@@ -28,15 +30,23 @@ const Mainlayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="min-h-screen bg-black text-white flex justify-center w-full overflow-x-hidden">
-      <div className="w-16 sm:w-20 md:w-64 border-r border-gray-800 flex-shrink-0">
+      {/* Sidebar - hidden on mobile, narrow on tablets, wide on desktop */}
+      <div className="hidden xs:flex w-16 sm:w-20 md:w-64 border-r border-gray-800 flex-shrink-0">
         <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
       </div>
-      <main className="flex-1 w-full max-w-[600px] border-x border-gray-800 relative">
+
+      {/* Main Content */}
+      <main className="flex-1 w-full max-w-[600px] border-x border-gray-800 relative pb-16 sm:pb-0">
         {currentPage === "profile" ? <ProfilePage /> : children}
       </main>
+
+      {/* Right Sidebar - only on desktop */}
       <div className="hidden lg:block w-80 p-4 sticky top-0 h-screen">
         <RightSidebar />
       </div>
+
+      {/* Mobile Bottom Nav */}
+      <MobileNav currentPage={currentPage} onNavigate={setCurrentPage} />
     </div>
   );
 };

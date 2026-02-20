@@ -63,28 +63,28 @@ export default function TweetCard({ tweet }: any) {
           </Avatar>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center space-x-2 mb-2">
-              <span className="font-bold text-white">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mb-1">
+              <span className="font-bold text-white truncate max-w-[120px] sm:max-w-none">
                 {tweetstate.author.displayName}
               </span>
               {tweetstate.author.verified && (
-                <div className="bg-blue-500 rounded-full p-0.5">
+                <div className="bg-blue-500 rounded-full p-0.5 flex-shrink-0">
                   <svg
-                    className="h-4 w-4 text-white fill-current"
+                    className="h-3 w-3 sm:h-4 sm:w-4 text-white fill-current"
                     viewBox="0 0 20 20"
                   >
                     <path d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
                   </svg>
                 </div>
               )}
-              <span className="text-gray-500">
+              <span className="text-gray-500 text-sm truncate max-w-[80px] sm:max-w-none">
                 @{tweetstate.author.username}
               </span>
               <span className="text-gray-500">·</span>
-              <span className="text-gray-500">
+              <span className="text-gray-500 text-sm whitespace-nowrap">
                 {tweetstate.timestamp &&
                   new Date(tweetstate.timestamp).toLocaleDateString("en-us", {
-                    month: "long",
+                    month: "short",
                     year: "numeric",
                   })}
               </span>
@@ -125,14 +125,14 @@ export default function TweetCard({ tweet }: any) {
               </div>
             )}
 
-            <div className="flex items-center justify-between max-w-md">
+            <div className="flex items-center justify-between max-w-sm xs:max-w-md -ml-2">
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex items-center space-x-2 p-2 rounded-full hover:bg-blue-900/20 text-gray-500 hover:text-blue-400 group"
+                className="flex items-center space-x-1 sm:space-x-2 p-1.5 sm:p-2 rounded-full hover:bg-blue-900/20 text-gray-500 hover:text-blue-400 group"
               >
-                <MessageCircle className="h-5 w-5 group-hover:text-blue-400" />
-                <span className="text-sm">
+                <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 group-hover:text-blue-400" />
+                <span className="text-xs sm:text-sm">
                   {formatNumber(tweetstate.comments)}
                 </span>
               </Button>
@@ -140,7 +140,7 @@ export default function TweetCard({ tweet }: any) {
               <Button
                 variant="ghost"
                 size="sm"
-                className={`flex items-center space-x-2 p-2 rounded-full hover:bg-green-900/20 group ${isRetweet
+                className={`flex items-center space-x-1 sm:space-x-2 p-1.5 sm:p-2 rounded-full hover:bg-green-900/20 group ${isRetweet
                   ? "text-green-400"
                   : "text-gray-500 hover:text-green-400"
                   }`}
@@ -150,12 +150,12 @@ export default function TweetCard({ tweet }: any) {
                 }}
               >
                 <Repeat2
-                  className={`h-5 w-5 ${tweet.retweeted
+                  className={`h-4 w-4 sm:h-5 sm:w-5 ${tweet.retweeted
                     ? "text-green-400"
                     : "group-hover:text-green-400"
                     }`}
                 />
-                <span className="text-sm">
+                <span className="text-xs sm:text-sm">
                   {formatNumber(tweetstate.retweets)}
                 </span>
               </Button>
@@ -163,7 +163,7 @@ export default function TweetCard({ tweet }: any) {
               <Button
                 variant="ghost"
                 size="sm"
-                className={`flex items-center space-x-2 p-2 rounded-full hover:bg-red-900/20 group ${isLiked ? "text-red-500" : "text-gray-500 hover:text-red-400"
+                className={`flex items-center space-x-1 sm:space-x-2 p-1.5 sm:p-2 rounded-full hover:bg-red-900/20 group ${isLiked ? "text-red-500" : "text-gray-500 hover:text-red-400"
                   }`}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -171,12 +171,12 @@ export default function TweetCard({ tweet }: any) {
                 }}
               >
                 <Heart
-                  className={`h-5 w-5 ${tweetstate.liked
+                  className={`h-4 w-4 sm:h-5 sm:w-5 ${tweetstate.liked
                     ? "text-red-500 fill-current"
                     : "group-hover:text-red-400"
                     }`}
                 />
-                <span className="text-sm">
+                <span className="text-xs sm:text-sm">
                   {formatNumber(tweetstate.likes)}
                 </span>
               </Button>
@@ -184,9 +184,9 @@ export default function TweetCard({ tweet }: any) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex items-center space-x-2 p-2 rounded-full hover:bg-blue-900/20 text-gray-500 hover:text-blue-400 group"
+                className="flex items-center space-x-1 sm:space-x-2 p-1.5 sm:p-2 rounded-full hover:bg-blue-900/20 text-gray-500 hover:text-blue-400 group"
               >
-                <Share className="h-5 w-5 group-hover:text-blue-400" />
+                <Share className="h-4 w-4 sm:h-5 sm:w-5 group-hover:text-blue-400" />
               </Button>
             </div>
           </div>

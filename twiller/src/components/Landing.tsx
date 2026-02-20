@@ -10,15 +10,17 @@ import Feed from "./Feed";
 export default function LandingPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
-  const { user, logout ,googlesignin} = useAuth();
+  const { user, googlesignin } = useAuth();
 
   const openAuthModal = (mode: "login" | "signup") => {
     setAuthMode(mode);
     setShowAuthModal(true);
   };
+
   if (user) {
-    return <Feed/>;
+    return <Feed />;
   }
+
   return (
     <div className="min-h-screen bg-black text-white flex">
       {/* Left side - Logo */}
@@ -26,23 +28,23 @@ export default function LandingPage() {
         <TwitterLogo className="text-white h-80 w-80" />
       </div>
       {/* Right side - Content */}
-      <div className="flex-1 lg:flex-1 flex flex-col justify-center px-8 lg:px-16 max-w-lg lg:max-w-2xl">
-        <div className="lg:hidden mb-8 text-center">
+      <div className="flex-1 lg:flex-1 flex flex-col justify-center px-4 xs:px-8 lg:px-16 max-w-full lg:max-w-2xl overflow-x-hidden">
+        <div className="lg:hidden mb-12 text-center">
           <TwitterLogo size="xl" className="text-white mx-auto" />
         </div>
 
-        <div className="space-y-12">
+        <div className="space-y-10 sm:space-y-12">
           <div>
-            <h1 className="text-5xl lg:text-6xl font-bold mb-8 leading-tight">
+            <h1 className="text-4xl xs:text-5xl lg:text-7xl font-extrabold mb-8 leading-tight tracking-tight">
               Happening now
             </h1>
-            <h2 className="text-2xl lg:text-3xl font-bold mb-8">Join today.</h2>
+            <h2 className="text-xl xs:text-2xl lg:text-3xl font-bold mb-8">Join today.</h2>
           </div>
 
-          <div className="space-y-4 max-w-xs">
+          <div className="space-y-4 w-full max-w-xs sm:max-w-md">
             <Button
               variant="outline"
-              className="w-full py-3 rounded-full border-gray-600 bg-black  text-white font-semibold text-base h-12"
+              className="w-full py-3 rounded-full border-gray-600 bg-black text-white font-semibold text-base h-12"
               onClick={() => googlesignin()}
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -60,7 +62,7 @@ export default function LandingPage() {
                 />
                 <path
                   fill="currentColor"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
               Sign up with Google
@@ -68,8 +70,8 @@ export default function LandingPage() {
 
             <Button
               variant="outline"
-              className="w-full py-3 rounded-full border-gray-600  bg-black text-white font-semibold text-base h-12"
-             onClick={() => googlesignin()}
+              className="w-full py-3 rounded-full border-gray-600 bg-black text-white font-semibold text-base h-12"
+              onClick={() => googlesignin()}
             >
               <svg
                 className="w-5 h-5 mr-2"
@@ -89,29 +91,23 @@ export default function LandingPage() {
                 <span className="bg-black px-2 text-gray-400">or</span>
               </div>
             </div>
+
             <Button
               className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-full text-base h-12"
               onClick={() => openAuthModal("signup")}
             >
               Create account
             </Button>
-            <p className="text-xs text-gray-400 leading-relaxed">
+
+            <p className="text-[11px] text-gray-500 leading-tight">
               By signing up, you agree to the{" "}
-              <a href="#" className="text-blue-400 hover:underline">
-                Terms of Service
-              </a>{" "}
-              and{" "}
-              <a href="#" className="text-blue-400 hover:underline">
-                Privacy Policy
-              </a>
-              , including{" "}
-              <a href="#" className="text-blue-400 hover:underline">
-                Cookie Use
-              </a>
-              .
+              <a href="#" className="text-blue-400 hover:underline">Terms of Service</a> and{" "}
+              <a href="#" className="text-blue-400 hover:underline">Privacy Policy</a>, including{" "}
+              <a href="#" className="text-blue-400 hover:underline">Cookie Use</a>.
             </p>
           </div>
-          <div className="space-y-5">
+
+          <div className="space-y-4">
             <p className="text-lg font-bold">Already have an account?</p>
             <Button
               variant="outline"
