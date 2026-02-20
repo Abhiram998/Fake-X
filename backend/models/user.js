@@ -12,7 +12,7 @@ const UserSchema = mongoose.Schema({
   joinedDate: { type: Date, default: Date.now },
   notificationEnabled: { type: Boolean, default: false },
   pushSubscriptions: { type: Array, default: [] },
-  lastResetRequest: { type: Date }, // For "once per day" restriction
+  lastResetDate: { type: Date }, // For "once per day" restriction
 });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);

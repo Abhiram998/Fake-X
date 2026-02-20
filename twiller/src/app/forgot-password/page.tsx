@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { KeyRound, ArrowLeft, Mail, Phone, ShieldCheck, AlertCircle, Copy, Check } from "lucide-react";
+import { KeyRound, ArrowLeft, Mail, Phone, ShieldCheck, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,8 +13,8 @@ export default function ForgotPasswordPage() {
     const [identity, setIdentity] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [successData, setSuccessData] = useState<{ newPassword: string; message: string } | null>(null);
-    const [copied, setCopied] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
 
     const handleReset = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -22,20 +22,15 @@ export default function ForgotPasswordPage() {
 
         setIsLoading(true);
         setError(null);
-        setSuccessData(null);
+        setIsSuccess(false);
 
         try {
             const res = await axiosInstance.post("/forgot-password", { identity });
             if (res.data.error) {
                 setError(res.data.error);
-            } else if (res.data.newPassword) {
-                setSuccessData({
-                    newPassword: res.data.newPassword,
-                    message: res.data.message
-                });
             } else {
-                // For non-demo security, we might not show the password
-                setError(res.data.message || "Request processed.");
+                setIsSuccess(true);
+                setSuccessMessage(res.data.message || "A new password has been sent to your registered email.");
             }
         } catch (err: any) {
             const msg = err.response?.data?.error || "Failed to reset password. Please try again.";
@@ -45,13 +40,6 @@ export default function ForgotPasswordPage() {
         }
     };
 
-    const copyToClipboard = () => {
-        if (successData?.newPassword) {
-            navigator.clipboard.writeText(successData.newPassword);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        }
-    };
 
     return (
         <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
@@ -68,7 +56,7 @@ export default function ForgotPasswordPage() {
 
                 <CardContent className="p-6">
                     <form onSubmit={handleReset} className="space-y-6">
-                        {!successData ? (
+                        {!isSuccess ? (
                             <>
                                 <div className="space-y-4">
                                     <div className="space-y-2">
@@ -100,7 +88,7 @@ export default function ForgotPasswordPage() {
 
                                     <div className="bg-blue-500/5 border border-blue-500/20 p-4 rounded-xl">
                                         <p className="text-xs text-blue-400 leading-relaxed text-center italic">
-                                            Rule: You can only reset your password once every 24 hours.
+                                            You can use this option only one time per day.
                                         </p>
                                     </div>
                                 </div>
@@ -120,42 +108,25 @@ export default function ForgotPasswordPage() {
                             </>
                         ) : (
                             <div className="space-y-6 animate-in zoom-in-95 duration-300">
-                                <div className="bg-green-500/10 border border-green-500/50 p-4 rounded-xl flex items-center gap-3">
-                                    <ShieldCheck className="h-6 w-6 text-green-500 shrink-0" />
-                                    <p className="text-sm font-medium text-green-400">
-                                        Success! Please save your temporary password.
-                                    </p>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <Label className="text-gray-400 text-xs uppercase tracking-widest font-bold">Your New Password</Label>
-                                    <div className="relative group">
-                                        <div className="bg-black border-2 border-dashed border-gray-700 rounded-2xl p-6 text-center">
-                                            <span className="text-3xl font-mono font-bold text-blue-400 tracking-wider">
-                                                {successData.newPassword}
-                                            </span>
-                                        </div>
-                                        <Button
-                                            type="button"
-                                            size="sm"
-                                            variant="ghost"
-                                            className="absolute top-2 right-2 text-gray-500 hover:text-white"
-                                            onClick={copyToClipboard}
-                                        >
-                                            {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
-                                        </Button>
+                                <div className="bg-green-500/10 border border-green-500/50 p-6 rounded-2xl flex flex-col items-center gap-4 text-center">
+                                    <div className="bg-green-500/20 p-3 rounded-full">
+                                        <ShieldCheck className="h-10 w-10 text-green-500" />
                                     </div>
-                                    <p className="text-[10px] text-gray-500 text-center uppercase tracking-tighter">
-                                        Note: This password contains alphabetical characters only (A-Z, a-z).
-                                    </p>
+                                    <div className="space-y-2">
+                                        <h3 className="text-xl font-bold text-white">Check Your Email</h3>
+                                        <p className="text-sm text-gray-400 leading-relaxed">
+                                            {successMessage}
+                                        </p>
+                                    </div>
                                 </div>
 
-                                <Button
-                                    className="w-full bg-gray-800 hover:bg-gray-700 h-12"
-                                    onClick={() => window.location.href = '/'}
-                                >
-                                    Go to Login
-                                </Button>
+                                <Link href="/login" className="block w-full">
+                                    <Button
+                                        className="w-full bg-blue-500 hover:bg-blue-600 h-12 text-base font-semibold transition-all"
+                                    >
+                                        Back to Login
+                                    </Button>
+                                </Link>
                             </div>
                         )}
                     </form>

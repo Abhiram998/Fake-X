@@ -15,6 +15,7 @@ import sendOTP from "./utils/sendOTP.js";
 import bcrypt from "bcryptjs";
 import { generateSecureAlphabetPassword } from "./utils/passwordGenerator.js";
 import webpush from "web-push";
+import sendPasswordReset from "./utils/sendPasswordReset.js";
 
 dotenv.config();
 const app = express();
@@ -173,8 +174,8 @@ app.post("/forgot-password", async (req, res) => {
 
     // Restriction check: Once per day
     const now = new Date();
-    if (user.lastResetRequest) {
-      const lastReset = new Date(user.lastResetRequest);
+    if (user.lastResetDate) {
+      const lastReset = new Date(user.lastResetDate);
       if (
         lastReset.getDate() === now.getDate() &&
         lastReset.getMonth() === now.getMonth() &&
@@ -190,18 +191,25 @@ app.post("/forgot-password", async (req, res) => {
     const newPassword = generateSecureAlphabetPassword(12);
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update user
+    // Send via email (Secure)
+    const emailResult = await sendPasswordReset(user.email, newPassword);
+
+    if (!emailResult.success) {
+      // If email fails, don't update DB to allow retry, or handle as error
+      return res.status(500).send({ error: "Failed to send reset email. Please try again later." });
+    }
+
+    // Update user (Only if email sent successfully)
     user.password = hashedPassword;
-    user.lastResetRequest = now;
+    user.lastResetDate = now;
     await user.save();
 
-    console.log(`🔑 PASSWORD RESET for ${cleanIdentity}: ${newPassword}`);
+    console.log(`🔑 PASSWORD RESET for ${user.email} (Email sent)`);
 
-    // Return success
+    // Return success message without the password
     res.status(200).send({
-      message: "Password reset successful.",
-      newPassword: newPassword, // Show in UI for demo
-      identity: cleanIdentity
+      message: "A new password has been sent to your registered email.",
+      identity: user.email // Optional: return email for confirmation
     });
 
   } catch (error) {
