@@ -37,11 +37,15 @@ cloudinary.config({
 });
 
 // Web Push Config
-webpush.setVapidDetails(
-  "mailto:example@yourdomain.com",
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    "mailto:example@yourdomain.com",
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+} else {
+  console.warn("⚠️ Web Push keys are missing. Push notifications will not work.");
+}
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
