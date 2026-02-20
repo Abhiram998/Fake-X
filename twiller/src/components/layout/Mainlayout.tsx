@@ -27,14 +27,14 @@ const Mainlayout = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex justify-center">
-      <div className="w-20 sm:w-24 md:w-64 border-r border-gray-800">
+    <div className="min-h-screen bg-black text-white flex justify-center w-full overflow-x-hidden">
+      <div className="w-16 sm:w-20 md:w-64 border-r border-gray-800 flex-shrink-0">
         <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
       </div>
-      <main className="flex-1 max-w-2xl border-x border-gray-800">
-        {currentPage ==="profile" ? <ProfilePage/> :children}
+      <main className="flex-1 w-full max-w-[600px] border-x border-gray-800 relative">
+        {currentPage === "profile" ? <ProfilePage /> : children}
       </main>
-      <div className="hidden lg:block w-80 p-4">
+      <div className="hidden lg:block w-80 p-4 sticky top-0 h-screen">
         <RightSidebar />
       </div>
     </div>

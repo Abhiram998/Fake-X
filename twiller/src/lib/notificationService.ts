@@ -1,3 +1,5 @@
+import toast from "react-hot-toast";
+
 /**
  * Utility service for handling Browser Notifications
  */
@@ -13,7 +15,6 @@ export const checkNotificationPermission = (): NotificationPermission => {
 
 export const requestNotificationPermission = async (): Promise<boolean> => {
     if (typeof window === "undefined" || !("Notification" in window)) {
-        alert("This browser does not support desktop notifications");
         return false;
     }
 
@@ -21,41 +22,64 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
     return permission === "granted";
 };
 
+/**
+ * Detects if the current device is mobile based on user agent
+ */
+const isMobileDevice = () => {
+    if (typeof window === "undefined") return false;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
 export const showNotification = async (title: string, body: string, icon?: string) => {
-    console.log("🔔 Attempting to show notification:", title);
+    console.log("🔔 Notification triggered:", title);
 
-    if (checkNotificationPermission() !== "granted") {
-        console.warn("🚫 Notification permission not granted");
-        return;
+    // HYBRID LOGIC:
+    // 1. If mobile or browser doesn't support Native Notifications OR Permission Denied -> Use Toast
+    // 2. If Desktop & Granted -> Use Native
+
+    const nativeSupported = typeof window !== "undefined" && "Notification" in window;
+    const isMobile = isMobileDevice();
+    const permission = checkNotificationPermission();
+
+    if (isMobile || !nativeSupported || permission !== "granted") {
+        // Fallback to Toast (Safe for all devices)
+        toast.custom((t) => (
+            <div className= {`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-blue-600 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 p-4`}>
+                <div className="flex-1 w-0" >
+                    <p className="text-sm font-bold text-white" > { title } </p>
+                        < p className = "mt-1 text-xs text-blue-100" > { body } </p>
+                            </div>
+                            </div>
+        ), {
+    duration: 4000,
+        position: "top-center",
+        });
+return;
     }
 
-    const options = {
-        body,
-        icon: icon || "/favicon.ico",
-        badge: "/favicon.ico",
-        tag: "tweet-alert",
-        vibrate: [200, 100, 200],
-        renotify: true,
-        requireInteraction: false,
-    };
+// Native Desktop Logic
+const options = {
+    body,
+    icon: icon || "/favicon.ico",
+    badge: "/favicon.ico",
+    tag: "tweet-alert",
+    vibrate: [200, 100, 200],
+    renotify: true,
+    requireInteraction: false,
+};
 
-    try {
-        // Method 1: Service Worker (Best for Android/Mobile)
-        if ("serviceWorker" in navigator) {
-            const registration = await navigator.serviceWorker.ready;
-            if (registration && "showNotification" in registration) {
-                console.log("📱 Showing via Service Worker");
-                await registration.showNotification(title, options);
-                return;
-            }
+try {
+    if ("serviceWorker" in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        if (registration && "showNotification" in registration) {
+            await registration.showNotification(title, options);
+            return;
         }
-
-        // Method 2: Standard Notification API (Desktop/Fallback)
-        console.log("💻 Showing via standard API");
-        new Notification(title, options);
-    } catch (error) {
-        console.error("❌ Error creating notification:", error);
     }
+    new Notification(title, options);
+} catch (error) {
+    console.error("❌ Error creating native notification:", error);
+}
 };
 
 export const shouldNotifyForTweet = (content: string): boolean => {

@@ -29,17 +29,29 @@ export const metadata: Metadata = {
   },
 };
 
+import { Toaster } from "react-hot-toast";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black`}
       >
         <SwRegistration />
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            style: {
+              background: '#1d9bf0',
+              color: '#fff',
+              fontWeight: 'bold',
+            },
+          }}
+        />
         {children}
       </body>
     </html>

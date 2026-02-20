@@ -99,11 +99,11 @@ const TweetComposer = ({ onTweetPosted }: any) => {
                 </div>
               )}
 
-              <div className="flex items-center justify-between mt-4">
-                <div className="flex items-center space-x-4 text-blue-400">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-4 gap-4">
+                <div className="flex items-center flex-wrap gap-1 sm:gap-2 text-blue-400">
                   <label
                     htmlFor="tweetImage"
-                    className="p-2 rounded-full hover:bg-blue-900/20 cursor-pointer"
+                    className="p-2 rounded-full hover:bg-blue-900/20 cursor-pointer transition-colors"
                   >
                     <Image className="h-5 w-5" />
                     <input
@@ -118,7 +118,7 @@ const TweetComposer = ({ onTweetPosted }: any) => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="p-2 rounded-full hover:bg-blue-900/20"
+                    className="p-2 rounded-full hover:bg-blue-900/20 h-9 w-9"
                     type="button"
                     onClick={() => setShowAudioComposer(true)}
                   >
@@ -127,36 +127,36 @@ const TweetComposer = ({ onTweetPosted }: any) => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="p-2 rounded-full hover:bg-blue-900/20"
+                    className="p-2 rounded-full hover:bg-blue-900/20 h-9 w-9 hidden xs:flex"
                   >
                     <BarChart3 className="h-5 w-5" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="p-2 rounded-full hover:bg-blue-900/20"
+                    className="p-2 rounded-full hover:bg-blue-900/20 h-9 w-9"
                   >
                     <Smile className="h-5 w-5" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="p-2 rounded-full hover:bg-blue-900/20"
+                    className="p-2 rounded-full hover:bg-blue-900/20 h-9 w-9 hidden sm:flex"
                   >
                     <Calendar className="h-5 w-5" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="p-2 rounded-full hover:bg-blue-900/20"
+                    className="p-2 rounded-full hover:bg-blue-900/20 h-9 w-9"
                   >
                     <MapPin className="h-5 w-5" />
                   </Button>
                 </div>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                   <div className="flex items-center space-x-2">
                     <Globe className="h-4 w-4 text-blue-400" />
-                    <span className="text-sm text-blue-400 font-semibold">
+                    <span className="text-xs sm:text-sm text-blue-400 font-semibold whitespace-nowrap">
                       Everyone can reply
                     </span>
                   </div>
