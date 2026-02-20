@@ -413,8 +413,8 @@ app.post("/post", async (req, res) => {
       });
 
       const notificationPayload = JSON.stringify({
-        title: `New Tweet from ${populatedTweet.author.displayName}`,
-        body: populatedTweet.content.length > 100 ? populatedTweet.content.slice(0, 97) + "..." : populatedTweet.content,
+        title: "New Tweet Alert",
+        body: populatedTweet.content,
         url: "/",
         icon: populatedTweet.author.avatar || "/favicon.ico",
       });

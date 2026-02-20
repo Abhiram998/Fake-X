@@ -36,8 +36,8 @@ const isMobileDevice = () => {
 export const showNotification = async (tweet: any) => {
     if (!tweet) return;
 
-    const title = `New Tweet from ${tweet.author?.displayName || "Someone"}`;
-    const body = tweet.content.length > 100 ? tweet.content.slice(0, 97) + "..." : tweet.content;
+    const title = "New Tweet Alert";
+    const body = tweet.content;
 
     console.log("🔔 Notification triggered:", title);
 
@@ -85,11 +85,14 @@ export const showNotification = async (tweet: any) => {
                 </div>
             </div>
             <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1 overflow-hidden">
-                    <p className="text-sm font-bold text-white truncate">{tweet.author?.displayName}</p>
-                    <p className="text-xs text-gray-500 truncate">@{tweet.author?.username}</p>
+                <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">New Tweet Alert</span>
+                    <span className="text-[10px] text-gray-500">@{tweet.author?.username}</span>
                 </div>
-                <p className="text-sm text-gray-200 mt-0.5 line-clamp-2 leading-tight">
+                <div className="flex items-center gap-2 mb-1">
+                    <p className="text-sm font-bold text-white truncate">{tweet.author?.displayName}</p>
+                </div>
+                <p className="text-sm text-gray-200 mt-0.5 leading-normal">
                     {tweet.content}
                 </p>
             </div>
