@@ -271,12 +271,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             if (enabled) {
               const granted = await requestNotificationPermission();
               if (granted) {
-                await subscribeUserToPush(user._id);
+                subscribeUserToPush(user._id).catch(e => console.warn(e));
               } else {
                 return; // Don't enable if permission denied
               }
             } else {
-              await unsubscribeUserFromPush(user._id);
+              unsubscribeUserFromPush(user._id).catch(e => console.warn(e));
             }
 
             const res = await axiosInstance.patch(`/userupdate/${user.email}`, {
