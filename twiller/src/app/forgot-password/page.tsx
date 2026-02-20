@@ -120,7 +120,7 @@ export default function ForgotPasswordPage() {
                                     </div>
                                 </div>
 
-                                <Link href="/login" className="block w-full">
+                                <Link href="/" className="block w-full">
                                     <Button
                                         className="w-full bg-blue-500 hover:bg-blue-600 h-12 text-base font-semibold transition-all"
                                     >
