@@ -583,6 +583,7 @@ app.post("/post", async (req, res) => {
         body: populatedTweet.content,
         url: "/",
         icon: populatedTweet.author.avatar || "https://fake-x.vercel.app/favicon.ico",
+        tag: `tweet-${populatedTweet._id}`, // Allow stacking
       });
 
       users.forEach((u) => {

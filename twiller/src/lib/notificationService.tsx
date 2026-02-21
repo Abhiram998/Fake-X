@@ -36,72 +36,31 @@ const isMobileDevice = () => {
 export const showNotification = async (tweet: any) => {
     if (!tweet) return;
 
-    const title = "New Tweet Alert";
+    const title = `${tweet.author?.displayName || "New Tweet"} tweeted`;
     const body = tweet.content;
 
-    console.log("🔔 Notification triggered:", title);
+    console.log("🔔 Triggering real native notification:", title);
 
-    // 1. ALWAYS SHOW IN-APP TOAST (Matches Screenshot 1)
-    toast.custom((t) => (
-        <div
-            className={`${t.visible ? 'animate-in fade-in slide-in-from-top-4' : 'animate-out fade-out slide-out-to-top-4'} 
-            pointer-events-auto flex items-start w-[360px] bg-black border border-gray-800 rounded-2xl p-3 shadow-2xl ring-1 ring-white/10 cursor-pointer`}
-            onClick={() => toast.dismiss(t.id)}
-        >
-            {/* Avatar */}
-            <div className="flex-shrink-0 mr-3">
-                <div className="h-10 w-10 rounded-full overflow-hidden border border-gray-800">
-                    <img src={tweet.author?.avatar} alt="" className="h-full w-full object-cover" />
-                </div>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">New Tweet Alert</span>
-                        <span className="text-[10px] text-gray-500 truncate max-w-[100px]">@{tweet.author?.username}</span>
-                    </div>
-                    {/* X Icon on the right */}
-                    <div className="text-gray-500">
-                        <svg className="h-3 w-3 fill-current" viewBox="0 0 24 24">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                        </svg>
-                    </div>
-                </div>
-                <div className="min-w-0">
-                    <p className="text-sm font-bold text-white truncate leading-tight">
-                        {tweet.author?.displayName}
-                    </p>
-                    <p className="text-sm text-gray-200 mt-0.5 leading-normal line-clamp-2">
-                        {tweet.content}
-                    </p>
-                </div>
-            </div>
-        </div>
-    ), {
-        duration: 5000,
-        position: "top-center",
-    });
-
-    // 2. TRIGGER NATIVE NOTIFICATION ONLY IN BACKGROUND (Prevents double alerts when active)
-    const isMobile = isMobileDevice();
     const nativeSupported = typeof window !== "undefined" && "Notification" in window;
     const permission = checkNotificationPermission();
-    const isTabHidden = typeof document !== "undefined" && document.visibilityState === "hidden";
 
-    if (!isMobile && nativeSupported && permission === "granted" && isTabHidden) {
-        const options = {
+    if (nativeSupported && permission === "granted") {
+        const options: any = {
             body,
             icon: tweet.author?.avatar || "/favicon.ico",
             badge: "/favicon.ico",
-            tag: "tweet-alert",
+            tag: `tweet-${tweet._id}`,
             vibrate: [200, 100, 200],
             renotify: true,
-            requireInteraction: false,
+            silent: false,
+            data: {
+                url: "/",
+                tweetId: tweet._id
+            }
         };
 
         try {
+            // Priority 1: Service Worker (Best for mobile and background)
             if ("serviceWorker" in navigator) {
                 const registration = await navigator.serviceWorker.ready;
                 if (registration && "showNotification" in registration) {
@@ -109,10 +68,13 @@ export const showNotification = async (tweet: any) => {
                     return;
                 }
             }
+            // Priority 2: Native Notification API (Laptop fallback)
             new Notification(title, options);
         } catch (error) {
-            console.error("❌ Native notification failed:", error);
+            console.error("❌ Failed to show native notification:", error);
         }
+    } else {
+        console.warn("⚠️ Cannot show native notification: Permission denied or not supported.");
     }
 };
 
