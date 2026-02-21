@@ -62,7 +62,7 @@ export const showNotification = async (tweet: any) => {
             if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
                 const registration = await Promise.race([
                     navigator.serviceWorker.ready,
-                    new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1000))
+                    new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000))
                 ]) as ServiceWorkerRegistration;
 
                 if (registration && "showNotification" in registration) {

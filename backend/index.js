@@ -43,7 +43,7 @@ cloudinary.config({
 // Web Push Config
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
-    "mailto:example@yourdomain.com",
+    "mailto:abhiramptb@gmail.com",
     process.env.VAPID_PUBLIC_KEY,
     process.env.VAPID_PRIVATE_KEY
   );

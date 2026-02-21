@@ -277,7 +277,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             if (enabled) {
               const granted = await requestNotificationPermission();
               if (granted) {
-                subscribeUserToPush(user._id).catch(e => console.warn(e));
+                await subscribeUserToPush(user._id);
               } else {
                 return; // Don't enable if permission denied
               }
