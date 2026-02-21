@@ -18,7 +18,7 @@
   "dependencies": {
     "@getbrevo/brevo": "^3.0.1",
     "bcryptjs": "^3.0.3",
-    "cloudinary": "^1.41.3",
+    "cloudinary": "^2.9.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "crypto-js": "^4.2.0",
@@ -28,11 +28,11 @@
     "mongodb": "^6.19.0",
     "mongoose": "^8.18.0",
     "multer": "^2.0.2",
-    "multer-storage-cloudinary": "^4.0.0",
+    "multer-storage-cloudinary": "^2.2.1",
     "nodemailer": "^8.0.1",
     "nodemon": "^3.1.10",
     "socket.io": "^4.8.3",
     "stripe": "^20.3.1",
-    "web-push": "^3.6.7"
+    "web-push": "^1.0.2"
   }
 }
