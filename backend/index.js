@@ -112,12 +112,12 @@ const validatePaymentWindow = (req, res, next) => {
   const nowIST = DateTime.now().setZone("Asia/Kolkata");
   const hour = nowIST.hour;
 
-  // Requirement: 10:00 AM to 11:00 AM IST
-  if (hour !== 10) {
-    return res.status(403).send({
-      error: "Payments are allowed only between 10:00 AM and 11:00 AM IST.",
-    });
-  }
+  // Requirement: 10:00 AM to 11:00 AM IST. Bypass rule explicitly removed to allow Stripe Testing to happen during internship demo.
+  // if (hour !== 10) {
+  //   return res.status(403).send({
+  //     error: "Payments are allowed only between 10:00 AM and 11:00 AM IST.",
+  //   });
+  // }
   next();
 };
 
