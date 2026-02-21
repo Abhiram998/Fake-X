@@ -576,13 +576,23 @@ app.post("/post", async (req, res) => {
         icon: populatedTweet.author.avatar || "/favicon.ico",
       });
 
-      users.forEach((user) => {
-        user.pushSubscriptions.forEach((sub) => {
-          webpush.sendNotification(sub, notificationPayload).catch(async (err) => {
-            console.error(`❌ Push failed for user ${user._id}:`, err.statusCode);
+      users.forEach((u) => {
+        // Don't send push to the author themselves
+        if (u._id.toString() === author.toString()) return;
+
+        u.pushSubscriptions.forEach((sub) => {
+          const payload = JSON.stringify({
+            title: `${populatedTweet.author.displayName} tweeted`,
+            body: populatedTweet.content,
+            url: "/",
+            icon: populatedTweet.author.avatar || "/favicon.ico",
+          });
+
+          webpush.sendNotification(sub, payload).catch(async (err) => {
+            console.error(`❌ Push failed for user ${u._id}:`, err.statusCode);
             if (err.statusCode === 410 || err.statusCode === 404) {
               // Remove expired subscription
-              await User.findByIdAndUpdate(user._id, {
+              await User.findByIdAndUpdate(u._id, {
                 $pull: { pushSubscriptions: { endpoint: sub.endpoint } },
               });
             }
