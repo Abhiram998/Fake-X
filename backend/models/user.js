@@ -13,6 +13,10 @@ const UserSchema = mongoose.Schema({
   notificationEnabled: { type: Boolean, default: false },
   pushSubscriptions: { type: Array, default: [] },
   lastResetDate: { type: Date }, // For "once per day" restriction
+  subscriptionPlan: { type: String, default: "Free" },
+  subscriptionStartDate: { type: Date },
+  subscriptionExpiryDate: { type: Date },
+  tweetCount: { type: Number, default: 0 },
 });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);

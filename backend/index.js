@@ -16,6 +16,9 @@ import bcrypt from "bcryptjs";
 import { generateSecureAlphabetPassword } from "./utils/passwordGenerator.js";
 import webpush from "web-push";
 import sendPasswordReset from "./utils/sendPasswordReset.js";
+import sendInvoice from "./utils/sendInvoice.js";
+import Razorpay from "razorpay";
+import crypto from "crypto";
 
 dotenv.config();
 const app = express();
@@ -47,6 +50,19 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 } else {
   console.warn("⚠️ Web Push keys are missing. Push notifications will not work.");
 }
+
+// Razorpay Config
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+const SUBSCRIPTION_PLANS = {
+  Free: { price: 0, limit: 1 },
+  Bronze: { price: 100, limit: 3 },
+  Silver: { price: 300, limit: 5 },
+  Gold: { price: 1000, limit: Infinity },
+};
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
@@ -89,6 +105,31 @@ const validateTimeWindow = (req, res, next) => {
     });
   }
   next();
+};
+
+const validatePaymentWindow = (req, res, next) => {
+  const nowIST = DateTime.now().setZone("Asia/Kolkata");
+  const hour = nowIST.hour;
+
+  // Requirement: 10:00 AM to 11:00 AM IST
+  if (hour !== 10) {
+    return res.status(403).send({
+      error: "Payments are allowed only between 10:00 AM and 11:00 AM IST.",
+    });
+  }
+  next();
+};
+
+const checkSubscriptionExpiry = async (user) => {
+  if (user.subscriptionPlan !== "Free" && user.subscriptionExpiryDate) {
+    const now = new Date();
+    if (now > user.subscriptionExpiryDate) {
+      user.subscriptionPlan = "Free";
+      // We don't reset tweetCount here usually, but the limit will apply based on plan
+      await user.save();
+    }
+  }
+  return user;
 };
 
 // OTP Endpoints
@@ -144,6 +185,85 @@ app.post("/verify-otp", async (req, res) => {
     res.status(200).send({ message: "OTP verified successfully" });
   } catch (error) {
     res.status(500).send({ error: error.message });
+  }
+});
+
+// Razorpay Endpoints
+app.post("/create-order", validatePaymentWindow, async (req, res) => {
+  try {
+    const { planName, email } = req.body;
+    const plan = SUBSCRIPTION_PLANS[planName];
+
+    if (!plan || planName === "Free") {
+      return res.status(400).send({ error: "Invalid plan selected" });
+    }
+
+    const options = {
+      amount: plan.price * 100, // Amount in paise
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+    };
+
+    const order = await razorpay.orders.create(options);
+    res.status(200).send({
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+    });
+  } catch (error) {
+    console.error("❌ Create Order Error:", error);
+    res.status(500).send({ error: "Failed to create payment order." });
+  }
+});
+
+app.post("/verify-payment", async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planName, email } = req.body;
+
+    // Signature Verification
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(body.toString())
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).send({ error: "Payment verification failed. Invalid signature." });
+    }
+
+    // Update User Plan
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).send({ error: "User not found" });
+
+    const now = new Date();
+    const expiryDate = new Date();
+    expiryDate.setDate(now.getDate() + 30);
+
+    user.subscriptionPlan = planName;
+    user.subscriptionStartDate = now;
+    user.subscriptionExpiryDate = expiryDate;
+    // Reset tweetCount if needed - requirement doesn't explicitly say reset, 
+    // but usually new plan starts fresh or keeps count. 
+    // Requirement says "Reset tweetCount if needed." I'll reset it to 0 for the new plan.
+    user.tweetCount = 0;
+    await user.save();
+
+    // Send Invoice
+    const invoiceData = {
+      planName,
+      amount: SUBSCRIPTION_PLANS[planName].price,
+      invoiceNumber: `INV-${Date.now()}`,
+      paymentDate: now.toLocaleDateString(),
+      expiryDate: expiryDate.toLocaleDateString(),
+      tweetLimit: SUBSCRIPTION_PLANS[planName].limit === Infinity ? "Unlimited" : SUBSCRIPTION_PLANS[planName].limit,
+    };
+
+    await sendInvoice(email, invoiceData);
+
+    res.status(200).send({ message: "Subscription updated successfully", user });
+  } catch (error) {
+    console.error("❌ Verify Payment Error:", error);
+    res.status(500).send({ error: "Failed to verify payment." });
   }
 });
 
@@ -334,7 +454,11 @@ app.get("/loggedinuser", async (req, res) => {
     if (!user) {
       return res.status(404).send({ error: "User not found" });
     }
-    return res.status(200).send(user);
+
+    // Check expiry
+    const updatedUser = await checkSubscriptionExpiry(user);
+
+    return res.status(200).send(updatedUser);
   } catch (error) {
     return res.status(400).send({ error: error.message });
   }
@@ -404,8 +528,25 @@ app.patch("/userupdate/:email", async (req, res) => {
 // POST
 app.post("/post", async (req, res) => {
   try {
+    const { author } = req.body;
+    const user = await User.findById(author);
+    if (!user) return res.status(404).send({ error: "Author not found" });
+
+    // Enforce limits
+    const plan = SUBSCRIPTION_PLANS[user.subscriptionPlan || "Free"];
+    if (user.tweetCount >= plan.limit) {
+      return res.status(403).send({
+        error: `${user.subscriptionPlan} plan allows only ${plan.limit} tweet${plan.limit > 1 ? 's' : ''}. Upgrade your plan to post more tweets.`,
+      });
+    }
+
     const tweet = new Tweet(req.body);
     await tweet.save();
+
+    // Increment tweetCount
+    user.tweetCount = (user.tweetCount || 0) + 1;
+    await user.save();
+
     const populatedTweet = await Tweet.findById(tweet._id).populate("author");
     io.emit("new-tweet", populatedTweet);
 

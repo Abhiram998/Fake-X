@@ -11,7 +11,8 @@ import {
   User,
   MoreHorizontal,
   Settings,
-  LogOut
+  LogOut,
+  CreditCard
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -41,6 +42,7 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
     { name: 'Messages', icon: Mail, current: currentPage === 'messages', page: 'messages' },
     { name: 'Bookmarks', icon: Bookmark, current: currentPage === 'bookmarks', page: 'bookmarks' },
     { name: 'Profile', icon: User, current: currentPage === 'profile', page: 'profile' },
+    { name: 'Subscriptions', icon: CreditCard, current: currentPage === 'subscriptions', page: 'subscriptions' },
     { name: 'More', icon: MoreHorizontal, current: currentPage === 'more', page: 'more' },
   ];
 
@@ -87,6 +89,31 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
             </span>
           </Button>
         </div>
+        {user && (
+          <div className="mt-6 px-4 hidden md:block">
+            <div className="bg-gray-900/50 rounded-2xl p-4 border border-gray-800">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Plan: {user.subscriptionPlan || 'Free'}</span>
+                <span className="text-[10px] text-blue-400 font-mono">
+                  {user.tweetCount || 0}/{user.subscriptionPlan === 'Gold' ? '∞' : (user.subscriptionPlan === 'Silver' ? '5' : (user.subscriptionPlan === 'Bronze' ? '3' : '1'))}
+                </span>
+              </div>
+              <div className="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="bg-blue-500 h-full transition-all duration-500"
+                  style={{
+                    width: `${user.subscriptionPlan === 'Gold' ? 0 : Math.min(100, ((user.tweetCount || 0) / (user.subscriptionPlan === 'Silver' ? 5 : (user.subscriptionPlan === 'Bronze' ? 3 : 1))) * 100)}%`
+                  }}
+                />
+              </div>
+              <p className="text-[10px] text-gray-500 mt-2 text-center italic">
+                {user.tweetCount >= (user.subscriptionPlan === 'Silver' ? 5 : (user.subscriptionPlan === 'Bronze' ? 3 : 1)) && user.subscriptionPlan !== 'Gold'
+                  ? "Limit reached! Upgrade now."
+                  : "Keep tweeting!"}
+              </p>
+            </div>
+          </div>
+        )}
       </nav>
 
       {user && (

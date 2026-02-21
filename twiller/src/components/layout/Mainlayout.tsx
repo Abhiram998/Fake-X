@@ -1,16 +1,17 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
-import React, { useState } from "react";
+import React from "react";
 import LoadingSpinner from "../loading-spinner";
 import Sidebar from "./Sidebar";
 import RightSidebar from "./Rightsidebar";
 import ProfilePage from "../ProfilePage";
-
+import SubscriptionPage from "../SubscriptionPage";
 import MobileNav from "./MobileNav";
+import { NavigationProvider, useNavigation } from "@/context/NavigationContext";
 
-const Mainlayout = ({ children }: { children: React.ReactNode }) => {
+function MainlayoutInner({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
-  const [currentPage, setCurrentPage] = useState("home");
+  const { currentPage, navigate } = useNavigation();
 
   if (isLoading) {
     return (
@@ -23,32 +24,33 @@ const Mainlayout = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // If user is not logged in → show children (like login/signup pages)
   if (!user) {
     return <>{children}</>;
   }
 
   return (
     <div className="min-h-screen bg-black text-white flex justify-center w-full overflow-x-hidden">
-      {/* Sidebar - hidden on mobile, narrow on tablets, wide on desktop */}
       <div className="hidden xs:flex w-16 sm:w-20 md:w-64 border-r border-gray-800 flex-shrink-0">
-        <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
+        <Sidebar currentPage={currentPage} onNavigate={navigate} />
       </div>
 
-      {/* Main Content */}
       <main className="flex-1 w-full max-w-[600px] border-x border-gray-800 relative pb-16 sm:pb-0">
-        {currentPage === "profile" ? <ProfilePage /> : children}
+        {currentPage === "profile" ? <ProfilePage /> : currentPage === "subscriptions" ? <SubscriptionPage /> : children}
       </main>
 
-      {/* Right Sidebar - only on desktop */}
       <div className="hidden lg:block w-80 p-4 sticky top-0 h-screen">
         <RightSidebar />
       </div>
 
-      {/* Mobile Bottom Nav */}
-      <MobileNav currentPage={currentPage} onNavigate={setCurrentPage} />
+      <MobileNav currentPage={currentPage} onNavigate={navigate} />
     </div>
   );
-};
+}
+
+const Mainlayout = ({ children }: { children: React.ReactNode }) => (
+  <NavigationProvider>
+    <MainlayoutInner>{children}</MainlayoutInner>
+  </NavigationProvider>
+);
 
 export default Mainlayout;

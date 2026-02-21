@@ -9,17 +9,28 @@ import { Separator } from "./ui/separator";
 import axios from "axios";
 import axiosInstance from "@/lib/axiosInstance";
 import AudioTweetComposer from "./AudioTweetComposer";
+import { useNavigation } from "@/context/NavigationContext";
+
 const TweetComposer = ({ onTweetPosted }: any) => {
   const { user } = useAuth();
+  const { navigate } = useNavigation();
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [imageurl, setimageurl] = useState("");
   const [audiourl, setaudiourl] = useState("");
   const [showAudioComposer, setShowAudioComposer] = useState(false);
+  const [tweetError, setTweetError] = useState<string | null>(null);
   const maxLength = 200;
+
+  const currentPlan = user?.subscriptionPlan || "Free";
+  const planLimit = currentPlan === "Gold" ? Infinity : currentPlan === "Silver" ? 5 : currentPlan === "Bronze" ? 3 : 1;
+  const tweetsUsed = user?.tweetCount || 0;
+  const atLimit = planLimit !== Infinity && tweetsUsed >= planLimit;
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    if (!user || !content.trim()) return
+    if (!user || !content.trim()) return;
+    setTweetError(null);
     try {
       const tweetdata = {
         author: user?._id,
@@ -32,8 +43,9 @@ const TweetComposer = ({ onTweetPosted }: any) => {
       setContent("")
       setimageurl("")
       setaudiourl("")
-    } catch (error) {
-      console.log(error)
+    } catch (error: any) {
+      const msg = error.response?.data?.error || "Failed to post tweet.";
+      setTweetError(msg);
     } finally {
       setIsLoading(false)
     }
@@ -74,6 +86,29 @@ const TweetComposer = ({ onTweetPosted }: any) => {
           </Avatar>
 
           <div className="flex-1 min-w-0">
+            {/* Tweet limit error banner */}
+            {tweetError && (
+              <div className="mb-3 bg-red-500/10 border border-red-500/40 rounded-2xl p-3 flex items-start gap-2">
+                <span className="text-red-400 text-sm flex-1">{tweetError}</span>
+                {tweetError.includes("Upgrade") && (
+                  <button
+                    onClick={() => navigate("subscriptions")}
+                    className="text-blue-400 text-xs font-bold underline whitespace-nowrap shrink-0"
+                  >
+                    Upgrade →
+                  </button>
+                )}
+              </div>
+            )}
+            {/* Plan usage chip */}
+            <div className="flex items-center gap-2 mb-2">
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${atLimit ? "bg-red-500/20 text-red-400" : "bg-gray-800 text-gray-500"}`}>
+                {currentPlan} · {planLimit === Infinity ? "∞" : `${tweetsUsed}/${planLimit}`} tweets
+              </span>
+              {atLimit && (
+                <span className="text-[10px] text-red-400">Limit reached</span>
+              )}
+            </div>
             <form onSubmit={handleSubmit}>
               <Textarea
                 placeholder="What's happening?"

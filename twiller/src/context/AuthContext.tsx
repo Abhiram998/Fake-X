@@ -24,6 +24,10 @@ interface User {
   website: string;
   location: string;
   notificationEnabled: boolean;
+  subscriptionPlan?: string;
+  subscriptionStartDate?: string;
+  subscriptionExpiryDate?: string;
+  tweetCount: number;
 }
 
 interface AuthContextType {

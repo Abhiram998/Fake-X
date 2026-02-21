@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Home, Search, Bell, Mail } from 'lucide-react';
+import { Home, Search, Bell, Mail, CreditCard } from 'lucide-react';
 import { Button } from '../ui/button';
 
 interface MobileNavProps {
@@ -15,6 +15,7 @@ export default function MobileNav({ currentPage, onNavigate }: MobileNavProps) {
         { icon: Search, page: 'explore' },
         { icon: Bell, page: 'notifications' },
         { icon: Mail, page: 'messages' },
+        { icon: CreditCard, page: 'subscriptions' },
     ];
 
     return (
