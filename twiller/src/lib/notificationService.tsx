@@ -185,7 +185,7 @@ export const subscribeUserToPush = async (userId: string) => {
     try {
         const registration = await Promise.race([
             navigator.serviceWorker.ready,
-            new Promise((_, reject) => setTimeout(() => reject(new Error("SW Ready Timeout")), 2000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error("SW Ready Timeout")), 5000))
         ]) as ServiceWorkerRegistration;
 
         // Subscribe to push service
@@ -203,9 +203,12 @@ export const subscribeUserToPush = async (userId: string) => {
         });
 
         return subscription;
-    } catch (error) {
+    } catch (error: any) {
         console.error("❌ Failed to subscribe user to push:", error);
-        throw error; // Throw so AuthContext knows it failed
+        if (error.message === "SW Ready Timeout") {
+            throw new Error("Service Worker timed out. Please refresh the page.");
+        }
+        throw error;
     }
 };
 
