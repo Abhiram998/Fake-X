@@ -577,7 +577,7 @@ app.post("/post", async (req, res) => {
       });
 
       const notificationPayload = JSON.stringify({
-        title: "New Tweet Alert",
+        title: `${populatedTweet.author.displayName} tweeted`,
         body: populatedTweet.content,
         url: "/",
         icon: populatedTweet.author.avatar || "/favicon.ico",
@@ -588,14 +588,7 @@ app.post("/post", async (req, res) => {
         if (u._id.toString() === author.toString()) return;
 
         u.pushSubscriptions.forEach((sub) => {
-          const payload = JSON.stringify({
-            title: `${populatedTweet.author.displayName} tweeted`,
-            body: populatedTweet.content,
-            url: "/",
-            icon: populatedTweet.author.avatar || "/favicon.ico",
-          });
-
-          webpush.sendNotification(sub, payload).catch(async (err) => {
+          webpush.sendNotification(sub, notificationPayload).catch(async (err) => {
             console.error(`❌ Push failed for user ${u._id}:`, err.statusCode);
             if (err.statusCode === 410 || err.statusCode === 404) {
               // Remove expired subscription
