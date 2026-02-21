@@ -52,7 +52,11 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 }
 
 // Stripe Config
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripeKey = process.env.STRIPE_SECRET_KEY || "sk_test_dummyKeyToPreventCrash";
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.warn("⚠️ STRIPE_SECRET_KEY is missing. Payments will fail.");
+}
+const stripe = new Stripe(stripeKey);
 
 const SUBSCRIPTION_PLANS = {
   Free: { price: 0, limit: 1 },
