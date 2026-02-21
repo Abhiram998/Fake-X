@@ -128,9 +128,12 @@ export default function ProfilePage() {
     (tweet: any) => tweet.author._id === user._id
   );
 
+  const [toggleLoading, setToggleLoading] = useState(false);
   const handleToggleNotifications = async () => {
     if (!user) return;
+    setToggleLoading(true);
     await toggleNotifications(!user.notificationEnabled);
+    setToggleLoading(false);
   };
 
 
@@ -256,8 +259,9 @@ export default function ProfilePage() {
             </div>
             <button
               onClick={handleToggleNotifications}
+              disabled={toggleLoading}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none ${user.notificationEnabled ? "bg-blue-500" : "bg-gray-700"
-                }`}
+                } ${toggleLoading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${user.notificationEnabled ? "translate-x-6" : "translate-x-1"

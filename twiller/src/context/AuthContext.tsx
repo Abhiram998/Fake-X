@@ -12,6 +12,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { auth } from "./firebase";
 import axiosInstance from "../lib/axiosInstance";
 import { subscribeUserToPush, unsubscribeUserFromPush, requestNotificationPermission } from "../lib/notificationService";
+import toast from "react-hot-toast";
 
 interface User {
   _id: string;
@@ -278,11 +279,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               const granted = await requestNotificationPermission();
               if (granted) {
                 await subscribeUserToPush(user._id);
+                toast.success("Notifications enabled!");
               } else {
+                toast.error("Notification permission denied.");
                 return; // Don't enable if permission denied
               }
             } else {
-              unsubscribeUserFromPush(user._id).catch(e => console.warn(e));
+              await unsubscribeUserFromPush(user._id);
+              toast.success("Notifications disabled.");
             }
 
             const res = await axiosInstance.patch(`/userupdate/${user.email}`, {
@@ -293,8 +297,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               setUser(updatedUser);
               localStorage.setItem("twitter-user", JSON.stringify(updatedUser));
             }
-          } catch (err) {
+          } catch (err: any) {
             console.error("Failed to update notifications preference:", err);
+            toast.error(err.response?.data?.error || "Failed to update notification settings.");
           }
         },
         refreshUser: async () => {
