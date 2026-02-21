@@ -128,15 +128,18 @@ export default function SubscriptionPage() {
                 email: user.email,
             });
 
-            const { id } = orderRes.data;
+            const { url } = orderRes.data;
 
-            // Step 2: Open Stripe Checkout
-            const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
-            if (stripe) {
-                await (stripe as any).redirectToCheckout({ sessionId: id });
+            // Step 2: Redirect directly to Stripe Checkout URL (no SDK needed)
+            if (url) {
+                window.location.href = url;
+            } else {
+                setError("Could not get payment URL. Please try again.");
+                setLoading(false);
+                setSelectedPlan(null);
             }
         } catch (err: any) {
-            const msg = err.response?.data?.error || "Something went wrong.";
+            const msg = err.response?.data?.error || err.message || "Something went wrong.";
             setError(msg);
             setLoading(false);
             setSelectedPlan(null);
