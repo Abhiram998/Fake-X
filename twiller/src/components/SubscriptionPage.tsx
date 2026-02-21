@@ -133,7 +133,7 @@ export default function SubscriptionPage() {
             // Step 2: Open Stripe Checkout
             const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
             if (stripe) {
-                await stripe.redirectToCheckout({ sessionId: id });
+                await (stripe as any).redirectToCheckout({ sessionId: id });
             }
         } catch (err: any) {
             const msg = err.response?.data?.error || "Something went wrong.";
