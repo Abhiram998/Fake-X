@@ -16,7 +16,9 @@ self.addEventListener("push", (event) => {
         const options = {
             body: data.body || "Something new happened on Twiller.",
             icon: data.icon || "/favicon.ico",
-            badge: "/favicon.ico",
+            badge: data.icon || "/favicon.ico",
+            tag: "twiller-notification",
+            renotify: true,
             vibrate: [200, 100, 200],
             data: {
                 url: data.url || "/"

@@ -168,15 +168,20 @@ export const subscribeUserToPush = async (userId: string) => {
     }
 
     try {
+        // Wait for SW to be ready
         const registration = await navigator.serviceWorker.ready;
 
-        // Subscribe to push service
-        const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-        });
+        // Try getting existing subscription first
+        let subscription = await registration.pushManager.getSubscription();
 
-        console.log("✅ Push Subscription successful:", subscription);
+        if (!subscription) {
+            subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+            });
+        }
+
+        console.log("✅ Push Subscription active:", subscription);
 
         // Send to backend
         await axiosInstance.post("/subscribe", {
@@ -185,9 +190,11 @@ export const subscribeUserToPush = async (userId: string) => {
         });
 
         return subscription;
-    } catch (error) {
+    } catch (error: any) {
         console.error("❌ Failed to subscribe user to push:", error);
-        throw error;
+        let msg = error.message || "Failed to subscribe to push notifications.";
+        if (msg.includes("permission")) msg = "Please allow notification permissions in your browser settings.";
+        throw new Error(msg);
     }
 };
 

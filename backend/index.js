@@ -576,11 +576,13 @@ app.post("/post", async (req, res) => {
         pushSubscriptions: { $exists: true, $not: { $size: 0 } },
       });
 
+      console.log(`🔔 Found ${users.length} users subscribed for push notifications.`);
+
       const notificationPayload = JSON.stringify({
         title: `${populatedTweet.author.displayName} tweeted`,
         body: populatedTweet.content,
         url: "/",
-        icon: populatedTweet.author.avatar || "/favicon.ico",
+        icon: populatedTweet.author.avatar || "https://fake-x.vercel.app/favicon.ico",
       });
 
       users.forEach((u) => {
