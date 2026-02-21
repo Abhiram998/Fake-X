@@ -519,16 +519,23 @@ app.post("/unsubscribe", async (req, res) => {
 app.patch("/userupdate/:email", async (req, res) => {
   try {
     const { email } = req.params;
+    const cleanEmail = email.trim().toLowerCase();
     const updated = await User.findOneAndUpdate(
-      { email },
+      { email: cleanEmail },
       { $set: req.body },
       { new: true, upsert: false }
     );
+
+    if (!updated) {
+      return res.status(404).send({ error: "User not found for update" });
+    }
+
     const userObj = updated.toObject();
     delete userObj.password;
     return res.status(200).send(userObj);
   } catch (error) {
-    return res.status(400).send({ error: error.message });
+    console.error("❌ User Update Error:", error);
+    return res.status(500).send({ error: error.message || "Failed to update user profile" });
   }
 });
 // Tweet API
