@@ -17,7 +17,7 @@ import { generateSecureAlphabetPassword } from "./utils/passwordGenerator.js";
 import webpush from "web-push";
 import sendPasswordReset from "./utils/sendPasswordReset.js";
 import sendInvoice from "./utils/sendInvoice.js";
-import Razorpay from "razorpay";
+import Stripe from "stripe";
 import crypto from "crypto";
 
 dotenv.config();
@@ -51,11 +51,8 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   console.warn("⚠️ Web Push keys are missing. Push notifications will not work.");
 }
 
-// Razorpay Config
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+// Stripe Config
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const SUBSCRIPTION_PLANS = {
   Free: { price: 0, limit: 1 },
@@ -188,8 +185,8 @@ app.post("/verify-otp", async (req, res) => {
   }
 });
 
-// Razorpay Endpoints
-app.post("/create-order", validatePaymentWindow, async (req, res) => {
+// Stripe Endpoints
+app.post("/create-checkout-session", validatePaymentWindow, async (req, res) => {
   try {
     const { planName, email } = req.body;
     const plan = SUBSCRIPTION_PLANS[planName];
@@ -198,37 +195,47 @@ app.post("/create-order", validatePaymentWindow, async (req, res) => {
       return res.status(400).send({ error: "Invalid plan selected" });
     }
 
-    const options = {
-      amount: plan.price * 100, // Amount in paise
-      currency: "INR",
-      receipt: `receipt_${Date.now()}`,
-    };
+    const clientUrl = req.get("origin") || process.env.CLIENT_URL || "http://localhost:3000";
 
-    const order = await razorpay.orders.create(options);
-    res.status(200).send({
-      orderId: order.id,
-      amount: order.amount,
-      currency: order.currency,
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "inr",
+            product_data: {
+              name: `Twiller ${planName} Subscription`,
+            },
+            unit_amount: plan.price * 100, // paise
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: `${clientUrl}/subscriptions?success=true&session_id={CHECKOUT_SESSION_ID}&planName=${planName}`,
+      cancel_url: `${clientUrl}/subscriptions?canceled=true`,
+      customer_email: email,
     });
+
+    res.status(200).send({ id: session.id, url: session.url });
   } catch (error) {
-    console.error("❌ Create Order Error:", error);
-    res.status(500).send({ error: "Failed to create payment order." });
+    console.error("❌ Create Checkout Session Error:", error);
+    res.status(500).send({ error: "Failed to create payment session." });
   }
 });
 
 app.post("/verify-payment", async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planName, email } = req.body;
+    const { session_id, planName, email } = req.body;
 
-    // Signature Verification
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(body.toString())
-      .digest("hex");
+    if (!session_id) {
+      return res.status(400).send({ error: "Session ID is required." });
+    }
 
-    if (expectedSignature !== razorpay_signature) {
-      return res.status(400).send({ error: "Payment verification failed. Invalid signature." });
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+
+    if (session.payment_status !== "paid") {
+      return res.status(400).send({ error: "Payment not successful." });
     }
 
     // Update User Plan
@@ -242,9 +249,6 @@ app.post("/verify-payment", async (req, res) => {
     user.subscriptionPlan = planName;
     user.subscriptionStartDate = now;
     user.subscriptionExpiryDate = expiryDate;
-    // Reset tweetCount if needed - requirement doesn't explicitly say reset, 
-    // but usually new plan starts fresh or keeps count. 
-    // Requirement says "Reset tweetCount if needed." I'll reset it to 0 for the new plan.
     user.tweetCount = 0;
     await user.save();
 

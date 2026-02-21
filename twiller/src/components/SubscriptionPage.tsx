@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { loadStripe } from "@stripe/stripe-js";
 import { useAuth } from "@/context/AuthContext";
 import axiosInstance from "@/lib/axiosInstance";
 import { CreditCard, Zap, Star, Crown, CheckCircle2, AlertCircle, Sparkles, Lock } from "lucide-react";
@@ -52,11 +53,7 @@ const PLANS = [
     },
 ];
 
-declare global {
-    interface Window {
-        Razorpay: any;
-    }
-}
+
 
 export default function SubscriptionPage() {
     const { user, login } = useAuth();
@@ -64,6 +61,47 @@ export default function SubscriptionPage() {
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+
+    useEffect(() => {
+        const query = new URLSearchParams(window.location.search);
+        const isSuccess = query.get("success");
+        const isCanceled = query.get("canceled");
+        const session_id = query.get("session_id");
+        const planName = query.get("planName");
+
+        if (isSuccess && session_id && planName && user) {
+            const verifyPayment = async () => {
+                setLoading(true);
+                try {
+                    const verifyRes = await axiosInstance.post("/verify-payment", {
+                        session_id,
+                        planName,
+                        email: user.email,
+                    });
+
+                    if (verifyRes.data.message) {
+                        setSuccess(`🎉 Successfully upgraded to ${planName} plan! Invoice sent to ${user.email}.`);
+                        const refreshed = await axiosInstance.get("/loggedinuser", { params: { email: user.email } });
+                        if (refreshed.data) {
+                            localStorage.setItem("twitter-user", JSON.stringify(refreshed.data));
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        }
+                    }
+                } catch (err: any) {
+                    setError(err.response?.data?.error || "Payment verification failed.");
+                } finally {
+                    setLoading(false);
+                }
+            };
+            verifyPayment();
+        } else if (isCanceled) {
+            setError("Payment was canceled.");
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }, [user]);
 
     const currentPlan = user?.subscriptionPlan || "Free";
     const currentLimit = PLANS.find((p) => p.name === currentPlan)?.limit ?? 1;
@@ -84,64 +122,19 @@ export default function SubscriptionPage() {
         setSelectedPlan(planName);
 
         try {
-            // Step 1: Create Razorpay order (backend validates payment window)
-            const orderRes = await axiosInstance.post("/create-order", {
+            // Step 1: Create Stripe session
+            const orderRes = await axiosInstance.post("/create-checkout-session", {
                 planName,
                 email: user.email,
             });
 
-            const { orderId, amount, currency } = orderRes.data;
+            const { id } = orderRes.data;
 
-            // Step 2: Open Razorpay modal
-            const options = {
-                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-                amount,
-                currency,
-                name: "Twiller",
-                description: `${planName} Subscription`,
-                order_id: orderId,
-                handler: async (response: any) => {
-                    try {
-                        // Step 3: Verify payment in backend
-                        const verifyRes = await axiosInstance.post("/verify-payment", {
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
-                            planName,
-                            email: user.email,
-                        });
-
-                        if (verifyRes.data.message) {
-                            setSuccess(`🎉 Successfully upgraded to ${planName} plan! Invoice sent to ${user.email}.`);
-                            // Refresh user from backend
-                            const refreshed = await axiosInstance.get("/loggedinuser", { params: { email: user.email } });
-                            if (refreshed.data) {
-                                localStorage.setItem("twitter-user", JSON.stringify(refreshed.data));
-                                window.location.reload();
-                            }
-                        }
-                    } catch (err: any) {
-                        setError(err.response?.data?.error || "Payment verification failed.");
-                    } finally {
-                        setLoading(false);
-                        setSelectedPlan(null);
-                    }
-                },
-                prefill: {
-                    email: user.email,
-                    name: user.displayName,
-                },
-                theme: { color: "#1DA1F2" },
-                modal: {
-                    ondismiss: () => {
-                        setLoading(false);
-                        setSelectedPlan(null);
-                    },
-                },
-            };
-
-            const rzp = new window.Razorpay(options);
-            rzp.open();
+            // Step 2: Open Stripe Checkout
+            const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
+            if (stripe) {
+                await stripe.redirectToCheckout({ sessionId: id });
+            }
         } catch (err: any) {
             const msg = err.response?.data?.error || "Something went wrong.";
             setError(msg);
@@ -304,8 +297,8 @@ export default function SubscriptionPage() {
                                             onClick={() => handleSubscribe(plan.name, plan.price)}
                                             disabled={loading}
                                             className={`w-full py-3 rounded-2xl text-sm font-bold transition-all duration-200 ${isPending
-                                                    ? "bg-gray-700 text-gray-400 cursor-wait"
-                                                    : "bg-blue-500 hover:bg-blue-600 text-white hover:scale-[1.02] active:scale-95 shadow-lg shadow-blue-500/20"
+                                                ? "bg-gray-700 text-gray-400 cursor-wait"
+                                                : "bg-blue-500 hover:bg-blue-600 text-white hover:scale-[1.02] active:scale-95 shadow-lg shadow-blue-500/20"
                                                 }`}
                                         >
                                             {isPending ? (
@@ -326,7 +319,7 @@ export default function SubscriptionPage() {
 
                 {/* Info */}
                 <div className="text-center text-xs text-gray-600 space-y-1 pb-10">
-                    <p>All payments are processed securely via Razorpay.</p>
+                    <p>All payments are processed securely via Stripe.</p>
                     <p>Subscriptions auto-expire after 30 days. No auto-renewal.</p>
                     <p>Invoice will be sent to your registered email after payment.</p>
                 </div>
