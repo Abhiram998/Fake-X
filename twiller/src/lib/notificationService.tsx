@@ -87,36 +87,35 @@ export const showNotification = async (tweet: any) => {
     // TWEET-STYLE TOAST FALLBACK (Mobile or Permission Denied)
     toast.custom((t) => (
         <div
-            className={`${t.visible ? 'animate-in fade-in slide-in-from-top-4' : 'animate-out fade-out slide-out-to-top-4'} 
-            pointer-events-auto flex items-start w-full max-w-sm bg-black border border-gray-800 rounded-2xl p-4 shadow-2xl ring-1 ring-white/10`}
+            className={`${t.visible ? 'animate-in fade-in slide-in-from-right-10 duration-500' : 'animate-out fade-out slide-out-to-right-10 duration-300'} 
+            pointer-events-auto flex items-start w-[320px] bg-[#1a1c1e]/95 backdrop-blur-xl border border-white/10 rounded-xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] ring-1 ring-white/5`}
             onClick={() => toast.dismiss(t.id)}
         >
-            <div className="flex-shrink-0 mr-3">
-                <div className="h-10 w-10 rounded-full overflow-hidden border border-gray-800">
+            <div className="flex-shrink-0 mr-4">
+                <div className="h-12 w-12 rounded-xl overflow-hidden border border-white/10 shadow-inner">
                     <img src={tweet.author?.avatar} alt="" className="h-full w-full object-cover" />
                 </div>
             </div>
             <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">New Tweet Alert</span>
-                    <span className="text-[10px] text-gray-500">@{tweet.author?.username}</span>
+                    <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.1em] opacity-80">New Tweet Alert</span>
+                    <span className="text-[10px] text-white/40 font-medium">@{tweet.author?.username}</span>
                 </div>
-                <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-bold text-white truncate">{tweet.author?.displayName}</p>
+                <div className="flex items-center gap-1.5 mb-1">
+                    <p className="text-sm font-bold text-white/90 truncate">{tweet.author?.displayName}</p>
                 </div>
-                <p className="text-sm text-gray-200 mt-0.5 leading-normal">
+                <p className="text-[13px] text-white/80 mt-1 leading-[1.5] line-clamp-2 font-medium">
                     {tweet.content}
                 </p>
-            </div>
-            <div className="ml-2 flex-shrink-0 text-gray-500">
-                <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
+                <div className="mt-3 text-[10px] text-white/30 font-semibold flex items-center gap-1.5 uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+                    fake-x.vercel.app
+                </div>
             </div>
         </div>
     ), {
         duration: 5000,
-        position: "top-center",
+        position: "top-right",
     });
 };
 
@@ -142,13 +141,17 @@ const saveNotifiedTweet = (id: string) => {
     localStorage.setItem("notified_tweets", JSON.stringify(limited));
 };
 
+// In-memory set for instant duplicate prevention (localStorage is slower)
+const inMemoryNotified = new Set<string>();
+
 export const triggerTweetNotification = (tweet: any) => {
     if (!tweet?._id) return;
 
     const notified = getNotifiedTweets();
-    if (notified.has(tweet._id)) return;
+    if (notified.has(tweet._id) || inMemoryNotified.has(tweet._id)) return;
 
     if (shouldNotifyForTweet(tweet.content)) {
+        inMemoryNotified.add(tweet._id); // Mark instantly
         showNotification(tweet);
         saveNotifiedTweet(tweet._id);
     }

@@ -50,6 +50,8 @@ interface AuthContextType {
   isLoading: boolean;
   googlesignin: () => void;
   toggleNotifications: (enabled: boolean) => Promise<void>;
+  refreshUser: () => Promise<void>;
+  updateTweetCount: (newCount: number) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -295,6 +297,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             console.error("Failed to update notifications preference:", err);
           }
         },
+        refreshUser: async () => {
+          if (!user?.email) return;
+          try {
+            const res = await axiosInstance.get("/loggedinuser", {
+              params: { email: user.email },
+            });
+            if (res.data) {
+              setUser(res.data);
+              localStorage.setItem("twitter-user", JSON.stringify(res.data));
+            }
+          } catch (err) {
+            console.error("Failed to refresh user data:", err);
+          }
+        },
+        updateTweetCount: (newCount: number) => {
+          if (!user) return;
+          const updatedUser = { ...user, tweetCount: newCount };
+          setUser(updatedUser);
+          localStorage.setItem("twitter-user", JSON.stringify(updatedUser));
+        }
       }}
     >
       {children}

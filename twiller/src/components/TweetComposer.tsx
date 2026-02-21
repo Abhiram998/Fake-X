@@ -12,7 +12,7 @@ import AudioTweetComposer from "./AudioTweetComposer";
 import { useNavigation } from "@/context/NavigationContext";
 
 const TweetComposer = ({ onTweetPosted }: any) => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { navigate } = useNavigation();
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -40,6 +40,7 @@ const TweetComposer = ({ onTweetPosted }: any) => {
       }
       const res = await axiosInstance.post('/post', tweetdata)
       onTweetPosted(res.data)
+      refreshUser(); // Sync tweetCount
       setContent("")
       setimageurl("")
       setaudiourl("")
