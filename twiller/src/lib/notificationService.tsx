@@ -189,12 +189,33 @@ export const subscribeUserToPush = async (userId: string) => {
         ]) as ServiceWorkerRegistration;
 
         console.log("🔍 Attempting push subscription for user:", userId);
-        const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-        });
 
-        console.log("✅ Browser push subscription generated:", subscription);
+        // EXTRA STEP: Check if we already have an active subscription
+        let subscription = await registration.pushManager.getSubscription();
+
+        if (!subscription) {
+            try {
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+                });
+            } catch (subError: any) {
+                if (subError.name === 'NotAllowedError') {
+                    throw new Error("Permission denied by your browser. Please allow notifications in site settings.");
+                }
+                // If the push service is being stubborn, try clearing everything once
+                console.warn("Push service error, attempting cleanup...");
+                const existing = await registration.pushManager.getSubscription();
+                if (existing) await existing.unsubscribe();
+
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+                });
+            }
+        }
+
+        console.log("✅ Browser push subscription active:", subscription.endpoint);
 
         // Send to backend
         const response = await axiosInstance.post("/subscribe", {
@@ -207,14 +228,16 @@ export const subscribeUserToPush = async (userId: string) => {
         return subscription;
     } catch (error: any) {
         console.error("❌ Subscription Flow Error:", error);
-        if (error.message === "SW Ready Timeout") {
-            throw new Error("Service Worker timed out. Please refresh the page.");
+
+        let msg = typeof error === 'string' ? error : (error.message || "Failed to subscribe to push.");
+
+        if (msg.includes("push service error")) {
+            msg = "Push Service Error. If you use Brave, please enable 'Use Google Services for Push Messaging' in Settings -> Privacy.";
+        } else if (error.message === "SW Ready Timeout") {
+            msg = "Service Worker timed out. Please refresh the page.";
         }
-        if (error.response) {
-            console.error("Data:", error.response.data);
-            throw new Error(error.response.data.error || "Server rejected subscription");
-        }
-        throw error;
+
+        throw new Error(msg);
     }
 };
 
