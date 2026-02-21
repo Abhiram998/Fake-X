@@ -6,6 +6,7 @@ import Sidebar from "./Sidebar";
 import RightSidebar from "./Rightsidebar";
 import ProfilePage from "../ProfilePage";
 import SubscriptionPage from "../SubscriptionPage";
+import Feed from "../Feed";
 import MobileNav from "./MobileNav";
 import { NavigationProvider, useNavigation } from "@/context/NavigationContext";
 
@@ -35,7 +36,7 @@ function MainlayoutInner({ children }: { children: React.ReactNode }) {
       </div>
 
       <main className="flex-1 w-full max-w-[600px] border-x border-gray-800 relative pb-16 sm:pb-0">
-        {currentPage === "profile" ? <ProfilePage /> : currentPage === "subscriptions" ? <SubscriptionPage /> : children}
+        {currentPage === "profile" ? <ProfilePage /> : currentPage === "subscriptions" ? <SubscriptionPage /> : <Feed />}
       </main>
 
       <div className="hidden lg:block w-80 p-4 sticky top-0 h-screen">

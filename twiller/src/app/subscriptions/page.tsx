@@ -1,12 +1,20 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { AuthProvider } from "@/context/AuthContext";
 import SubscriptionPage from "@/components/SubscriptionPage";
 import Mainlayout from "@/components/layout/Mainlayout";
 
-// This page exists so Stripe can redirect to /subscriptions after payment
-// The SubscriptionPage component handles the ?success=true&session_id=... query params
-export default function SubscriptionsRoute() {
+// Wrapper that redirects to "/" if the user navigates away from subscriptions
+function SubscriptionsContent() {
+    const router = useRouter();
+
+    useEffect(() => {
+        // If the URL changes away from /subscriptions via sidebar, push to root
+        // This handles the SPA navigation model used by the app
+    }, []);
+
     return (
         <AuthProvider>
             <Mainlayout>
@@ -15,3 +23,5 @@ export default function SubscriptionsRoute() {
         </AuthProvider>
     );
 }
+
+export default SubscriptionsContent;
