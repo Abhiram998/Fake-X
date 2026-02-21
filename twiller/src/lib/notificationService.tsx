@@ -188,25 +188,31 @@ export const subscribeUserToPush = async (userId: string) => {
             new Promise((_, reject) => setTimeout(() => reject(new Error("SW Ready Timeout")), 5000))
         ]) as ServiceWorkerRegistration;
 
-        // Subscribe to push service
+        console.log("🔍 Attempting push subscription for user:", userId);
         const subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
         });
 
-        console.log("✅ Push Subscription successful:", subscription);
+        console.log("✅ Browser push subscription generated:", subscription);
 
         // Send to backend
-        await axiosInstance.post("/subscribe", {
+        const response = await axiosInstance.post("/subscribe", {
             userId,
             subscription,
         });
 
+        console.log("🚀 Backend subscription response:", response.data);
+
         return subscription;
     } catch (error: any) {
-        console.error("❌ Failed to subscribe user to push:", error);
+        console.error("❌ Subscription Flow Error:", error);
         if (error.message === "SW Ready Timeout") {
             throw new Error("Service Worker timed out. Please refresh the page.");
+        }
+        if (error.response) {
+            console.error("Data:", error.response.data);
+            throw new Error(error.response.data.error || "Server rejected subscription");
         }
         throw error;
     }

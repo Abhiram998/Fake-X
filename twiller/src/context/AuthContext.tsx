@@ -298,8 +298,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               localStorage.setItem("twitter-user", JSON.stringify(updatedUser));
             }
           } catch (err: any) {
-            console.error("Failed to update notifications preference:", err);
-            toast.error(err.response?.data?.error || "Failed to update notification settings.");
+            console.error("❌ Failed to update notifications preference:", err);
+            const errorMessage = err.response?.data?.error || err.message || "Failed to update notification settings.";
+            toast.error(errorMessage);
           }
         },
         refreshUser: async () => {
