@@ -184,7 +184,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error: any) {
       console.error("Login Error:", error);
-      const errorMessage = error.response?.data?.error || error.message || "Login failed";
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || "Login failed";
       throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -213,7 +213,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setShowOtpModal(false);
       }
     } catch (error: any) {
-      const message = error.response?.data?.error || "Invalid OTP";
+      const message = error.response?.data?.message || error.response?.data?.error || error.message || "Invalid OTP";
       toast.error(message);
       throw new Error(message);
     } finally {
@@ -261,7 +261,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toast.success(res.data.message);
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to send OTP");
+      toast.error(error.response?.data?.message || error.response?.data?.error || "Failed to send OTP");
     } finally {
       setIsLoading(false);
     }
@@ -374,18 +374,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
         userData = res.data;
       } catch (err: any) {
-        const newuser: any = {
-          username: firebaseuser.email.split("@")[0],
-          displayName: firebaseuser.displayName || "User",
-          avatar: firebaseuser.photoURL || "https://images.pexels.com/photos/1139743/pexels-photo-1139743.jpeg?auto=compress&cs=tinysrgb&w=400",
-          email: firebaseuser.email,
-          mobile: "0000000000",
-          isLogin: true,
-          screenWidth: window.innerWidth
-        };
+        if (err.response?.status === 404) {
+          const newuser: any = {
+            username: firebaseuser.email.split("@")[0],
+            displayName: firebaseuser.displayName || "User",
+            avatar: firebaseuser.photoURL || "https://images.pexels.com/photos/1139743/pexels-photo-1139743.jpeg?auto=compress&cs=tinysrgb&w=400",
+            email: firebaseuser.email,
+            mobile: "0000000000",
+            isLogin: true,
+            screenWidth: window.innerWidth
+          };
 
-        const registerRes = await axiosInstance.post("/register", newuser);
-        userData = registerRes.data;
+          const registerRes = await axiosInstance.post("/register", newuser);
+          userData = registerRes.data;
+        } else {
+          // Re-throw 403 or other errors to be handled by the outer catch
+          throw err;
+        }
       }
 
       if (userData?.otpRequired) {
@@ -408,7 +413,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
       console.error("Google Sign-In Error:", error);
-      toast.error(error.response?.data?.message || error.message || "Login failed");
+      const msg = error.response?.data?.message || error.response?.data?.error || error.message || "Login failed";
+      toast.error(msg);
     } finally {
       setIsLoading(false);
       setManualLoginInProgress(false);

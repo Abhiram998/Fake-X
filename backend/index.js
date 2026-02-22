@@ -456,24 +456,31 @@ app.post("/forgot-password", async (req, res) => {
 
 const checkLoginSecurity = async (user, req, res, justCheck = false) => {
   const parser = new UAParser(req.headers["user-agent"]);
+  const userAgent = req.headers["user-agent"] || "";
   const browser = parser.getBrowser().name || "Unknown";
-  const os = parser.getOS().name || "Unknown";
-  const ipAddress = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 
-  // Robust Device type detection (Combined Strategy)
-  const screenWidthFromReq = req.body.screenWidth || req.query.screenWidth;
   let deviceType = "desktop";
+  const parsedDevice = parser.getDevice();
 
-  if (
-    parser.getDevice().type === "mobile" ||
-    parser.getDevice().type === "tablet" ||
-    /mobile/i.test(req.headers["user-agent"]) ||
-    (screenWidthFromReq && screenWidthFromReq < 768)
-  ) {
+  // Primary detection
+  if (parsedDevice.type === "mobile" || parsedDevice.type === "tablet") {
     deviceType = "mobile";
   }
 
-  console.log(`📱 [DEBUG] Device Detection: UA=${req.headers["user-agent"]}, screenWidth=${screenWidthFromReq} => Result=${deviceType}`);
+  // Strong fallback detection
+  if (/android|iphone|ipad|ipod|mobile/i.test(userAgent)) {
+    deviceType = "mobile";
+  }
+
+  // Robust screen width check (as requested previously)
+  const screenWidthFromReq = req.body.screenWidth || req.query.screenWidth;
+  if (screenWidthFromReq && screenWidthFromReq < 768) {
+    deviceType = "mobile";
+  }
+
+  console.log("Detected deviceType:", deviceType);
+  console.log("User agent:", userAgent);
+  if (screenWidthFromReq) console.log("Screen width detected:", screenWidthFromReq);
 
   // PART 3: Mobile Login Time Restriction
   if (deviceType === "mobile") {
@@ -483,7 +490,10 @@ const checkLoginSecurity = async (user, req, res, justCheck = false) => {
 
     if (hour < 10 || hour >= 13) {
       console.log(`🛑 [DEBUG] Mobile restriction active: Hour=${hour} IST`);
-      return { restricted: true, error: "Login is restricted to 10:00 AM – 1:00 PM IST on mobile devices." };
+      return {
+        restricted: true,
+        error: "Mobile login allowed only between 10:00 AM and 1:00 PM IST."
+      };
     }
   }
 
@@ -497,9 +507,9 @@ const checkLoginSecurity = async (user, req, res, justCheck = false) => {
     const history = new LoginHistory({
       userId: user._id,
       browser,
-      os,
+      os: parser.getOS().name || "Unknown",
       deviceType,
-      ipAddress,
+      ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
       loginTime: new Date()
     });
     await history.save();
@@ -564,7 +574,7 @@ app.post("/login", async (req, res) => {
     const securityCheck = await checkLoginSecurity(user, req, res);
 
     if (securityCheck.restricted) {
-      return res.status(403).send({ error: securityCheck.error });
+      return res.status(403).json({ message: securityCheck.error });
     }
 
     if (securityCheck.otpRequired) {
@@ -742,7 +752,7 @@ app.post("/register", async (req, res) => {
     if (existinguser) {
       if (req.body.isLogin) {
         const securityCheck = await checkLoginSecurity(existinguser, req, res);
-        if (securityCheck.restricted) return res.status(403).send({ error: securityCheck.error });
+        if (securityCheck.restricted) return res.status(403).json({ message: securityCheck.error });
         if (securityCheck.otpRequired) return res.status(200).send(securityCheck);
       }
       return res.status(200).send(existinguser);
@@ -758,7 +768,7 @@ app.post("/register", async (req, res) => {
 
     if (req.body.isLogin) {
       const securityCheck = await checkLoginSecurity(newUser, req, res);
-      if (securityCheck.restricted) return res.status(403).send({ error: securityCheck.error });
+      if (securityCheck.restricted) return res.status(403).json({ message: securityCheck.error });
       if (securityCheck.otpRequired) return res.status(200).send(securityCheck);
     }
 
@@ -789,7 +799,7 @@ app.get("/loggedinuser", async (req, res) => {
     const justCheck = req.query.justCheck === "true" || req.query.justCheck === true;
     if (isLogin) {
       const securityCheck = await checkLoginSecurity(updatedUser, req, res, justCheck);
-      if (securityCheck.restricted) return res.status(403).send({ error: securityCheck.error });
+      if (securityCheck.restricted) return res.status(403).json({ message: securityCheck.error });
       if (securityCheck.otpRequired) return res.status(200).send(securityCheck);
     }
 
@@ -812,6 +822,7 @@ app.post("/trigger-login-otp", async (req, res) => {
     if (!user) return res.status(404).send({ error: "User not found" });
 
     const securityCheck = await checkLoginSecurity(user, req, res, false); // Triggers OTP
+    if (securityCheck.restricted) return res.status(403).json({ message: securityCheck.error });
     return res.status(200).send(securityCheck);
   } catch (err) {
     console.error("❌ Trigger Login OTP Error:", err);
