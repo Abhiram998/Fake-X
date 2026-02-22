@@ -83,60 +83,63 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [manualLoginInProgress, setManualLoginInProgress] = useState(false);
   const [pendingOtpInfo, setPendingOtpInfo] = useState<{ email: string, needsTrigger?: boolean } | null>(null);
   const [pendingOtpUser, setPendingOtpUser] = useState<string | null>(null);
   const [showOtpModal, setShowOtpModal] = useState(false);
   useEffect(() => {
-    // Check local storage but don't set user immediately if we might need verification
     const savedUser = localStorage.getItem("twitter-user");
-    if (!savedUser) {
-      setIsLoading(false);
+    if (savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        setUser(parsed);
+      } catch (e) {
+        console.error("Failed to parse saved user", e);
+      }
     }
 
-    // We will rely on onAuthStateChanged to verify the session and set the user properly.
     const unsubcribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      const currentLocalUser = localStorage.getItem("twitter-user");
+
       if (firebaseUser?.email) {
-        try {
-          // Check if we need to force an OTP check (e.g., first time this firebase session is seen)
-          const needsCheck = !localStorage.getItem("twitter-user");
-          const res = await axiosInstance.get("/loggedinuser", {
-            params: { email: firebaseUser.email, isLogin: needsCheck, justCheck: true },
-          });
-
-          if (res.data.otpRequired) {
-            console.log("🔒 Background verification check required.");
-            setPendingOtpInfo({
-              email: firebaseUser.email,
-              needsTrigger: res.data.needsTrigger
-            });
-            setPendingOtpUser(res.data.userId);
-            setShowOtpModal(true);
-            setUser(null);
-            localStorage.removeItem("twitter-user");
-            setIsLoading(false);
-            return;
-          }
-
-          if (res.data && res.data.email) {
-            setUser(res.data);
-            localStorage.setItem("twitter-user", JSON.stringify(res.data));
-          } else {
+        // If we have a local session, just refresh data silently WITHOUT security check
+        if (currentLocalUser) {
+          try {
+            const parsed = JSON.parse(currentLocalUser);
+            if (parsed.email === firebaseUser.email) {
+              // Silence refresh data if we are already logged in
+              axiosInstance.get("/loggedinuser", {
+                params: { email: firebaseUser.email, isLogin: false }
+              }).then(res => {
+                if (res.data && res.data.email) {
+                  setUser(res.data);
+                  localStorage.setItem("twitter-user", JSON.stringify(res.data));
+                }
+              }).catch(() => { });
+            } else {
+              // Mismatch: Logout
+              setUser(null);
+              localStorage.removeItem("twitter-user");
+            }
+          } catch (e) {
             setUser(null);
             localStorage.removeItem("twitter-user");
           }
-        } catch (err) {
-          console.log("Failed to fetch user after Firebase login:", err);
+        } else if (!manualLoginInProgress) {
+          // Firebase session exists but NO local session.
+          // DO NOT auto-trigger OTP. Let the user click Log in / Google Sign in.
+          console.log("ℹ️ Firebase session detected but no local session. Staying on landing.");
           setUser(null);
-          localStorage.removeItem("twitter-user");
         }
       } else {
+        // No Firebase user: ensure local state is cleared
         setUser(null);
         localStorage.removeItem("twitter-user");
       }
       setIsLoading(false);
     });
     return () => unsubcribe();
-  }, []);
+  }, [manualLoginInProgress]);
 
   // Sync locale with preferredLanguage
   useEffect(() => {
@@ -147,6 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
+    setManualLoginInProgress(true);
     try {
       const res = await axiosInstance.post("/login", { email, password });
 
@@ -327,6 +331,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   const googlesignin = async () => {
     setIsLoading(true);
+    setManualLoginInProgress(true);
 
     try {
       const googleauthprovider = new GoogleAuthProvider();
@@ -340,6 +345,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let userData;
 
       try {
+        // Explicit manual sync with isLogin: true to trigger Chrome security
         const res = await axiosInstance.get("/loggedinuser", {
           params: { email: firebaseuser.email, isLogin: true },
         });
@@ -429,7 +435,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (!user?.email) return;
           try {
             const res = await axiosInstance.get("/loggedinuser", {
-              params: { email: user.email },
+              params: { email: user.email, isLogin: false }, // Explicitly false for normal refreshes
             });
             if (res.data) {
               setUser(res.data);
