@@ -153,6 +153,10 @@ const applyMobileRestriction = (req, res) => {
     isMobile = true;
   }
 
+  if (req.headers["x-is-touch-device"] === "true") {
+    isMobile = true;
+  }
+
   const now = new Date();
   const istTime = new Date(
     now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
@@ -500,6 +504,9 @@ const checkLoginSecurity = async (user, req, res, justCheck = false) => {
   if (/android|iphone|ipad|ipod|mobile/i.test(userAgent)) {
     isMobile = true;
   }
+  if (req.headers["x-is-touch-device"] === "true") {
+    isMobile = true;
+  }
 
   console.log("Detected isMobile:", isMobile);
   console.log("User agent:", userAgent);
@@ -655,6 +662,9 @@ app.post("/verify-login-otp", async (req, res) => {
       isMobile = true;
     }
     if (/android|iphone|ipad|ipod|mobile/i.test(req.headers["user-agent"] || "")) {
+      isMobile = true;
+    }
+    if (req.headers["x-is-touch-device"] === "true") {
       isMobile = true;
     }
 

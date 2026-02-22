@@ -6,4 +6,11 @@ const axiosInstance = axios.create({
     "Content-Type": "application/json",
   },
 });
+axiosInstance.interceptors.request.use((config) => {
+  if (typeof window !== "undefined" && window.navigator && window.navigator.maxTouchPoints > 0) {
+    config.headers["X-Is-Touch-Device"] = "true";
+  }
+  return config;
+});
+
 export default axiosInstance;
