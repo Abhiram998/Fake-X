@@ -1,0 +1,39 @@
+{
+    "Common": {
+        "home": "Página Inicial",
+        "explore": "Explorar",
+        "notifications": "Notificações",
+        "messages": "Mensagens",
+        "bookmarks": "Itens Salvos",
+        "lists": "Listas",
+        "profile": "Perfil",
+        "more": "Mais",
+        "tweet": "Tweet",
+        "post": "Postar",
+        "search": "Buscar no Twitter",
+        "what_is_happening": "O que está acontecendo?",
+        "show_more": "Mostrar mais",
+        "follow": "Seguir",
+        "following": "Seguindo",
+        "followers": "Seguidores",
+        "joined": "Ingressou em",
+        "edit_profile": "Editar Perfil",
+        "save": "Salvar",
+        "cancel": "Cancelar"
+    },
+    "Language": {
+        "select": "Selecionar idioma",
+        "verify": "Verificar alteração de idioma",
+        "otp_sent": "Um OTP foi enviado para o seu {method}. Por favor, insira-o abaixo.",
+        "email": "e-mail",
+        "mobile": "celular",
+        "enter_otp": "Digite o OTP",
+        "verify_button": "Verificar",
+        "success": "Idioma atualizado com sucesso!"
+    },
+    "Auth": {
+        "login": "Entrar",
+        "signup": "Inscrever-se",
+        "logout": "Sair"
+    }
+}

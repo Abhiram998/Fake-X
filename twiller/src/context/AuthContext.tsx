@@ -29,6 +29,7 @@ interface User {
   subscriptionStartDate?: string;
   subscriptionExpiryDate?: string;
   tweetCount: number;
+  preferredLanguage?: string;
 }
 
 interface AuthContextType {
@@ -53,6 +54,8 @@ interface AuthContextType {
   toggleNotifications: (enabled: boolean) => Promise<void>;
   refreshUser: () => Promise<void>;
   updateTweetCount: (newCount: number) => void;
+  requestLanguageChange: (newLang: string) => Promise<{ message: string; simulated?: boolean; code?: string }>;
+  verifyLanguageChange: (otp: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -106,6 +109,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     });
     return () => unsubcribe();
   }, []);
+
+  // Sync locale with preferredLanguage
+  useEffect(() => {
+    if (user?.preferredLanguage) {
+      document.cookie = `NEXT_LOCALE=${user.preferredLanguage}; path=/; max-age=31536000`;
+    }
+  }, [user?.preferredLanguage]);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
@@ -322,7 +332,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           const updatedUser = { ...user, tweetCount: newCount };
           setUser(updatedUser);
           localStorage.setItem("twitter-user", JSON.stringify(updatedUser));
-        }
+        },
+        requestLanguageChange: async (newLang: string) => {
+          if (!user) throw new Error("Not logged in");
+          const res = await axiosInstance.post("/request-language-change", {
+            email: user.email,
+            newLanguage: newLang,
+          });
+          return res.data;
+        },
+        verifyLanguageChange: async (otp: string) => {
+          if (!user) throw new Error("Not logged in");
+          const res = await axiosInstance.post("/verify-language-change", {
+            email: user.email,
+            code: otp,
+          });
+          if (res.data.preferredLanguage) {
+            const updatedUser = { ...user, preferredLanguage: res.data.preferredLanguage };
+            setUser(updatedUser);
+            localStorage.setItem("twitter-user", JSON.stringify(updatedUser));
+            toast.success("Language updated successfully!");
+            // Refresh to apply locale
+            window.location.reload();
+          }
+        },
       }}
     >
       {children}

@@ -30,31 +30,41 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from "react-hot-toast";
+import { AuthProvider } from "@/context/AuthContext";
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en" className="dark">
+    <html lang={locale} className="dark">
       <head>
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black`}
       >
-        <SwRegistration />
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            style: {
-              background: '#1d9bf0',
-              color: '#fff',
-              fontWeight: 'bold',
-            },
-          }}
-        />
-        {children}
+        <AuthProvider>
+          <NextIntlClientProvider messages={messages} locale={locale}>
+            <SwRegistration />
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                style: {
+                  background: '#1d9bf0',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                },
+              }}
+            />
+            {children}
+          </NextIntlClientProvider>
+        </AuthProvider>
       </body>
     </html>
   );

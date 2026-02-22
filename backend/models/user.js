@@ -17,6 +17,10 @@ const UserSchema = mongoose.Schema({
   subscriptionStartDate: { type: Date },
   subscriptionExpiryDate: { type: Date },
   tweetCount: { type: Number, default: 0 },
+  preferredLanguage: { type: String, default: "en" },
+  pendingLanguage: { type: String },
+  languageOtp: { type: String },
+  languageOtpExpiry: { type: Date },
 });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);

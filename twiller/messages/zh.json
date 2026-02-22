@@ -1,0 +1,39 @@
+{
+    "Common": {
+        "home": "首页",
+        "explore": "探索",
+        "notifications": "通知",
+        "messages": "消息",
+        "bookmarks": "书签",
+        "lists": "列表",
+        "profile": "个人资料",
+        "more": "更多",
+        "tweet": "推文",
+        "post": "发布",
+        "search": "搜索 Twitter",
+        "what_is_happening": "正在发生什么？",
+        "show_more": "显示更多",
+        "follow": "关注",
+        "following": "正在关注",
+        "followers": "关注者",
+        "joined": "加入时间",
+        "edit_profile": "编辑个人资料",
+        "save": "保存",
+        "cancel": "取消"
+    },
+    "Language": {
+        "select": "选择语言",
+        "verify": "验证语言更改",
+        "otp_sent": "验证码已发送到您的 {method}。请在下方输入。",
+        "email": "电子邮件",
+        "mobile": "手机",
+        "enter_otp": "输入验证码",
+        "verify_button": "验证",
+        "success": "语言更新成功！"
+    },
+    "Auth": {
+        "login": "登录",
+        "signup": "注册",
+        "logout": "退出登录"
+    }
+}

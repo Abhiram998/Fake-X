@@ -26,6 +26,8 @@ import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import TwitterLogo from '../Twitterlogo';
 import { useAuth } from '@/context/AuthContext';
+import { useTranslations } from 'next-intl';
+import LanguageSelector from '../LanguageSelector';
 
 interface SidebarProps {
   currentPage?: string;
@@ -34,28 +36,30 @@ interface SidebarProps {
 
 export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarProps) {
   const { user, logout } = useAuth();
+  const t = useTranslations('Common');
 
   const navigation = [
-    { name: 'Home', icon: Home, current: currentPage === 'home', page: 'home' },
-    { name: 'Explore', icon: Search, current: currentPage === 'explore', page: 'explore' },
-    { name: 'Notifications', icon: Bell, current: currentPage === 'notifications', page: 'notifications', badge: true },
-    { name: 'Messages', icon: Mail, current: currentPage === 'messages', page: 'messages' },
-    { name: 'Bookmarks', icon: Bookmark, current: currentPage === 'bookmarks', page: 'bookmarks' },
-    { name: 'Profile', icon: User, current: currentPage === 'profile', page: 'profile' },
-    { name: 'Subscriptions', icon: CreditCard, current: currentPage === 'subscriptions', page: 'subscriptions' },
-    { name: 'More', icon: MoreHorizontal, current: currentPage === 'more', page: 'more' },
+    { name: t('home'), icon: Home, current: currentPage === 'home', page: 'home' },
+    { name: t('explore'), icon: Search, current: currentPage === 'explore', page: 'explore' },
+    { name: t('notifications'), icon: Bell, current: currentPage === 'notifications', page: 'notifications', badge: true },
+    { name: t('messages'), icon: Mail, current: currentPage === 'messages', page: 'messages' },
+    { name: t('bookmarks'), icon: Bookmark, current: currentPage === 'bookmarks', page: 'bookmarks' },
+    { name: t('profile'), icon: User, current: currentPage === 'profile', page: 'profile' },
+    { name: t('subscriptions'), icon: CreditCard, current: currentPage === 'subscriptions', page: 'subscriptions' },
+    { name: t('more'), icon: MoreHorizontal, current: currentPage === 'more', page: 'more' },
   ];
 
   return (
     <div className="flex flex-col h-screen w-full border-r border-gray-800 bg-black sticky top-0">
-      <div className="p-4 flex justify-center md:justify-start">
+      <div className="p-4 flex flex-row items-center justify-between">
         <TwitterLogo size="lg" className="text-white" />
+        <LanguageSelector />
       </div>
 
       <nav className="flex-1 px-2">
         <ul className="space-y-1">
           {navigation.map((item) => (
-            <li key={item.name}>
+            <li key={item.page}>
               <Button
                 variant="ghost"
                 className={`w-full justify-center md:justify-start text-xl py-6 px-4 rounded-full hover:bg-gray-900 ${item.current ? 'font-bold' : 'font-normal'
@@ -83,7 +87,7 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
 
         <div className="mt-4 px-2">
           <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-full text-lg flex justify-center items-center">
-            <span className="hidden md:inline">Post</span>
+            <span className="hidden md:inline">{t('post')}</span>
             <span className="md:hidden">
               <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6 fill-current text-white"><g><path d="M23 3c-6.62-.1-10.38 2.421-13.05 6.03C7.29 12.61 6 17.331 6 22h2c0-1.007.07-2.012.19-3H12c4.1 0 7.48-3.082 7.94-7.054C22.79 10.147 23.17 6.359 23 3zm-7 8h-1.5v2H13V11h-2V9.5h2V8h1.5v1.5H16V11zM1 22h4y3 3 0 0 1 0 6H1v-6z"></path></g></svg>
             </span>
@@ -146,7 +150,7 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
                 onClick={logout}
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                Log out @{user.username}
+                {t('Auth.logout')} @{user.username}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

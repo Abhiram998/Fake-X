@@ -1,0 +1,40 @@
+{
+    "Common": {
+        "home": "Accueil",
+        "explore": "Explorer",
+        "notifications": "Notifications",
+        "messages": "Messages",
+        "bookmarks": "Signets",
+        "lists": "Listes",
+        "profile": "Profil",
+        "subscriptions": "Abonnements",
+        "more": "Plus",
+        "tweet": "Tweet",
+        "post": "Poster",
+        "search": "Rechercher sur Twitter",
+        "what_is_happening": "Quoi de neuf ?",
+        "show_more": "Voir plus",
+        "follow": "Suivre",
+        "following": "Abonnements",
+        "followers": "Abonnés",
+        "joined": "A rejoint",
+        "edit_profile": "Modifier le profil",
+        "save": "Enregistrer",
+        "cancel": "Annuler"
+    },
+    "Language": {
+        "select": "Choisir la langue",
+        "verify": "Vérifier le changement de langue",
+        "otp_sent": "Un OTP a été envoyé à votre {method}. Veuillez le saisir ci-dessous.",
+        "email": "e-mail",
+        "mobile": "mobile",
+        "enter_otp": "Saisir l'OTP",
+        "verify_button": "Vérifier",
+        "success": "Langue mise à jour avec succès !"
+    },
+    "Auth": {
+        "login": "Se connecter",
+        "signup": "S'inscrire",
+        "logout": "Se déconnecter"
+    }
+}

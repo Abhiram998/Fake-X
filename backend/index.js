@@ -17,6 +17,7 @@ import { generateSecureAlphabetPassword } from "./utils/passwordGenerator.js";
 import webpush from "web-push";
 import sendPasswordReset from "./utils/sendPasswordReset.js";
 import sendInvoice from "./utils/sendInvoice.js";
+import sendLanguageOTP from "./utils/sendLanguageOTP.js";
 import Stripe from "stripe";
 import crypto from "crypto";
 
@@ -186,6 +187,99 @@ app.post("/verify-otp", async (req, res) => {
     res.status(200).send({ message: "OTP verified successfully" });
   } catch (error) {
     res.status(500).send({ error: error.message });
+  }
+});
+
+// Language Change Endpoints
+app.post("/request-language-change", async (req, res) => {
+  try {
+    const { email, newLanguage } = req.body;
+    if (!email || !newLanguage) {
+      return res.status(400).send({ error: "Email and new language are required" });
+    }
+
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    if (!user) return res.status(404).send({ error: "User not found" });
+
+    // Rate limit: 1 request per minute
+    const now = new Date();
+    if (user.languageOtpExpiry && (user.languageOtpExpiry.getTime() - now.getTime() > 4 * 60 * 1000)) {
+      return res.status(429).send({ error: "Please wait a minute before requesting another OTP." });
+    }
+
+    // Generate 6-digit OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    user.pendingLanguage = newLanguage;
+    user.languageOtp = otpCode;
+    user.languageOtpExpiry = expiry;
+    await user.save();
+
+    let result;
+    if (newLanguage === "fr") {
+      // Send OTP to email
+      result = await sendLanguageOTP(user.email, otpCode, true);
+    } else {
+      // Send OTP to mobile (simulated)
+      result = await sendLanguageOTP(user.phone || "No Phone Registered", otpCode, false);
+    }
+
+    if (!result.success && !result.simulated) {
+      console.log(`🔥 [FALLBACK] Language OTP for ${user.email}: ${otpCode}`);
+      return res.status(200).send({
+        message: "OTP generated. Please check server logs if not received.",
+        simulated: false
+      });
+    }
+
+    res.status(200).send({
+      message: `OTP sent to your ${newLanguage === "fr" ? "email" : "mobile"}.`,
+      simulated: !!result.simulated,
+      code: result.simulated ? otpCode : undefined
+    });
+  } catch (error) {
+    console.error("❌ Request Language Change Error:", error);
+    res.status(500).send({ error: "Internal server error" });
+  }
+});
+
+app.post("/verify-language-change", async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    if (!email || !code) {
+      return res.status(400).send({ error: "Email and code are required" });
+    }
+
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    if (!user) return res.status(404).send({ error: "User not found" });
+
+    if (!user.languageOtp || !user.pendingLanguage) {
+      return res.status(400).send({ error: "No pending language change found" });
+    }
+
+    if (new Date() > user.languageOtpExpiry) {
+      return res.status(400).send({ error: "OTP has expired" });
+    }
+
+    if (user.languageOtp !== code.trim()) {
+      return res.status(400).send({ error: "Invalid OTP" });
+    }
+
+    // Success: Update language
+    user.preferredLanguage = user.pendingLanguage;
+    user.pendingLanguage = undefined;
+    user.languageOtp = undefined;
+    user.languageOtpExpiry = undefined;
+    await user.save();
+
+    res.status(200).send({
+      message: "Language updated successfully",
+      preferredLanguage: user.preferredLanguage
+    });
+  } catch (error) {
+    console.error("❌ Verify Language Change Error:", error);
+    res.status(500).send({ error: "Internal server error" });
   }
 });
 
