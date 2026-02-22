@@ -31,6 +31,7 @@ interface User {
   subscriptionExpiryDate?: string;
   tweetCount: number;
   preferredLanguage?: string;
+  phone?: string;
 }
 
 interface AuthContextType {
