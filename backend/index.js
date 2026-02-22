@@ -458,8 +458,22 @@ const checkLoginSecurity = async (user, req, res, justCheck = false) => {
   const parser = new UAParser(req.headers["user-agent"]);
   const browser = parser.getBrowser().name || "Unknown";
   const os = parser.getOS().name || "Unknown";
-  const deviceType = parser.getDevice().type || "desktop";
   const ipAddress = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+
+  // Robust Device type detection (Combined Strategy)
+  const screenWidthFromReq = req.body.screenWidth || req.query.screenWidth;
+  let deviceType = "desktop";
+
+  if (
+    parser.getDevice().type === "mobile" ||
+    parser.getDevice().type === "tablet" ||
+    /mobile/i.test(req.headers["user-agent"]) ||
+    (screenWidthFromReq && screenWidthFromReq < 768)
+  ) {
+    deviceType = "mobile";
+  }
+
+  console.log(`📱 [DEBUG] Device Detection: UA=${req.headers["user-agent"]}, screenWidth=${screenWidthFromReq} => Result=${deviceType}`);
 
   // PART 3: Mobile Login Time Restriction
   if (deviceType === "mobile") {
@@ -468,6 +482,7 @@ const checkLoginSecurity = async (user, req, res, justCheck = false) => {
     const hour = istTime.getHours();
 
     if (hour < 10 || hour >= 13) {
+      console.log(`🛑 [DEBUG] Mobile restriction active: Hour=${hour} IST`);
       return { restricted: true, error: "Login is restricted to 10:00 AM – 1:00 PM IST on mobile devices." };
     }
   }
@@ -611,10 +626,22 @@ app.post("/verify-login-otp", async (req, res) => {
     }
 
     // PART 1: Capture Login Details (again, during verification)
-    const parser = new UAParser(req.headers["user-agent"]);
     const browser = parser.getBrowser().name || "Unknown";
     const os = parser.getOS().name || "Unknown";
-    const deviceType = parser.getDevice().type || "desktop";
+
+    // Robust Device type detection (Combined Strategy)
+    const screenWidthFromReq = req.body.screenWidth || req.query.screenWidth;
+    let deviceType = "desktop";
+
+    if (
+      parser.getDevice().type === "mobile" ||
+      parser.getDevice().type === "tablet" ||
+      /mobile/i.test(req.headers["user-agent"]) ||
+      (screenWidthFromReq && screenWidthFromReq < 768)
+    ) {
+      deviceType = "mobile";
+    }
+
     const ipAddress = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 
     // Save login history record ONLY after successful login completion

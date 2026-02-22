@@ -109,7 +109,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (parsed.email === firebaseUser.email) {
               // Silence refresh data if we are already logged in
               axiosInstance.get("/loggedinuser", {
-                params: { email: firebaseUser.email, isLogin: false }
+                params: {
+                  email: firebaseUser.email,
+                  isLogin: false, // Keep original `isLogin` value
+                  justCheck: true, // Add `justCheck`
+                  screenWidth: window.innerWidth // Add `screenWidth`
+                }
               }).then(res => {
                 if (res.data && res.data.email) {
                   setUser(res.data);
@@ -152,7 +157,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     setManualLoginInProgress(true);
     try {
-      const res = await axiosInstance.post("/login", { email, password });
+      const res = await axiosInstance.post("/login", {
+        email,
+        password,
+        screenWidth: window.innerWidth
+      });
 
       if (res.data.otpRequired) {
         toast.success(res.data.message);
@@ -187,7 +196,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       // Use email or userId if available
-      const payload = { userId: pendingOtpUser, email, code: otp };
+      const payload = {
+        userId: pendingOtpUser,
+        email,
+        code: otp,
+        screenWidth: window.innerWidth
+      };
       const res = await axiosInstance.post("/verify-login-otp", payload);
 
       if (res.data && res.data.email) {
@@ -278,6 +292,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         avatar: user.photoURL || "https://images.pexels.com/photos/1139743/pexels-photo-1139743.jpeg?auto=compress&cs=tinysrgb&w=400",
         email: user.email,
         password: password, // Save initial password to MongoDB as well
+        screenWidth: window.innerWidth
       };
 
       const res = await axiosInstance.post("/register", newuser);
@@ -351,7 +366,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         // Explicit manual sync with isLogin: true to trigger Chrome security
         const res = await axiosInstance.get("/loggedinuser", {
-          params: { email: firebaseuser.email, isLogin: true },
+          params: {
+            email: firebaseuser.email,
+            isLogin: true,
+            screenWidth: window.innerWidth
+          },
         });
         userData = res.data;
       } catch (err: any) {
@@ -361,7 +380,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           avatar: firebaseuser.photoURL || "https://images.pexels.com/photos/1139743/pexels-photo-1139743.jpeg?auto=compress&cs=tinysrgb&w=400",
           email: firebaseuser.email,
           mobile: "0000000000",
-          isLogin: true
+          isLogin: true,
+          screenWidth: window.innerWidth
         };
 
         const registerRes = await axiosInstance.post("/register", newuser);
@@ -440,7 +460,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (!user?.email) return;
           try {
             const res = await axiosInstance.get("/loggedinuser", {
-              params: { email: user.email, isLogin: false }, // Explicitly false for normal refreshes
+              params: {
+                email: user.email,
+                isLogin: false,
+                screenWidth: window.innerWidth
+              }, // Explicitly false for normal refreshes
             });
             if (res.data) {
               setUser(res.data);
