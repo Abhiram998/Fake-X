@@ -220,20 +220,23 @@ app.post("/request-language-change", async (req, res) => {
     await user.save();
 
     let result;
-    if (language !== "fr") {
-      // Send OTP to email
-      result = await sendLanguageOTP(user.email, otpCode, true);
+    if (language === "fr") {
+      // French: try SMS to registered mobile number
+      if (user.phone) {
+        result = await sendLanguageOTP(user.phone, otpCode, false);
+      } else {
+        // No phone registered, fallback to email
+        result = await sendLanguageOTP(user.email, otpCode, true);
+      }
     } else {
-      // Send OTP to mobile (simulated)
-      result = await sendLanguageOTP(user.phone || "No Phone Registered", otpCode, false);
-      // For testing purposes: deliver the simulated OTP to the registered email as well
-      await sendLanguageOTP(user.email, otpCode, true);
+      // All other languages: send OTP via email
+      result = await sendLanguageOTP(user.email, otpCode, true);
     }
 
-    // Requirements: "Remove any simulation code from production"
-    // We return success message. If it was simulated, the developer can check logs.
+    // Return appropriate success message based on actual delivery method
+    const deliveryMethod = (language === "fr" && user.phone) ? "registered mobile number" : "registered email";
     res.status(200).send({
-      message: `OTP sent successfully to your ${language !== "fr" ? "registered email" : "registered mobile number"}.`,
+      message: `OTP sent successfully to your ${deliveryMethod}.`,
     });
   } catch (error) {
     console.error("❌ Request Language Change Error:", error);
