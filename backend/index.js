@@ -11,7 +11,7 @@ import { Server } from "socket.io";
 import { createServer } from "http";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
-import CloudinaryStorage from "multer-storage-cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { DateTime } from "luxon";
 import sendOTP from "./utils/sendOTP.js";
 import bcrypt from "bcryptjs";
