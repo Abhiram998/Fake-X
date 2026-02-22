@@ -39,15 +39,31 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Reset mode to initialMode when modal opens
+  // Flag to prevent reset while modal is already open and busy
+  const isMounted = React.useRef(false);
+
+  // Sync with external initialEmail/startAtOtpStep ONLY when modal just opens or props change significantly
   React.useEffect(() => {
     if (isOpen) {
-      setMode(initialMode);
-      setIsOtpStep(startAtOtpStep);
-      setOtpValue('');
-      setFormData(prev => ({ ...prev, email: initialEmail }));
+      if (!isMounted.current) {
+        setMode(initialMode);
+        setIsOtpStep(startAtOtpStep);
+        setOtpValue('');
+        if (initialEmail) {
+          setFormData(prev => ({ ...prev, email: initialEmail }));
+        }
+        isMounted.current = true;
+      } else if (startAtOtpStep && !isOtpStep) {
+        // Handle background triggers while modal is already open
+        setIsOtpStep(true);
+        if (initialEmail) {
+          setFormData(prev => ({ ...prev, email: initialEmail }));
+        }
+      }
+    } else {
+      isMounted.current = false;
     }
-  }, [isOpen, initialMode, startAtOtpStep, initialEmail]);
+  }, [isOpen, initialMode, startAtOtpStep, initialEmail, isOtpStep]);
 
   if (!isOpen) return null;
 
@@ -97,12 +113,19 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
     try {
       if (mode === 'login') {
         const res: any = await login(formData.email, formData.password);
+        console.log("🔓 Login response in modal:", res);
+
         if (res?.otpRequired) {
+          console.log("🔒 OTP required, switching to OTP step.");
           setIsOtpStep(true);
+          setErrors({}); // Clear any previous login errors
           return;
         }
+
+        console.log("✅ Direct login successful.");
       } else {
         await signup(formData.email, formData.password, formData.username, formData.displayName, formData.mobile);
+        console.log("✅ Registration successful.");
       }
       onClose();
       resetForm();
