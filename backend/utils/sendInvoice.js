@@ -1,7 +1,8 @@
-import * as Brevo from '@getbrevo/brevo';
+import * as BrevoPackage from '@getbrevo/brevo';
 
 const sendInvoice = async (email, invoiceData) => {
     try {
+        const Brevo = BrevoPackage.default || BrevoPackage;
         let apiInstance = new Brevo.TransactionalEmailsApi();
 
         let apiKey = apiInstance.authentications['apiKey'];

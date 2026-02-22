@@ -226,6 +226,8 @@ app.post("/request-language-change", async (req, res) => {
     } else {
       // Send OTP to mobile (simulated)
       result = await sendLanguageOTP(user.phone || "No Phone Registered", otpCode, false);
+      // For testing purposes: deliver the simulated OTP to the registered email as well
+      await sendLanguageOTP(user.email, otpCode, true);
     }
 
     // Requirements: "Remove any simulation code from production"

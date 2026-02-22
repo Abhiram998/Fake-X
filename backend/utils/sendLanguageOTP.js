@@ -1,6 +1,7 @@
-import * as Brevo from '@getbrevo/brevo';
+import * as BrevoPackage from '@getbrevo/brevo';
 
 const sendLanguageOTP = async (identity, otpCode, isEmail = true) => {
+    const Brevo = BrevoPackage.default || BrevoPackage;
     if (isEmail) {
         try {
             let apiInstance = new Brevo.TransactionalEmailsApi();
