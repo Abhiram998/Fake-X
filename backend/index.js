@@ -18,6 +18,7 @@ import webpush from "web-push";
 import sendPasswordReset from "./utils/sendPasswordReset.js";
 import sendInvoice from "./utils/sendInvoice.js";
 import sendLanguageOTP from "./utils/sendLanguageOTP.js";
+import sendSMS from "./utils/sendSMS.js";
 import Stripe from "stripe";
 import crypto from "crypto";
 
@@ -201,7 +202,12 @@ app.post("/request-language-change", async (req, res) => {
     const user = await User.findOne({ email: email.trim().toLowerCase() });
     if (!user) return res.status(404).send({ error: "User not found" });
 
-    // Rate limit: 1 request per minute
+    // Ensure user has a mobile number (required for language switch)
+    if (!user.mobile) {
+      return res.status(403).send({ error: "Mobile number is required. Please complete your profile first." });
+    }
+
+    // Rate limit: 1 request per minute (already implemented via expiry check)
     const now = new Date();
     if (user.languageOtpExpiry && (user.languageOtpExpiry.getTime() - now.getTime() > 4 * 60 * 1000)) {
       return res.status(429).send({ error: "Please wait a minute before requesting another OTP." });
@@ -221,20 +227,19 @@ app.post("/request-language-change", async (req, res) => {
 
     let result;
     if (language === "fr") {
-      // French: try SMS to registered mobile number
-      if (user.phone) {
-        result = await sendLanguageOTP(user.phone, otpCode, false);
-      } else {
-        // No phone registered, fallback to email
-        result = await sendLanguageOTP(user.email, otpCode, true);
-      }
+      // IF language === "fr": Send OTP to user.email (Brevo)
+      result = await sendLanguageOTP(user.email, otpCode);
     } else {
-      // All other languages: send OTP via email
-      result = await sendLanguageOTP(user.email, otpCode, true);
+      // ELSE: Send OTP to user.mobile (SMS)
+      result = await sendSMS(user.mobile, otpCode);
+    }
+
+    if (!result.success) {
+      return res.status(500).send({ error: "Failed to send verification code. Please try again." });
     }
 
     // Return appropriate success message based on actual delivery method
-    const deliveryMethod = (language === "fr" && user.phone) ? "registered mobile number" : "registered email";
+    const deliveryMethod = (language === "fr") ? "registered email" : "registered mobile number";
     res.status(200).send({
       message: `OTP sent successfully to your ${deliveryMethod}.`,
     });
@@ -521,9 +526,12 @@ mongoose
 //Register
 app.post("/register", async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, mobile } = req.body;
     if (!email) {
       return res.status(400).send({ error: "Email is required" });
+    }
+    if (!mobile || !/^[0-9]{10,15}$/.test(mobile)) {
+      return res.status(400).send({ error: "A valid mobile number (10-15 digits) is required" });
     }
     const existinguser = await User.findOne({ email });
     if (existinguser) {
@@ -618,7 +626,7 @@ app.patch("/userupdate/:email", async (req, res) => {
     const updated = await User.findOneAndUpdate(
       { email: cleanEmail },
       { $set: req.body },
-      { new: true, upsert: false }
+      { new: true, upsert: false, runValidators: true }
     );
 
     if (!updated) {

@@ -4,7 +4,18 @@ const UserSchema = mongoose.Schema({
   displayName: { type: String, required: true },
   avatar: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  phone: { type: String, unique: true, sparse: true },
+  mobile: {
+    type: String,
+    required: true,
+    validate: {
+      validator: function (v) {
+        return /^[0-9]{10,15}$/.test(v);
+      },
+      message: "Invalid mobile number format"
+    },
+    unique: true
+  },
+  phone: { type: String, sparse: true }, // Keep for legacy, but mobile is now primary
   password: { type: String, select: false }, // Hashed password
   bio: { type: String, default: "" },
   location: { type: String, default: "" },

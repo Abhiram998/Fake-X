@@ -55,8 +55,8 @@ export default function LanguageSelector() {
         setIsLoading(true);
         try {
             const res = await requestLanguageChange(langCode);
-            // Match backend logic: only French uses mobile and only if phone exists
-            setOtpSentTo((langCode === "fr" && user?.phone) ? "mobile" : "email");
+            // New rules: French -> Email, all others -> Mobile
+            setOtpSentTo(langCode === "fr" ? "email" : "mobile");
             setIsOtpOpen(true);
             toast.success(res.message);
         } catch (error: any) {

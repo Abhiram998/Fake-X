@@ -30,7 +30,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
     email: '',
     password: '',
     username: '',
-    displayName: ''
+    displayName: '',
+    mobile: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -70,6 +71,12 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
       if (!formData.displayName.trim()) {
         newErrors.displayName = 'Display name is required';
       }
+
+      if (!formData.mobile.trim()) {
+        newErrors.mobile = 'Mobile number is required';
+      } else if (!/^[0-9]{10,15}$/.test(formData.mobile)) {
+        newErrors.mobile = 'Mobile number must be 10-15 digits';
+      }
     }
 
     setErrors(newErrors);
@@ -84,10 +91,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
       if (mode === 'login') {
         await login(formData.email, formData.password);
       } else {
-        await signup(formData.email, formData.password, formData.username, formData.displayName);
+        await signup(formData.email, formData.password, formData.username, formData.displayName, formData.mobile);
       }
       onClose();
-      setFormData({ email: '', password: '', username: '', displayName: '' });
+      setFormData({ email: '', password: '', username: '', displayName: '', mobile: '' });
       setErrors({});
     } catch (error: any) {
       console.error("Auth Error:", error);
@@ -110,7 +117,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
   const switchMode = () => {
     setMode(mode === 'login' ? 'signup' : 'login');
     setErrors({});
-    setFormData({ email: '', password: '', username: '', displayName: '' });
+    setFormData({ email: '', password: '', username: '', displayName: '', mobile: '' });
   };
 
   return (
@@ -180,6 +187,28 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
                   </div>
                   {errors.username && (
                     <p className="text-red-400 text-sm">{errors.username}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="mobile" className="text-white">Mobile Number</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 font-medium">+</span>
+                    <Input
+                      id="mobile"
+                      type="text"
+                      placeholder="10-15 digits"
+                      value={formData.mobile}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        if (val.length <= 15) handleInputChange('mobile', val);
+                      }}
+                      className="pl-8 bg-transparent border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {errors.mobile && (
+                    <p className="text-red-400 text-sm">{errors.mobile}</p>
                   )}
                 </div>
               </>

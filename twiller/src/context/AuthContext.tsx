@@ -31,6 +31,7 @@ interface User {
   tweetCount: number;
   preferredLanguage?: string;
   phone?: string;
+  mobile?: string;
 }
 
 interface AuthContextType {
@@ -40,7 +41,8 @@ interface AuthContextType {
     email: string,
     password: string,
     username: string,
-    displayName: string
+    displayName: string,
+    mobile: string
   ) => Promise<void>;
   updateProfile: (profileData: {
     displayName: string;
@@ -48,6 +50,7 @@ interface AuthContextType {
     location: string;
     website: string;
     avatar: string;
+    mobile?: string;
   }) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
@@ -157,7 +160,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     email: string,
     password: string,
     username: string,
-    displayName: string
+    displayName: string,
+    mobile: string
   ) => {
     setIsLoading(true);
     try {
@@ -173,6 +177,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newuser: any = {
         username,
         displayName,
+        mobile,
         avatar: user.photoURL || "https://images.pexels.com/photos/1139743/pexels-photo-1139743.jpeg?auto=compress&cs=tinysrgb&w=400",
         email: user.email,
         password: password, // Save initial password to MongoDB as well
@@ -196,13 +201,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await signOut(auth);
     localStorage.removeItem("twitter-user");
   };
-
   const updateProfile = async (profileData: {
     displayName: string;
     bio: string;
     location: string;
     website: string;
     avatar: string;
+    mobile?: string;
   }) => {
     if (!user) return;
 

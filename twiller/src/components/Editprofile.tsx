@@ -21,6 +21,7 @@ const Editprofile = ({ isopen, onclose }: any) => {
     location: user?.location || "Earth",
     website: user?.website || "example.com",
     avatar: user?.avatar || "",
+    mobile: user?.mobile || "",
   });
   const [error, setError] = useState<any>({});
   if (!isopen || !user) return null;
@@ -43,6 +44,10 @@ const Editprofile = ({ isopen, onclose }: any) => {
 
     if (formData.location && formData.location.length > 30) {
       newErrors.location = "Location must be 30 characters or less";
+    }
+
+    if (formData.mobile && !/^[0-9]{10,15}$/.test(formData.mobile)) {
+      newErrors.mobile = "Mobile number must be 10-15 digits";
     }
 
     setError(newErrors);
@@ -288,6 +293,33 @@ const Editprofile = ({ isopen, onclose }: any) => {
                   <p className="text-gray-400 ml-auto">
                     {formData.website.length}/100
                   </p>
+                </div>
+              </div>
+
+              {/* Mobile Number */}
+              <div className="space-y-2">
+                <Label htmlFor="mobile" className="text-white">
+                  Mobile Number
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 font-medium">+</span>
+                  <Input
+                    id="mobile"
+                    type="text"
+                    value={formData.mobile}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      if (val.length <= 15) handleInputChange("mobile", val);
+                    }}
+                    className="pl-8 bg-transparent border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
+                    placeholder="10-15 digits"
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="flex justify-between text-sm">
+                  {error.mobile && (
+                    <p className="text-red-400">{error.mobile}</p>
+                  )}
                 </div>
               </div>
             </div>
