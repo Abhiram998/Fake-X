@@ -257,12 +257,14 @@ export default function SubscriptionPage() {
                             >
                                 <div className="h-28 bg-[url('https://abs.twimg.com/sticky/illustrations/blue_header.png')] bg-cover bg-center rounded-t-xl relative flex items-center justify-center border-b border-[#2f3336] overflow-hidden">
                                     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
-                                    <h2 className="text-2xl font-black text-white relative z-10">{plan.name}</h2>
-                                    {isCurrent && (
-                                        <div className="absolute top-3 right-3 text-[10px] bg-white text-black px-2 py-0.5 rounded-sm font-bold uppercase tracking-widest relative z-10">
-                                            ACTIVE
-                                        </div>
-                                    )}
+                                    <div className="relative z-10 flex flex-col items-center gap-1">
+                                        <h2 className="text-2xl font-black text-white">{plan.name}</h2>
+                                        {isCurrent && (
+                                            <div className="text-[9px] bg-white text-black px-2 py-0.5 rounded font-bold uppercase tracking-widest leading-none">
+                                                Active
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="p-4 flex-1 space-y-3">
