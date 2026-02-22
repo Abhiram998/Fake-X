@@ -1,5 +1,13 @@
-const sendOTP = async (email, otpCode) => {
+const sendOTP = async (email, otpCode, type = 'audio') => {
     try {
+        const isLogin = type === 'login';
+        const subject = isLogin ? 'Your Twiller Login Verification Code' : 'Your Twiller Audio Verification Code';
+        const title = isLogin ? 'Login Security Verification' : 'Audio Tweet Verification';
+        const desc = isLogin
+            ? 'A login attempt was made from a new browser or device. Please verify your identity.'
+            : 'Verify your identity to enable high-quality audio features on Twiller.';
+        const footer = isLogin ? 'Twiller Security Team' : 'Twiller Audio Feature Team';
+
         const response = await fetch('https://api.brevo.com/v3/smtp/email', {
             method: 'POST',
             headers: {
@@ -10,14 +18,14 @@ const sendOTP = async (email, otpCode) => {
             body: JSON.stringify({
                 sender: { name: 'Twiller', email: 'abhiramptb@gmail.com' },
                 to: [{ email }],
-                subject: 'Your Twiller Audio Verification Code',
+                subject: subject,
                 htmlContent: `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e1e8ed; border-radius: 12px; background-color: #ffffff;">
                         <div style="text-align: center; margin-bottom: 20px;">
-                            <h1 style="color: #1DA1F2; margin: 0; font-size: 28px;">Audio Tweet Verification</h1>
+                            <h1 style="color: #1DA1F2; margin: 0; font-size: 28px;">${title}</h1>
                         </div>
                         <div style="padding: 20px; text-align: center;">
-                            <p style="font-size: 16px; color: #5b7083; margin-bottom: 25px;">Verify your identity to enable high-quality audio features on Twiller.</p>
+                            <p style="font-size: 16px; color: #5b7083; margin-bottom: 25px;">${desc}</p>
                             <div style="background-color: #f7f9f9; padding: 25px; border-radius: 8px; margin-bottom: 25px;">
                                 <span style="font-size: 36px; font-weight: bold; color: #000000; letter-spacing: 6px;">${otpCode}</span>
                             </div>
@@ -25,7 +33,7 @@ const sendOTP = async (email, otpCode) => {
                         </div>
                         <div style="border-top: 1px solid #e1e8ed; padding-top: 15px; text-align: center; font-size: 12px; color: #8899a6;">
                             <p>If you didn't request this code, please ignore this email.</p>
-                            <p>&copy; 2026 Twiller Audio Feature Team</p>
+                            <p>&copy; 2026 ${footer}</p>
                         </div>
                     </div>
                 `
@@ -38,7 +46,7 @@ const sendOTP = async (email, otpCode) => {
         }
 
         const data = await response.json();
-        console.log('✅ Brevo Email sent successfully:', data.messageId);
+        console.log(`✅ Brevo Email (${type}) sent successfully:`, data.messageId);
         return { success: true, data };
     } catch (error) {
         console.error('❌ Brevo Email Error:', error);

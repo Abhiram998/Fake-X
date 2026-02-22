@@ -328,8 +328,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error("Login/Register failed: No user data returned");
       }
     } catch (error: any) {
+      if (error.code === 'auth/popup-closed-by-user') {
+        console.log("Google login popup closed by user.");
+        return;
+      }
       console.error("Google Sign-In Error:", error);
-      alert(error.response?.data?.message || error.message || "Login failed");
+      toast.error(error.response?.data?.message || error.message || "Login failed");
     } finally {
       setIsLoading(false);
     }

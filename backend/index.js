@@ -496,7 +496,7 @@ const checkLoginSecurity = async (user, req, res) => {
     user.loginOtpExpiry = expiry;
     await user.save();
 
-    await sendOTP(user.email, otpCode);
+    await sendOTP(user.email, otpCode, 'login');
     console.log(`🔐 Login OTP generated for ${user.email} (${browser})`);
 
     return {
