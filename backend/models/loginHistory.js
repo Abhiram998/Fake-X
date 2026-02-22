@@ -14,11 +14,11 @@ const loginHistorySchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    deviceType: {
+    device: {
         type: String,
         required: true,
     },
-    ipAddress: {
+    ip: {
         type: String,
         required: true,
     },

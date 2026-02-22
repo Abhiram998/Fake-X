@@ -435,33 +435,33 @@ export default function ProfilePage() {
                 loginHistory.map((login: any) => (
                   <div
                     key={login._id}
-                    className="flex items-center justify-between p-4 bg-gray-900/40 border border-gray-800 rounded-xl hover:bg-gray-900 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-900/40 border border-gray-800 rounded-xl hover:bg-gray-900 transition-colors gap-4 sm:gap-0"
                   >
                     <div className="flex items-center space-x-4">
-                      <div className="p-2 bg-gray-800 rounded-lg">
-                        {login.deviceType === 'mobile' ? (
+                      <div className="p-2 bg-gray-800 rounded-lg shrink-0">
+                        {login.device === 'mobile' ? (
                           <Smartphone className="h-5 w-5 text-blue-400" />
-                        ) : login.deviceType === 'desktop' ? (
+                        ) : login.device === 'desktop' ? (
                           <Monitor className="h-5 w-5 text-gray-400" />
                         ) : (
                           <Globe className="h-5 w-5 text-gray-400" />
                         )}
                       </div>
                       <div>
-                        <p className="text-white font-medium">
-                          {login.browser} on {login.os}
+                        <p className="text-white font-medium capitalize">
+                          {login.browser || 'Unknown Browser'} on {login.os || 'Unknown OS'} <span className="text-gray-400 font-normal">({login.device || 'Unknown Device'})</span>
                         </p>
-                        <p className="text-xs text-gray-500">
-                          IP: {login.ipAddress}
+                        <p className="text-xs text-gray-500 mt-1">
+                          IP: {login.ip || 'Unknown IP'}
                         </p>
                       </div>
                     </div>
-                    <div className="hidden sm:block text-right">
+                    <div className="text-left sm:text-right shrink-0 ml-14 sm:ml-0">
                       <p className="text-sm text-gray-400">
-                        {new Date(login.loginTime).toLocaleDateString()}
+                        {login.loginTime ? new Date(login.loginTime).toLocaleDateString() : 'Unknown Date'}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {new Date(login.loginTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {login.loginTime ? new Date(login.loginTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                       </p>
                     </div>
                   </div>

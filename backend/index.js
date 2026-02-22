@@ -522,8 +522,8 @@ const checkLoginSecurity = async (user, req, res, justCheck = false) => {
       userId: user._id,
       browser,
       os: parser.getOS().name || "Unknown",
-      deviceType: isMobile ? "mobile" : "desktop",
-      ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+      device: isMobile ? "mobile" : "desktop",
+      ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress || "Unknown IP",
       loginTime: new Date()
     });
     await history.save();
@@ -668,17 +668,17 @@ app.post("/verify-login-otp", async (req, res) => {
       isMobile = true;
     }
 
-    const deviceType = isMobile ? "mobile" : "desktop";
+    const device = isMobile ? "mobile" : "desktop";
 
-    const ipAddress = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "Unknown IP";
 
     // Save login history record ONLY after successful login completion
     const history = new LoginHistory({
       userId: user._id,
       browser,
       os,
-      deviceType,
-      ipAddress,
+      device,
+      ip,
       loginTime: new Date()
     });
     await history.save();
