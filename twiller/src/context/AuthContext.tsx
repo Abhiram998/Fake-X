@@ -62,6 +62,8 @@ interface AuthContextType {
   verifyLanguageChange: (otp: string) => Promise<void>;
   verifyLoginOtp: (email: string, otp: string) => Promise<void>;
   getLoginHistory: () => Promise<any[]>;
+  pendingOtpInfo: { email: string } | null;
+  clearPendingOtp: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -77,6 +79,7 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [pendingOtpInfo, setPendingOtpInfo] = useState<{ email: string } | null>(null);
   useEffect(() => {
     // Check local storage first for persistence
     const savedUser = localStorage.getItem("twitter-user");
@@ -103,6 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // If we are in a background sync and OTP is required, 
             // we DO NOT set the user. The login/googlesignin functions will handle the modal.
             console.log("🔒 Background OTP check required, skipping auto-login.");
+            setPendingOtpInfo({ email: firebaseUser.email });
             setIsLoading(false);
             return;
           }
@@ -251,6 +255,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     setUser(null);
+    setPendingOtpInfo(null);
     await signOut(auth);
     localStorage.removeItem("twitter-user");
   };
@@ -318,6 +323,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (userData?.otpRequired) {
         toast.success(userData.message);
+        setPendingOtpInfo({ email: userData.email });
         return userData; // Trigger OTP modal
       }
 
@@ -411,6 +417,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         verifyLanguageChange,
         verifyLoginOtp,
         getLoginHistory,
+        pendingOtpInfo,
+        clearPendingOtp: () => setPendingOtpInfo(null),
       }}
     >
       {children}

@@ -10,25 +10,30 @@ import Feed from "./Feed";
 export default function LandingPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
-  const { user, googlesignin } = useAuth();
+  const { user, googlesignin, pendingOtpInfo, clearPendingOtp } = useAuth();
   const [initialEmail, setInitialEmail] = useState("");
   const [startAtOtpStep, setStartAtOtpStep] = useState(false);
+
+  // Auto-trigger OTP modal if background sync requires it
+  React.useEffect(() => {
+    if (pendingOtpInfo?.email) {
+      setInitialEmail(pendingOtpInfo.email);
+      setStartAtOtpStep(true);
+      setAuthMode("login");
+      setShowAuthModal(true);
+    }
+  }, [pendingOtpInfo]);
 
   const openAuthModal = (mode: "login" | "signup") => {
     setAuthMode(mode);
     setInitialEmail("");
     setStartAtOtpStep(false);
+    clearPendingOtp(); // Clear any stale pending state
     setShowAuthModal(true);
   };
 
   const handleGoogleLogin = async () => {
-    const res: any = await googlesignin();
-    if (res?.otpRequired) {
-      setInitialEmail(res.email);
-      setStartAtOtpStep(true);
-      setAuthMode("login");
-      setShowAuthModal(true);
-    }
+    await googlesignin();
   };
 
   if (user) {
@@ -136,7 +141,10 @@ export default function LandingPage() {
 
       <AuthModal
         isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
+        onClose={() => {
+          setShowAuthModal(false);
+          clearPendingOtp();
+        }}
         initialMode={authMode}
         initialEmail={initialEmail}
         startAtOtpStep={startAtOtpStep}
