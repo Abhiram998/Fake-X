@@ -13,7 +13,6 @@ import { auth } from "./firebase";
 import axiosInstance from "../lib/axiosInstance";
 import { subscribeUserToPush, unsubscribeUserFromPush, requestNotificationPermission } from "../lib/notificationService";
 import toast from "react-hot-toast";
-import { useRouter } from 'next/router';
 
 interface User {
   _id: string;
@@ -71,7 +70,6 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
@@ -352,9 +350,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(updatedUser);
             localStorage.setItem("twitter-user", JSON.stringify(updatedUser));
             toast.success("Language updated successfully!");
-            // Smoothly update the locale without a full page reload if possible, 
-            // otherwise use router to navigate to the same path with the new locale.
-            router.push(router.pathname, router.asPath, { locale: res.data.preferredLanguage });
+            // Refresh to apply locale and update middleware-driven translations
+            window.location.reload();
           }
         },
       }}
