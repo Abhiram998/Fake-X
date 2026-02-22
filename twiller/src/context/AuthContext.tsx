@@ -336,6 +336,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       const googleauthprovider = new GoogleAuthProvider();
+      googleauthprovider.setCustomParameters({
+        prompt: "select_account"
+      });
       const result = await signInWithPopup(auth, googleauthprovider);
       const firebaseuser = result.user;
 
