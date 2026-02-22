@@ -63,6 +63,7 @@ export default function SubscriptionPage() {
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+    const [viewingPlan, setViewingPlan] = useState<string>("Bronze");
 
     const PLANS = getPlans(t);
 
@@ -151,186 +152,177 @@ export default function SubscriptionPage() {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white">
+        <div className="min-h-screen bg-black text-white relative font-sans selection:bg-gray-700">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-md border-b border-gray-800 px-6 py-4">
-                <div className="flex items-center gap-3">
-                    <CreditCard className="h-6 w-6 text-blue-400" />
-                    <div>
-                        <h1 className="text-xl font-bold">{t('title')}</h1>
-                        <p className="text-xs text-gray-500">{t('subtitle')}</p>
-                    </div>
-                </div>
+            <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-md px-4 py-3 flex items-center gap-6 border-b border-gray-800">
+                <button onClick={() => window.history.back()} className="p-2 hover:bg-gray-800 rounded-full transition-colors -ml-2 text-white">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5 h-5 fill-current"><g><path d="M7.414 13l5.043 5.04-1.414 1.42L3.586 12l7.457-7.46 1.414 1.42L7.414 11H21v2H7.414z"></path></g></svg>
+                </button>
+                <h1 className="text-xl font-bold">{t('title') || 'Subscribe'}</h1>
             </div>
 
-            <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
-                {/* Current Plan Card */}
-                <div className="bg-gradient-to-br from-blue-950 to-gray-900 rounded-3xl border border-blue-800/50 p-6 shadow-xl">
-                    <div className="flex items-center justify-between mb-4">
+            <div className="py-6 space-y-6">
+                {/* Notice & Error Groups */}
+                <div className="px-4 space-y-3">
+                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex items-start gap-3">
+                        <Lock className="h-5 w-5 text-gray-500 shrink-0 mt-0.5" />
                         <div>
-                            <p className="text-xs text-blue-400 uppercase tracking-widest font-bold">{t('current_plan')}</p>
-                            <h2 className="text-3xl font-black mt-1">{currentPlan}</h2>
-                        </div>
-                        <div className="bg-blue-500/10 p-4 rounded-2xl">
-                            {PLANS.find((p) => p.name === currentPlan)?.icon}
+                            <p className="text-sm font-semibold text-gray-200">{t('payment_window_title')}</p>
+                            <p className="text-xs text-gray-400 mt-1">
+                                {t.rich('payment_window_desc', { strong: (chunks) => <strong className="text-gray-200">{chunks}</strong> })}
+                            </p>
                         </div>
                     </div>
 
-                    {/* Usage bar */}
-                    <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                            <span className="text-gray-400">{t('tweet_usage')}</span>
-                            <span className="font-mono font-bold text-blue-400">
-                                {tweetsUsed} / {currentPlan === "Gold" ? "∞" : currentLimit}
-                            </span>
+                    {error && (
+                        <div className="bg-red-500/10 border border-red-500/40 rounded-2xl p-4 flex items-start gap-3">
+                            <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                            <p className="text-sm text-red-500">{error}</p>
                         </div>
-                        {currentPlan !== "Gold" && (
-                            <div className="w-full bg-gray-800 rounded-full h-2.5 overflow-hidden">
-                                <div
-                                    className={`h-full rounded-full transition-all duration-700 ${usagePercent >= 100 ? "bg-red-500" : usagePercent >= 70 ? "bg-yellow-500" : "bg-blue-500"
-                                        }`}
-                                    style={{ width: `${usagePercent}%` }}
-                                />
-                            </div>
-                        )}
-                        {currentPlan === "Gold" && (
-                            <div className="w-full bg-yellow-500/20 rounded-full h-2.5">
-                                <div className="w-full h-full rounded-full bg-gradient-to-r from-yellow-500 to-amber-400" />
-                            </div>
-                        )}
-                        <p className="text-xs text-gray-500">
-                            {currentPlan === "Gold"
-                                ? t('unlimited')
-                                : usagePercent >= 100
-                                    ? t('limit_reached')
-                                    : t('remaining', { count: tweetsLeft, posts: tweetsLeft !== 1 ? tCommon('tweet') + 's' : tCommon('tweet') })}
-                        </p>
-                    </div>
-
-                    {expiryDate && currentPlan !== "Free" && (
-                        <p className="mt-4 text-xs text-gray-500 border-t border-gray-700/50 pt-4">
-                            {t('valid_until')} <span className="text-white font-semibold">{expiryDate}</span>
-                        </p>
+                    )}
+                    {success && (
+                        <div className="bg-green-500/10 border border-green-500/40 rounded-2xl p-4 flex items-start gap-3">
+                            <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                            <p className="text-sm text-green-500">{success}</p>
+                        </div>
                     )}
                 </div>
 
-                {/* Payment window notice */}
-                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-4 flex items-start gap-3">
-                    <Lock className="h-5 w-5 text-yellow-400 shrink-0 mt-0.5" />
-                    <div>
-                        <p className="text-sm font-semibold text-yellow-300">{t('payment_window_title')}</p>
-                        <p className="text-xs text-yellow-500 mt-1">
-                            {t.rich('payment_window_desc', { strong: (chunks) => <strong>{chunks}</strong> })}
-                        </p>
+                {/* Current Usage */}
+                <div className="px-4">
+                    <div className="bg-[#16181c] rounded-2xl p-5 border border-gray-800">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">{t('current_plan')}</p>
+                                <h2 className="text-2xl font-bold mt-1 text-white">{currentPlan}</h2>
+                            </div>
+                            <div className="bg-gray-800 p-3 rounded-full shrink-0">
+                                {PLANS.find((p) => p.name === currentPlan)?.icon || <Zap className="h-5 w-5 text-gray-400" />}
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-400">{t('tweet_usage')}</span>
+                                <span className="font-bold text-white">
+                                    {tweetsUsed} <span className="text-gray-500">/ {currentPlan === "Gold" ? "∞" : currentLimit}</span>
+                                </span>
+                            </div>
+                            {currentPlan !== "Gold" && (
+                                <div className="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                                    <div
+                                        className={`h-full rounded-full transition-all duration-700 ${usagePercent >= 100 ? "bg-red-500" : usagePercent >= 70 ? "bg-yellow-500" : "bg-white"}`}
+                                        style={{ width: `${usagePercent}%` }}
+                                    />
+                                </div>
+                            )}
+                            {currentPlan === "Gold" && (
+                                <div className="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                                    <div className="w-full h-full bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full" />
+                                </div>
+                            )}
+                            <p className="text-xs text-gray-500">
+                                {currentPlan === "Gold"
+                                    ? t('unlimited')
+                                    : usagePercent >= 100
+                                        ? t('limit_reached')
+                                        : t('remaining', { count: tweetsLeft, posts: tweetsLeft !== 1 ? tCommon('tweet') + 's' : tCommon('tweet') })}
+                            </p>
+                        </div>
+                        {expiryDate && currentPlan !== "Free" && (
+                            <p className="mt-4 text-xs text-gray-500 pt-4 border-t border-gray-800">
+                                {t('valid_until')} <span className="text-white">{expiryDate}</span>
+                            </p>
+                        )}
                     </div>
                 </div>
 
-                {/* Error / Success */}
-                {error && (
-                    <div className="bg-red-500/10 border border-red-500/40 rounded-2xl p-4 flex items-start gap-3">
-                        <AlertCircle className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
-                        <p className="text-sm text-red-400">{error}</p>
-                    </div>
-                )}
-                {success && (
-                    <div className="bg-green-500/10 border border-green-500/40 rounded-2xl p-4 flex items-start gap-3">
-                        <CheckCircle2 className="h-5 w-5 text-green-400 shrink-0 mt-0.5" />
-                        <p className="text-sm text-green-400">{success}</p>
-                    </div>
-                )}
-
-                {/* Plan Cards */}
-                <div>
-                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                        <Sparkles className="h-5 w-5 text-blue-400" /> {t('choose_plan')}
+                {/* Plan Carousel Title */}
+                <div className="px-4">
+                    <h3 className="text-xl font-bold tracking-tight text-white mb-1 flex items-center gap-2">
+                        Premium Benefits
                     </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {PLANS.map((plan) => {
-                            const isCurrent = currentPlan === plan.name;
-                            const isPending = loading && selectedPlan === plan.name;
+                </div>
 
-                            return (
-                                <div
-                                    key={plan.name}
-                                    className={`relative rounded-3xl border-2 p-6 transition-all duration-300 bg-gradient-to-br ${plan.gradient} ${isCurrent ? `${plan.color} shadow-lg scale-[1.02]` : `${plan.color} hover:scale-[1.01] opacity-90 hover:opacity-100`
-                                        }`}
-                                >
+                {/* Plan Carousel Container */}
+                <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 px-4 pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    {PLANS.map((plan) => {
+                        const isCurrent = currentPlan === plan.name;
+                        const isSelected = viewingPlan === plan.name;
+
+                        return (
+                            <div
+                                key={plan.name}
+                                onClick={() => setViewingPlan(plan.name)}
+                                className={`shrink-0 w-[80vw] sm:w-[260px] snap-start rounded-2xl flex flex-col transition-all cursor-pointer bg-[#16181c] border-2 ${isSelected ? 'border-white' : 'border-[#2f3336] hover:border-gray-500'}`}
+                            >
+                                <div className="h-28 bg-[url('https://abs.twimg.com/sticky/illustrations/blue_header.png')] bg-cover bg-center rounded-t-xl relative flex items-center justify-center border-b border-[#2f3336] overflow-hidden">
+                                    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+                                    <h2 className="text-2xl font-black text-white relative z-10">{plan.name}</h2>
                                     {isCurrent && (
-                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                                            <span className="bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow">
-                                                {t('active')}
-                                            </span>
+                                        <div className="absolute top-3 right-3 text-[10px] bg-white text-black px-2 py-0.5 rounded-sm font-bold uppercase tracking-widest relative z-10">
+                                            ACTIVE
                                         </div>
-                                    )}
-
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <span className={`text-xs font-bold uppercase tracking-widest px-2 py-1 rounded-lg ${plan.badge}`}>
-                                                {plan.name}
-                                            </span>
-                                            <p className={`text-3xl font-black mt-3 ${plan.textColor}`}>
-                                                {plan.price === 0 ? "Free" : `₹${plan.price}`}
-                                                {plan.price > 0 && <span className="text-sm font-normal text-gray-500">{t('month')}</span>}
-                                            </p>
-                                        </div>
-                                        <div className="bg-gray-800/60 p-3 rounded-2xl">{plan.icon}</div>
-                                    </div>
-
-                                    <ul className="space-y-2 mb-6">
-                                        {plan.features.map((f) => (
-                                            <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
-                                                <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                                                {f}
-                                            </li>
-                                        ))}
-                                    </ul>
-
-                                    {plan.name === "Free" ? (
-                                        <button
-                                            disabled
-                                            className="w-full py-3 rounded-2xl bg-gray-700/50 text-gray-500 text-sm font-semibold cursor-not-allowed"
-                                        >
-                                            {t('default_plan')}
-                                        </button>
-                                    ) : isCurrent ? (
-                                        <button
-                                            disabled
-                                            className="w-full py-3 rounded-2xl bg-blue-500/20 text-blue-400 text-sm font-semibold border border-blue-500/40 cursor-not-allowed"
-                                        >
-                                            {t('current_plan_button')}
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={() => handleSubscribe(plan.name, plan.price)}
-                                            disabled={loading}
-                                            className={`w-full py-3 rounded-2xl text-sm font-bold transition-all duration-200 ${isPending
-                                                ? "bg-gray-700 text-gray-400 cursor-wait"
-                                                : "bg-blue-500 hover:bg-blue-600 text-white hover:scale-[1.02] active:scale-95 shadow-lg shadow-blue-500/20"
-                                                }`}
-                                        >
-                                            {isPending ? (
-                                                <span className="flex items-center justify-center gap-2">
-                                                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                    {t('processing')}
-                                                </span>
-                                            ) : (
-                                                t('upgrade_to', { plan: plan.name, price: plan.price })
-                                            )}
-                                        </button>
                                     )}
                                 </div>
-                            );
-                        })}
-                    </div>
+
+                                <div className="p-4 flex-1 space-y-3">
+                                    <div className="flex items-end gap-1 mb-2">
+                                        <span className="text-2xl font-bold text-white leading-none">{plan.price === 0 ? "Free" : `₹${plan.price}`}</span>
+                                        {plan.price > 0 && <span className="text-xs text-gray-500 font-medium">/ month</span>}
+                                    </div>
+                                    <div className="text-[13px] font-bold text-gray-300 uppercase tracking-widest border-b border-gray-800 pb-2 mb-3">
+                                        Enhanced Experience
+                                    </div>
+                                    <div className="space-y-4 pb-2">
+                                        {plan.features.map((f) => (
+                                            <div key={f} className="flex justify-between items-start gap-4">
+                                                <span className="text-[14px] text-gray-400 leading-tight">{f}</span>
+                                                <svg viewBox="0 0 24 24" aria-hidden="true" className="w-[16px] h-[16px] shrink-0 fill-[#00ba7c] mt-0.5"><g><path d="M12 1.75C6.34 1.75 1.75 6.34 1.75 12S6.34 22.25 12 22.25 22.25 17.66 22.25 12 17.66 1.75 12 1.75zm-.81 14.68l-4.1-3.27 1.25-1.57 2.47 1.98 3.97-5.47 1.62 1.18-5.21 7.15z"></path></g></svg>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
 
-                {/* Info */}
-                <div className="text-center text-xs text-gray-600 space-y-1 pb-10">
-                    <p>{t('secure_payments')}</p>
-                    <p>{t('auto_expire')}</p>
-                    <p>{t('invoice_sent')}</p>
+                <div className="text-center text-[11px] text-gray-600 px-4 pb-24">
+                    <p>{t('secure_payments')} • {t('auto_expire')} • {t('invoice_sent')}</p>
                 </div>
             </div>
+
+            {/* Sticky Bottom Contextual Inside the Parent Container - perfectly bound to 600px width natively */}
+            <div className="sticky bottom-0 sm:bottom-0 bg-black/90 backdrop-blur-md border-t border-gray-800 p-4 pb-[80px] sm:pb-6 z-40 w-full mt-auto">
+                <button
+                    onClick={() => {
+                        const plan = PLANS.find(p => p.name === viewingPlan);
+                        if (plan) handleSubscribe(plan.name, plan.price);
+                    }}
+                    disabled={loading || viewingPlan === "Free" || currentPlan === viewingPlan}
+                    className={`w-full max-w-sm mx-auto rounded-full py-3.5 text-[16px] font-bold transition-all flex justify-center items-center ${loading ? 'bg-[#333639] text-[#71767b] cursor-wait' : (viewingPlan === "Free" || currentPlan === viewingPlan) ? 'bg-[#333639] text-[#71767b] cursor-not-allowed' : 'bg-white text-black hover:bg-gray-200 active:scale-[0.98]'}`}
+                >
+                    {loading && viewingPlan === selectedPlan ? (
+                        <span className="flex items-center justify-center gap-2">
+                            <div className="h-5 w-5 border-2 border-[#71767b] border-t-white rounded-full animate-spin" />
+                            Processing...
+                        </span>
+                    ) : currentPlan === viewingPlan ? (
+                        "Current Plan"
+                    ) : viewingPlan === "Free" ? (
+                        "Default Plan"
+                    ) : (
+                        `Starting at ₹${PLANS.find(p => p.name === viewingPlan)?.price.toFixed(2)}`
+                    )}
+                </button>
+            </div>
+
+            <style jsx global>{`
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                }
+            `}</style>
         </div>
     );
 }
