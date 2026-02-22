@@ -123,25 +123,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Step 1: Try backend login
       const res = await axiosInstance.post("/login", { email, password });
 
-      if (res.data.requiresOtp) {
-        // Multi-Step Auth required
+      if (res.data.otpRequired) {
         toast.success(res.data.message);
-        return res.data; // Return to the component to show OTP input
+        return res.data;
       }
 
-      if (res.data && !res.data.requiresOtp) {
+      if (res.data) {
         setUser(res.data);
         localStorage.setItem("twitter-user", JSON.stringify(res.data));
 
-        // Step 2: Sync with Firebase in the background
         try {
           await signInWithEmailAndPassword(auth, email, password);
         } catch (fbErr) {
           console.log("Firebase sync skipped or failed, using backend session.");
         }
+        return res.data;
       }
     } catch (error: any) {
       console.error("Login Error:", error);
@@ -291,7 +289,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       try {
         const res = await axiosInstance.get("/loggedinuser", {
-          params: { email: firebaseuser.email },
+          params: { email: firebaseuser.email, isLogin: true },
         });
         userData = res.data;
       } catch (err: any) {
@@ -300,10 +298,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           displayName: firebaseuser.displayName || "User",
           avatar: firebaseuser.photoURL || "https://images.pexels.com/photos/1139743/pexels-photo-1139743.jpeg?auto=compress&cs=tinysrgb&w=400",
           email: firebaseuser.email,
+          mobile: "0000000000",
+          isLogin: true
         };
 
         const registerRes = await axiosInstance.post("/register", newuser);
         userData = registerRes.data;
+      }
+
+      if (userData?.otpRequired) {
+        toast.success(userData.message);
+        return userData; // Trigger OTP modal
       }
 
       if (userData) {

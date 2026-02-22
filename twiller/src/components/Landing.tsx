@@ -11,10 +11,24 @@ export default function LandingPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
   const { user, googlesignin } = useAuth();
+  const [initialEmail, setInitialEmail] = useState("");
+  const [startAtOtpStep, setStartAtOtpStep] = useState(false);
 
   const openAuthModal = (mode: "login" | "signup") => {
     setAuthMode(mode);
+    setInitialEmail("");
+    setStartAtOtpStep(false);
     setShowAuthModal(true);
+  };
+
+  const handleGoogleLogin = async () => {
+    const res: any = await googlesignin();
+    if (res?.otpRequired) {
+      setInitialEmail(res.email);
+      setStartAtOtpStep(true);
+      setAuthMode("login");
+      setShowAuthModal(true);
+    }
   };
 
   if (user) {
@@ -45,7 +59,7 @@ export default function LandingPage() {
             <Button
               variant="outline"
               className="w-full py-3 rounded-full border-gray-600 bg-black text-white font-semibold text-base h-12"
-              onClick={() => googlesignin()}
+              onClick={handleGoogleLogin}
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -71,7 +85,7 @@ export default function LandingPage() {
             <Button
               variant="outline"
               className="w-full py-3 rounded-full border-gray-600 bg-black text-white font-semibold text-base h-12"
-              onClick={() => googlesignin()}
+              onClick={handleGoogleLogin}
             >
               <svg
                 className="w-5 h-5 mr-2"
@@ -124,6 +138,8 @@ export default function LandingPage() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         initialMode={authMode}
+        initialEmail={initialEmail}
+        startAtOtpStep={startAtOtpStep}
       />
     </div>
   );

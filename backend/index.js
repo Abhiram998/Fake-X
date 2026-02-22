@@ -454,6 +454,60 @@ app.post("/forgot-password", async (req, res) => {
   }
 });
 
+const checkLoginSecurity = async (user, req, res) => {
+  const parser = new UAParser(req.headers["user-agent"]);
+  const browser = parser.getBrowser().name || "Unknown";
+  const os = parser.getOS().name || "Unknown";
+  const deviceType = parser.getDevice().type || "desktop";
+  const ipAddress = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+
+  // PART 3: Mobile Login Time Restriction
+  if (deviceType === "mobile") {
+    const now = new Date();
+    const istTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+    const hour = istTime.getHours();
+
+    if (hour < 10 || hour >= 13) {
+      return { restricted: true, error: "Login is restricted to 10:00 AM – 1:00 PM IST on mobile devices." };
+    }
+  }
+
+  // PART 2: Environment-Based Authentication
+  const isEdge = browser.toLowerCase().includes("edge");
+
+  if (isEdge) {
+    // Save login history ONLY after successful login
+    const history = new LoginHistory({
+      userId: user._id,
+      browser,
+      os,
+      deviceType,
+      ipAddress,
+      loginTime: new Date()
+    });
+    await history.save();
+    return { success: true };
+  } else {
+    // Chrome and all other browsers require OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    user.loginOtp = await bcrypt.hash(otpCode, 10);
+    user.loginOtpExpiry = expiry;
+    await user.save();
+
+    await sendOTP(user.email, otpCode);
+    console.log(`🔐 Login OTP generated for ${user.email} (${browser})`);
+
+    return {
+      otpRequired: true,
+      userId: user._id,
+      email: user.email,
+      message: "OTP sent to your registered email. Please verify to complete login."
+    };
+  }
+};
+
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -537,7 +591,8 @@ app.post("/login", async (req, res) => {
       }
 
       return res.status(200).send({
-        requiresOtp: true,
+        otpRequired: true,
+        userId: user._id,
         email: user.email,
         message: "OTP sent to your registered email. Please verify to complete login."
       });
@@ -675,6 +730,11 @@ app.post("/register", async (req, res) => {
     }
     const existinguser = await User.findOne({ email });
     if (existinguser) {
+      if (req.body.isLogin) {
+        const securityCheck = await checkLoginSecurity(existinguser, req, res);
+        if (securityCheck.restricted) return res.status(403).send({ error: securityCheck.error });
+        if (securityCheck.otpRequired) return res.status(200).send(securityCheck);
+      }
       return res.status(200).send(existinguser);
     }
 
@@ -685,6 +745,12 @@ app.post("/register", async (req, res) => {
 
     const newUser = new User(userData);
     await newUser.save();
+
+    if (req.body.isLogin) {
+      const securityCheck = await checkLoginSecurity(newUser, req, res);
+      if (securityCheck.restricted) return res.status(403).send({ error: securityCheck.error });
+      if (securityCheck.otpRequired) return res.status(200).send(securityCheck);
+    }
 
     const userObj = newUser.toObject();
     delete userObj.password;
@@ -708,6 +774,12 @@ app.get("/loggedinuser", async (req, res) => {
 
     // Check expiry
     const updatedUser = await checkSubscriptionExpiry(user);
+
+    if (req.query.isLogin) {
+      const securityCheck = await checkLoginSecurity(updatedUser, req, res);
+      if (securityCheck.restricted) return res.status(403).send({ error: securityCheck.error });
+      if (securityCheck.otpRequired) return res.status(200).send(securityCheck);
+    }
 
     return res.status(200).send(updatedUser);
   } catch (error) {

@@ -20,16 +20,18 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialMode?: 'login' | 'signup';
+  initialEmail?: string;
+  startAtOtpStep?: boolean;
 }
 
-export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, initialMode = 'login', initialEmail = '', startAtOtpStep = false }: AuthModalProps) {
   const { login, signup, verifyLoginOtp, isLoading } = useAuth();
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
-  const [isOtpStep, setIsOtpStep] = useState(false);
+  const [isOtpStep, setIsOtpStep] = useState(startAtOtpStep);
   const [otpValue, setOtpValue] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
+    email: initialEmail,
     password: '',
     username: '',
     displayName: '',
@@ -41,10 +43,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
   React.useEffect(() => {
     if (isOpen) {
       setMode(initialMode);
-      setIsOtpStep(false);
+      setIsOtpStep(startAtOtpStep);
       setOtpValue('');
+      setFormData(prev => ({ ...prev, email: initialEmail }));
     }
-  }, [isOpen, initialMode]);
+  }, [isOpen, initialMode, startAtOtpStep, initialEmail]);
 
   if (!isOpen) return null;
 
@@ -94,7 +97,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
     try {
       if (mode === 'login') {
         const res: any = await login(formData.email, formData.password);
-        if (res?.requiresOtp) {
+        if (res?.otpRequired) {
           setIsOtpStep(true);
           return;
         }
