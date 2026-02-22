@@ -1,4 +1,6 @@
-import brevo from '@getbrevo/brevo';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const brevo = require('@getbrevo/brevo');
 
 const sendLanguageOTP = async (identity, otpCode, isEmail = true) => {
     if (isEmail) {
