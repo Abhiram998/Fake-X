@@ -14,9 +14,12 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import axiosInstance from "@/lib/axiosInstance";
+import { useTranslations, useLocale } from "next-intl";
 
 export default function TweetCard({ tweet }: any) {
   const { user } = useAuth();
+  const t = useTranslations('Feed');
+  const locale = useLocale();
   const [tweetstate, settweetstate] = useState(tweet);
   const likeTweet = async (tweetId: string) => {
     try {
@@ -83,7 +86,7 @@ export default function TweetCard({ tweet }: any) {
               <span className="text-gray-500">·</span>
               <span className="text-gray-500 text-sm whitespace-nowrap">
                 {tweetstate.timestamp &&
-                  new Date(tweetstate.timestamp).toLocaleDateString("en-us", {
+                  new Date(tweetstate.timestamp).toLocaleDateString(locale, {
                     month: "short",
                     year: "numeric",
                   })}
@@ -119,7 +122,7 @@ export default function TweetCard({ tweet }: any) {
                   <div className="bg-blue-500/10 p-2 rounded-full">
                     <Volume2 className="h-4 w-4 text-blue-400" />
                   </div>
-                  <span className="text-sm font-medium text-gray-200">Audio Tweet</span>
+                  <span className="text-sm font-medium text-gray-200">{t('audio_tweet')}</span>
                 </div>
                 <audio src={tweetstate.audio} controls className="w-full h-10 custom-audio-player" />
               </div>

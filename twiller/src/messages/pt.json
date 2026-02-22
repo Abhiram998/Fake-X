@@ -5,35 +5,95 @@
         "notifications": "Notificações",
         "messages": "Mensagens",
         "bookmarks": "Itens Salvos",
-        "lists": "Listas",
         "profile": "Perfil",
+        "subscriptions": "Assinaturas",
         "more": "Mais",
-        "tweet": "Tweet",
         "post": "Postar",
-        "search": "Buscar no Twitter",
-        "what_is_happening": "O que está acontecendo?",
-        "show_more": "Mostrar mais",
-        "follow": "Seguir",
-        "following": "Seguindo",
-        "followers": "Seguidores",
-        "joined": "Ingressou em",
-        "edit_profile": "Editar Perfil",
-        "save": "Salvar",
-        "cancel": "Cancelar"
+        "logout": "Sair",
+        "settings": "Configurações",
+        "plan": "Plano",
+        "cancel": "Cancelar",
+        "tweet": "tweet"
     },
     "Language": {
         "select": "Selecionar idioma",
         "verify": "Verificar alteração de idioma",
-        "otp_sent": "Um OTP foi enviado para o seu {method}. Por favor, insira-o abaixo.",
-        "email": "e-mail",
-        "mobile": "celular",
-        "enter_otp": "Digite o OTP",
+        "otp_sent": "Um OTP foi enviado para seu {method}. Por favor, insira-o abaixo.",
+        "email": "e-mail registrado",
+        "mobile": "número de celular registrado",
         "verify_button": "Verificar",
-        "success": "Idioma atualizado com sucesso!"
+        "Common": {
+            "cancel": "Cancelar"
+        }
     },
     "Auth": {
         "login": "Entrar",
-        "signup": "Inscrever-se",
-        "logout": "Sair"
+        "signup": "Inscrever-se"
+    },
+    "Feed": {
+        "what_happening": "O que está acontecendo?",
+        "everyone_can_reply": "Todos podem responder",
+        "for_you": "Para você",
+        "following": "Seguindo",
+        "loading": "Carregando...",
+        "audio_tweet": "Tweet de áudio"
+    },
+    "RightSidebar": {
+        "search": "Buscar",
+        "subscribe_title": "Assine o Premium",
+        "subscribe_desc": "Assine para desbloquear novos recursos e, se qualificado, receber uma parte da receita.",
+        "subscribe_button": "Assinar",
+        "you_might_like": "Talvez você goste",
+        "follow": "Seguir",
+        "show_more": "Mostrar mais"
+    },
+    "Profile": {
+        "edit_profile": "Editar perfil",
+        "joined": "Entrou em",
+        "posts_count": "{count} postagens",
+        "posts": "Postagens",
+        "replies": "Respostas",
+        "highlights": "Destaques",
+        "articles": "Artigos",
+        "media": "Mídia",
+        "keyword_notifications": "Notificações de palavras-chave",
+        "watching_for": "Monitorando",
+        "no_posts_title": "Você ainda não postou nada",
+        "no_posts_desc": "Quando você postar, aparecerá aqui."
+    },
+    "EditProfile": {
+        "title": "Editar perfil",
+        "save": "Salvar",
+        "saving": "Salvando...",
+        "name": "Nome",
+        "placeholder_name": "Seu nome de exibição",
+        "bio": "Bio",
+        "placeholder_bio": "Conte ao mundo sobre você",
+        "location": "Localização",
+        "placeholder_location": "Onde você está localizado?",
+        "website": "Site",
+        "placeholder_website": "URL do seu site"
+    },
+    "Subscriptions": {
+        "title": "Assinaturas",
+        "subtitle": "Gerencie seu plano de tweets",
+        "current_plan": "Plano Atual",
+        "tweet_usage": "Uso de Tweets",
+        "unlimited": "Tweets ilimitados ativos",
+        "limit_reached": "Limite atingido. Faça upgrade para postar mais.",
+        "remaining": "{count} {posts} restantes",
+        "valid_until": "Plano válido até:",
+        "payment_window_title": "Janela de Pagamento",
+        "payment_window_desc": "Pagamentos são aceitos apenas entre <strong>10:00 – 11:00 IST</strong> diariamente. A navegação de planos está sempre disponível.",
+        "choose_plan": "Escolha um Plano",
+        "active": "Ativo",
+        "month": "/mês",
+        "default_plan": "Plano Padrão",
+        "current_plan_button": "✓ Plano Atual",
+        "upgrade_to": "Upgrade para {plan} — ₹{price}",
+        "processing": "Processando...",
+        "secure_payments": "Todos os pagamentos são processados com segurança pelo Stripe.",
+        "auto_expire": "As assinaturas expiram automaticamente após 30 dias. Sem renovação automática.",
+        "invoice_sent": "A fatura será enviada para o seu e-mail registrado após o pagamento."
     }
 }

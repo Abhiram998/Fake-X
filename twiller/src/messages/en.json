@@ -5,36 +5,95 @@
         "notifications": "Notifications",
         "messages": "Messages",
         "bookmarks": "Bookmarks",
-        "lists": "Lists",
         "profile": "Profile",
         "subscriptions": "Subscriptions",
         "more": "More",
-        "tweet": "Tweet",
         "post": "Post",
-        "search": "Search Twitter",
-        "what_is_happening": "What's happening?",
-        "show_more": "Show more",
-        "follow": "Follow",
-        "following": "Following",
-        "followers": "Followers",
-        "joined": "Joined",
-        "edit_profile": "Edit Profile",
-        "save": "Save",
-        "cancel": "Cancel"
+        "logout": "Log out",
+        "settings": "Settings",
+        "plan": "Plan",
+        "cancel": "Cancel",
+        "tweet": "tweet"
     },
     "Language": {
         "select": "Select Language",
         "verify": "Verify Language Change",
         "otp_sent": "An OTP has been sent to your {method}. Please enter it below.",
-        "email": "email",
-        "mobile": "mobile",
-        "enter_otp": "Enter OTP",
+        "email": "registered email",
+        "mobile": "registered mobile number",
         "verify_button": "Verify",
-        "success": "Language updated successfully!"
+        "Common": {
+            "cancel": "Cancel"
+        }
     },
     "Auth": {
         "login": "Log in",
-        "signup": "Sign up",
-        "logout": "Log out"
+        "signup": "Sign up"
+    },
+    "Feed": {
+        "what_happening": "What's happening?",
+        "everyone_can_reply": "Everyone can reply",
+        "for_you": "For you",
+        "following": "Following",
+        "loading": "Loading...",
+        "audio_tweet": "Audio Tweet"
+    },
+    "RightSidebar": {
+        "search": "Search",
+        "subscribe_title": "Subscribe to Premium",
+        "subscribe_desc": "Subscribe to unlock new features and if eligible, receive a share of revenue.",
+        "subscribe_button": "Subscribe",
+        "you_might_like": "You might like",
+        "follow": "Follow",
+        "show_more": "Show more"
+    },
+    "Profile": {
+        "edit_profile": "Edit profile",
+        "joined": "Joined",
+        "posts_count": "{count} posts",
+        "posts": "Posts",
+        "replies": "Replies",
+        "highlights": "Highlights",
+        "articles": "Articles",
+        "media": "Media",
+        "keyword_notifications": "Keyword Notifications",
+        "watching_for": "Watching for",
+        "no_posts_title": "You haven't posted yet",
+        "no_posts_desc": "When you post, it will show up here."
+    },
+    "EditProfile": {
+        "title": "Edit profile",
+        "save": "Save",
+        "saving": "Saving...",
+        "name": "Name",
+        "placeholder_name": "Your display name",
+        "bio": "Bio",
+        "placeholder_bio": "Tell the world about yourself",
+        "location": "Location",
+        "placeholder_location": "Where are you located?",
+        "website": "Website",
+        "placeholder_website": "Your website URL"
+    },
+    "Subscriptions": {
+        "title": "Subscriptions",
+        "subtitle": "Manage your tweet plan",
+        "current_plan": "Current Plan",
+        "tweet_usage": "Tweet Usage",
+        "unlimited": "Unlimited tweets active",
+        "limit_reached": "Limit reached. Upgrade to post more.",
+        "remaining": "{count} {posts} remaining",
+        "valid_until": "Plan valid until:",
+        "payment_window_title": "Payment Window",
+        "payment_window_desc": "Payments are only accepted between <strong>10:00 AM – 11:00 AM IST</strong> daily. Plan browsing is always available.",
+        "choose_plan": "Choose a Plan",
+        "active": "Active",
+        "month": "/month",
+        "default_plan": "Default Plan",
+        "current_plan_button": "✓ Current Plan",
+        "upgrade_to": "Upgrade to {plan} — ₹{price}",
+        "processing": "Processing...",
+        "secure_payments": "All payments are processed securely via Stripe.",
+        "auto_expire": "Subscriptions auto-expire after 30 days. No auto-renewal.",
+        "invoice_sent": "Invoice will be sent to your registered email after payment."
     }
 }

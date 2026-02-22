@@ -1,39 +1,99 @@
 {
     "Common": {
         "home": "होम",
-        "explore": "एक्सप्लोर करें",
-        "notifications": "नोटिफिकेशन",
+        "explore": "खोजें",
+        "notifications": "सूचनाएं",
         "messages": "संदेश",
         "bookmarks": "बुकमार्क",
-        "lists": "सूचियां",
         "profile": "प्रोफ़ाइल",
+        "subscriptions": "सदस्यता",
         "more": "अधिक",
-        "tweet": "ट्वीट",
-        "post": "पोस्ट करें",
-        "search": "ट्विटर पर खोजें",
-        "what_is_happening": "क्या हो रहा है?",
-        "show_more": "और दिखाएं",
-        "follow": "फ़ॉलो करें",
-        "following": "फ़ॉलो कर रहे हैं",
-        "followers": "फ़ॉलोअर्स",
-        "joined": "शामिल हुए",
-        "edit_profile": "प्रोफ़ाइल संपादित करें",
-        "save": "सहेजें",
-        "cancel": "रद्द करें"
+        "post": "पोस्ट",
+        "logout": "लॉग आउट",
+        "settings": "सेटिंग्स",
+        "plan": "योजना",
+        "cancel": "रद्द करें",
+        "tweet": "ट्वीट"
     },
     "Language": {
         "select": "भाषा चुनें",
         "verify": "भाषा परिवर्तन सत्यापित करें",
-        "otp_sent": "आपके {method} पर एक OTP भेजा गया है। कृपया इसे नीचे दर्ज करें।",
-        "email": "ईमेल",
-        "mobile": "मोबाइल",
-        "enter_otp": "OTP दर्ज करें",
+        "otp_sent": "एक OTP आपके {method} पर भेजा गया है। कृपया इसे नीचे दर्ज करें।",
+        "email": "पंजीकृत ईमेल",
+        "mobile": "पंजीकृत मोबाइल नंबर",
         "verify_button": "सत्यापित करें",
-        "success": "भाषा सफलतापूर्वक अपडेट की गई!"
+        "Common": {
+            "cancel": "रद्द करें"
+        }
     },
     "Auth": {
-        "login": "लॉग इन करें",
-        "signup": "साइन अप करें",
-        "logout": "लॉग आउट करें"
+        "login": "लॉग इन",
+        "signup": "साइन अप"
+    },
+    "Feed": {
+        "what_happening": "क्या हो रहा है?",
+        "everyone_can_reply": "हर कोई जवाब दे सकता है",
+        "for_you": "आपके लिए",
+        "following": "फ़ॉलो कर रहे हैं",
+        "loading": "लोड हो रहा है...",
+        "audio_tweet": "ऑडियो ट्वीट"
+    },
+    "RightSidebar": {
+        "search": "सर्च",
+        "subscribe_title": "प्रीमियम की सदस्यता लें",
+        "subscribe_desc": "नई सुविधाओं को अनलॉक करने के लिए सदस्यता लें और यदि पात्र हैं, तो राजस्व का हिस्सा प्राप्त करें।",
+        "subscribe_button": "सब्सक्राइब",
+        "you_might_like": "आपको पसंद आ सकता है",
+        "follow": "फ़ॉलो",
+        "show_more": "और दिखाएं"
+    },
+    "Profile": {
+        "edit_profile": "प्रोफ़ाइल संपादित करें",
+        "joined": "शामिल हुए",
+        "posts_count": "{count} पोस्ट",
+        "posts": "पोस्ट",
+        "replies": "जवाब",
+        "highlights": "मुख्य विशेषताएं",
+        "articles": "लेख",
+        "media": "मीडिया",
+        "keyword_notifications": "कीवर्ड सूचनाएं",
+        "watching_for": "देख रहे हैं",
+        "no_posts_title": "आपने अभी तक कोई पोस्ट नहीं किया है",
+        "no_posts_desc": "जब आप पोस्ट करेंगे, तो वह यहां दिखाई देगा।"
+    },
+    "EditProfile": {
+        "title": "प्रोफ़ाइल संपादित करें",
+        "save": "सहेजें",
+        "saving": "सहेजा जा रहा है...",
+        "name": "नाम",
+        "placeholder_name": "आपका प्रदर्शन नाम",
+        "bio": "बायो",
+        "placeholder_bio": "दुनिया को अपने बारे में बताएं",
+        "location": "स्थान",
+        "placeholder_location": "आप कहां स्थित हैं?",
+        "website": "वेबसाइट",
+        "placeholder_website": "आपकी वेबसाइट का URL"
+    },
+    "Subscriptions": {
+        "title": "सदस्यता",
+        "subtitle": "अपनी ट्वीट योजना प्रबंधित करें",
+        "current_plan": "वर्तमान योजना",
+        "tweet_usage": "ट्वीट उपयोग",
+        "unlimited": "असीमित ट्वीट सक्रिय",
+        "limit_reached": "सीमा पूरी हो गई। और पोस्ट करने के लिए अपग्रेड करें।",
+        "remaining": "{count} {posts} शेष",
+        "valid_until": "योजना कब तक वैध है:",
+        "payment_window_title": "भुगतान विंडो",
+        "payment_window_desc": "भुगतान केवल प्रतिदिन <strong>10:00 AM – 11:00 AM IST</strong> के बीच स्वीकार किए जाते हैं। योजना ब्राउज़िंग हमेशा उपलब्ध है।",
+        "choose_plan": "एक योजना चुनें",
+        "active": "सक्रिय",
+        "month": "/महीना",
+        "default_plan": "डिफ़ॉल्ट योजना",
+        "current_plan_button": "✓ वर्तमान योजना",
+        "upgrade_to": "{plan} पर अपग्रेड करें — ₹{price}",
+        "processing": "प्रसंस्करण हो रहा है...",
+        "secure_payments": "सभी भुगतान स्ट्राइप के माध्यम से सुरक्षित रूप से संसाधित किए जाते हैं।",
+        "auto_expire": "सदस्यता 30 दिनों के बाद अपने आप समाप्त हो जाती है। कोई ऑटो-नवीनीकरण नहीं।",
+        "invoice_sent": "भुगतान के बाद आपके पंजीकृत ईमेल पर चालान भेजा जाएगा।"
     }
 }

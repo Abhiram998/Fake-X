@@ -1,39 +1,99 @@
 {
     "Common": {
-        "home": "首页",
+        "home": "主页",
         "explore": "探索",
         "notifications": "通知",
         "messages": "消息",
         "bookmarks": "书签",
-        "lists": "列表",
         "profile": "个人资料",
+        "subscriptions": "订阅",
         "more": "更多",
-        "tweet": "推文",
         "post": "发布",
-        "search": "搜索 Twitter",
-        "what_is_happening": "正在发生什么？",
-        "show_more": "显示更多",
-        "follow": "关注",
-        "following": "正在关注",
-        "followers": "关注者",
-        "joined": "加入时间",
-        "edit_profile": "编辑个人资料",
-        "save": "保存",
-        "cancel": "取消"
+        "logout": "退出登录",
+        "settings": "设置",
+        "plan": "方案",
+        "cancel": "取消",
+        "tweet": "推文"
     },
     "Language": {
         "select": "选择语言",
         "verify": "验证语言更改",
-        "otp_sent": "验证码已发送到您的 {method}。请在下方输入。",
-        "email": "电子邮件",
-        "mobile": "手机",
-        "enter_otp": "输入验证码",
+        "otp_sent": "验证码已发送至您的{method}。请在下方输入。",
+        "email": "注册邮箱",
+        "mobile": "注册手机号码",
         "verify_button": "验证",
-        "success": "语言更新成功！"
+        "Common": {
+            "cancel": "取消"
+        }
     },
     "Auth": {
         "login": "登录",
-        "signup": "注册",
-        "logout": "退出登录"
+        "signup": "注册"
+    },
+    "Feed": {
+        "what_happening": "正在发生什么？",
+        "everyone_can_reply": "所有人均可回复",
+        "for_you": "为您推荐",
+        "following": "正在关注",
+        "loading": "加载中...",
+        "audio_tweet": "语音推文"
+    },
+    "RightSidebar": {
+        "search": "搜索",
+        "subscribe_title": "订阅 Premium",
+        "subscribe_desc": "订阅以解锁新功能，符合条件还可获得收入分成。",
+        "subscribe_button": "订阅",
+        "you_might_like": "你可能喜欢",
+        "follow": "关注",
+        "show_more": "显示更多"
+    },
+    "Profile": {
+        "edit_profile": "编辑个人资料",
+        "joined": "加入时间",
+        "posts_count": "{count} 条推文",
+        "posts": "推文",
+        "replies": "回复",
+        "highlights": "精选",
+        "articles": "文章",
+        "media": "媒体",
+        "keyword_notifications": "关键词通知",
+        "watching_for": "监控中",
+        "no_posts_title": "你还没有发布推文",
+        "no_posts_desc": "当你发布推文时，它们将显示在这里。"
+    },
+    "EditProfile": {
+        "title": "编辑个人资料",
+        "save": "保存",
+        "saving": "保存中...",
+        "name": "姓名",
+        "placeholder_name": "您的显示名称",
+        "bio": "简介",
+        "placeholder_bio": "向世界介绍你自己",
+        "location": "地点",
+        "placeholder_location": "你住在哪里？",
+        "website": "网站",
+        "placeholder_website": "您的网站 URL"
+    },
+    "Subscriptions": {
+        "title": "订阅",
+        "subtitle": "管理您的推文计划",
+        "current_plan": "当前计划",
+        "tweet_usage": "推文使用情况",
+        "unlimited": "无限推文功能已激活",
+        "limit_reached": "已达限制。升级以发布更多内容。",
+        "remaining": "剩余 {count} {posts}",
+        "valid_until": "计划有效期至：",
+        "payment_window_title": "支付时间",
+        "payment_window_desc": "每天只有在印度标准时间 <strong>10:00 AM 到 11:00 AM</strong> 之间接受支付。计划浏览随时可用。",
+        "choose_plan": "选择计划",
+        "active": "生效中",
+        "month": "/月",
+        "default_plan": "默认计划",
+        "current_plan_button": "✓ 当前计划",
+        "upgrade_to": "升级至 {plan} — ₹{price}",
+        "processing": "处理中...",
+        "secure_payments": "所有款项均通过 Stripe 安全处理。",
+        "auto_expire": "订阅在 30 天后自动到期。无自动续订。",
+        "invoice_sent": "付款后，发票将发送到您的注册邮箱。"
     }
 }

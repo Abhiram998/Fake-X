@@ -10,10 +10,13 @@ import axios from "axios";
 import axiosInstance from "@/lib/axiosInstance";
 import AudioTweetComposer from "./AudioTweetComposer";
 import { useNavigation } from "@/context/NavigationContext";
+import { useTranslations } from "next-intl";
 
 const TweetComposer = ({ onTweetPosted }: any) => {
   const { user, refreshUser } = useAuth();
   const { navigate } = useNavigation();
+  const tCommon = useTranslations('Common');
+  const tFeed = useTranslations('Feed');
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [imageurl, setimageurl] = useState("");
@@ -104,7 +107,7 @@ const TweetComposer = ({ onTweetPosted }: any) => {
             {/* Plan usage chip */}
             <div className="flex items-center gap-2 mb-2">
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${atLimit ? "bg-red-500/20 text-red-400" : "bg-gray-800 text-gray-500"}`}>
-                {currentPlan} · {planLimit === Infinity ? "∞" : `${tweetsUsed}/${planLimit}`} tweets
+                {currentPlan} · {planLimit === Infinity ? "∞" : `${tweetsUsed}/${planLimit}`} {tCommon('tweet')}
               </span>
               {atLimit && (
                 <span className="text-[10px] text-red-400">Limit reached</span>
@@ -112,7 +115,7 @@ const TweetComposer = ({ onTweetPosted }: any) => {
             </div>
             <form onSubmit={handleSubmit}>
               <Textarea
-                placeholder="What's happening?"
+                placeholder={tFeed('what_happening')}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="bg-transparent border-none text-lg sm:text-xl text-white placeholder-gray-500 resize-none min-h-[100px] sm:min-h-[120px] focus-visible:ring-0 focus-visible:ring-offset-0 px-0"
@@ -193,7 +196,7 @@ const TweetComposer = ({ onTweetPosted }: any) => {
                   <div className="flex items-center space-x-2">
                     <Globe className="h-4 w-4 text-blue-400" />
                     <span className="text-xs sm:text-sm text-blue-400 font-semibold whitespace-nowrap">
-                      Everyone can reply
+                      {tFeed('everyone_can_reply')}
                     </span>
                   </div>
                   <div className="flex items-center space-x-3">
@@ -253,7 +256,7 @@ const TweetComposer = ({ onTweetPosted }: any) => {
                       disabled={!content.trim() || isOverLimit || isLoading}
                       className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-700 disabled:text-gray-500 text-white font-semibold rounded-full px-6"
                     >
-                      Post
+                      {tCommon('post')}
                     </Button>
                   </div>
                 </div>
@@ -265,7 +268,7 @@ const TweetComposer = ({ onTweetPosted }: any) => {
       {showAudioComposer && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <AudioTweetComposer
-            onAudioUploaded={(url) => {
+            onAudioUploaded={(url: string) => {
               setaudiourl(url);
               setShowAudioComposer(false);
             }}

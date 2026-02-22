@@ -5,8 +5,9 @@ import { loadStripe } from "@stripe/stripe-js";
 import { useAuth } from "@/context/AuthContext";
 import axiosInstance from "@/lib/axiosInstance";
 import { CreditCard, Zap, Star, Crown, CheckCircle2, AlertCircle, Sparkles, Lock } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 
-const PLANS = [
+const getPlans = (t: any) => [
     {
         name: "Free",
         price: 0,
@@ -53,14 +54,17 @@ const PLANS = [
     },
 ];
 
-
-
 export default function SubscriptionPage() {
     const { user, login } = useAuth();
+    const t = useTranslations('Subscriptions');
+    const tCommon = useTranslations('Common');
+    const locale = useLocale();
     const [loading, setLoading] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+
+    const PLANS = getPlans(t);
 
     useEffect(() => {
         const query = new URLSearchParams(window.location.search);
@@ -110,7 +114,7 @@ export default function SubscriptionPage() {
     const usagePercent = currentPlan === "Gold" ? 0 : Math.min(100, (tweetsUsed / (currentLimit as number)) * 100);
 
     const expiryDate = user?.subscriptionExpiryDate
-        ? new Date(user.subscriptionExpiryDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
+        ? new Date(user.subscriptionExpiryDate).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })
         : null;
 
     const handleSubscribe = async (planName: string, price: number) => {
@@ -153,8 +157,8 @@ export default function SubscriptionPage() {
                 <div className="flex items-center gap-3">
                     <CreditCard className="h-6 w-6 text-blue-400" />
                     <div>
-                        <h1 className="text-xl font-bold">Subscriptions</h1>
-                        <p className="text-xs text-gray-500">Manage your tweet plan</p>
+                        <h1 className="text-xl font-bold">{t('title')}</h1>
+                        <p className="text-xs text-gray-500">{t('subtitle')}</p>
                     </div>
                 </div>
             </div>
@@ -164,7 +168,7 @@ export default function SubscriptionPage() {
                 <div className="bg-gradient-to-br from-blue-950 to-gray-900 rounded-3xl border border-blue-800/50 p-6 shadow-xl">
                     <div className="flex items-center justify-between mb-4">
                         <div>
-                            <p className="text-xs text-blue-400 uppercase tracking-widest font-bold">Current Plan</p>
+                            <p className="text-xs text-blue-400 uppercase tracking-widest font-bold">{t('current_plan')}</p>
                             <h2 className="text-3xl font-black mt-1">{currentPlan}</h2>
                         </div>
                         <div className="bg-blue-500/10 p-4 rounded-2xl">
@@ -175,7 +179,7 @@ export default function SubscriptionPage() {
                     {/* Usage bar */}
                     <div className="space-y-2">
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-400">Tweet Usage</span>
+                            <span className="text-gray-400">{t('tweet_usage')}</span>
                             <span className="font-mono font-bold text-blue-400">
                                 {tweetsUsed} / {currentPlan === "Gold" ? "∞" : currentLimit}
                             </span>
@@ -196,16 +200,16 @@ export default function SubscriptionPage() {
                         )}
                         <p className="text-xs text-gray-500">
                             {currentPlan === "Gold"
-                                ? "Unlimited tweets active"
+                                ? t('unlimited')
                                 : usagePercent >= 100
-                                    ? "Limit reached. Upgrade to post more."
-                                    : `${tweetsLeft} tweet${tweetsLeft !== 1 ? "s" : ""} remaining`}
+                                    ? t('limit_reached')
+                                    : t('remaining', { count: tweetsLeft, posts: tweetsLeft !== 1 ? tCommon('tweet') + 's' : tCommon('tweet') })}
                         </p>
                     </div>
 
                     {expiryDate && currentPlan !== "Free" && (
                         <p className="mt-4 text-xs text-gray-500 border-t border-gray-700/50 pt-4">
-                            Plan valid until: <span className="text-white font-semibold">{expiryDate}</span>
+                            {t('valid_until')} <span className="text-white font-semibold">{expiryDate}</span>
                         </p>
                     )}
                 </div>
@@ -214,9 +218,9 @@ export default function SubscriptionPage() {
                 <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-4 flex items-start gap-3">
                     <Lock className="h-5 w-5 text-yellow-400 shrink-0 mt-0.5" />
                     <div>
-                        <p className="text-sm font-semibold text-yellow-300">Payment Window</p>
+                        <p className="text-sm font-semibold text-yellow-300">{t('payment_window_title')}</p>
                         <p className="text-xs text-yellow-500 mt-1">
-                            Payments are only accepted between <strong>10:00 AM – 11:00 AM IST</strong> daily. Plan browsing is always available.
+                            {t.rich('payment_window_desc', { strong: (chunks) => <strong>{chunks}</strong> })}
                         </p>
                     </div>
                 </div>
@@ -238,7 +242,7 @@ export default function SubscriptionPage() {
                 {/* Plan Cards */}
                 <div>
                     <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                        <Sparkles className="h-5 w-5 text-blue-400" /> Choose a Plan
+                        <Sparkles className="h-5 w-5 text-blue-400" /> {t('choose_plan')}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {PLANS.map((plan) => {
@@ -254,7 +258,7 @@ export default function SubscriptionPage() {
                                     {isCurrent && (
                                         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                                             <span className="bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow">
-                                                Active
+                                                {t('active')}
                                             </span>
                                         </div>
                                     )}
@@ -266,7 +270,7 @@ export default function SubscriptionPage() {
                                             </span>
                                             <p className={`text-3xl font-black mt-3 ${plan.textColor}`}>
                                                 {plan.price === 0 ? "Free" : `₹${plan.price}`}
-                                                {plan.price > 0 && <span className="text-sm font-normal text-gray-500">/month</span>}
+                                                {plan.price > 0 && <span className="text-sm font-normal text-gray-500">{t('month')}</span>}
                                             </p>
                                         </div>
                                         <div className="bg-gray-800/60 p-3 rounded-2xl">{plan.icon}</div>
@@ -286,14 +290,14 @@ export default function SubscriptionPage() {
                                             disabled
                                             className="w-full py-3 rounded-2xl bg-gray-700/50 text-gray-500 text-sm font-semibold cursor-not-allowed"
                                         >
-                                            Default Plan
+                                            {t('default_plan')}
                                         </button>
                                     ) : isCurrent ? (
                                         <button
                                             disabled
                                             className="w-full py-3 rounded-2xl bg-blue-500/20 text-blue-400 text-sm font-semibold border border-blue-500/40 cursor-not-allowed"
                                         >
-                                            ✓ Current Plan
+                                            {t('current_plan_button')}
                                         </button>
                                     ) : (
                                         <button
@@ -307,10 +311,10 @@ export default function SubscriptionPage() {
                                             {isPending ? (
                                                 <span className="flex items-center justify-center gap-2">
                                                     <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                    Processing...
+                                                    {t('processing')}
                                                 </span>
                                             ) : (
-                                                `Upgrade to ${plan.name} — ₹${plan.price}`
+                                                t('upgrade_to', { plan: plan.name, price: plan.price })
                                             )}
                                         </button>
                                     )}
@@ -322,9 +326,9 @@ export default function SubscriptionPage() {
 
                 {/* Info */}
                 <div className="text-center text-xs text-gray-600 space-y-1 pb-10">
-                    <p>All payments are processed securely via Stripe.</p>
-                    <p>Subscriptions auto-expire after 30 days. No auto-renewal.</p>
-                    <p>Invoice will be sent to your registered email after payment.</p>
+                    <p>{t('secure_payments')}</p>
+                    <p>{t('auto_expire')}</p>
+                    <p>{t('invoice_sent')}</p>
                 </div>
             </div>
         </div>

@@ -97,7 +97,7 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
           <div className="mt-6 px-4 hidden md:block">
             <div className="bg-gray-900/50 rounded-2xl p-4 border border-gray-800">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Plan: {user.subscriptionPlan || 'Free'}</span>
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{t('plan')}: {user.subscriptionPlan || 'Free'}</span>
                 <span className="text-[10px] text-blue-400 font-mono">
                   {user.tweetCount || 0}/{user.subscriptionPlan === 'Gold' ? '∞' : (user.subscriptionPlan === 'Silver' ? '5' : (user.subscriptionPlan === 'Bronze' ? '3' : '1'))}
                 </span>
@@ -110,11 +110,6 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
                   }}
                 />
               </div>
-              <p className="text-[10px] text-gray-500 mt-2 text-center italic">
-                {user.tweetCount >= (user.subscriptionPlan === 'Silver' ? 5 : (user.subscriptionPlan === 'Bronze' ? 3 : 1)) && user.subscriptionPlan !== 'Gold'
-                  ? "Limit reached! Upgrade now."
-                  : "Keep tweeting!"}
-              </p>
             </div>
           </div>
         )}
@@ -142,7 +137,7 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
             <DropdownMenuContent className="w-56 bg-black border-gray-800">
               <DropdownMenuItem className="text-white hover:bg-gray-900">
                 <Settings className="mr-2 h-4 w-4" />
-                Settings
+                {t('settings')}
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-gray-800" />
               <DropdownMenuItem
@@ -150,7 +145,7 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
                 onClick={logout}
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                {t('Auth.logout')} @{user.username}
+                {t('logout')} @{user.username}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

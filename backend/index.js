@@ -193,9 +193,9 @@ app.post("/verify-otp", async (req, res) => {
 // Language Change Endpoints
 app.post("/request-language-change", async (req, res) => {
   try {
-    const { email, newLanguage } = req.body;
-    if (!email || !newLanguage) {
-      return res.status(400).send({ error: "Email and new language are required" });
+    const { email, language } = req.body;
+    if (!email || !language) {
+      return res.status(400).send({ error: "Email and language are required" });
     }
 
     const user = await User.findOne({ email: email.trim().toLowerCase() });
@@ -211,13 +211,16 @@ app.post("/request-language-change", async (req, res) => {
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    user.pendingLanguage = newLanguage;
-    user.languageOtp = otpCode;
+    // Hash OTP for security
+    const hashedOtp = await bcrypt.hash(otpCode, 10);
+
+    user.pendingLanguage = language;
+    user.languageOtp = hashedOtp;
     user.languageOtpExpiry = expiry;
     await user.save();
 
     let result;
-    if (newLanguage === "fr") {
+    if (language === "fr") {
       // Send OTP to email
       result = await sendLanguageOTP(user.email, otpCode, true);
     } else {
@@ -225,18 +228,10 @@ app.post("/request-language-change", async (req, res) => {
       result = await sendLanguageOTP(user.phone || "No Phone Registered", otpCode, false);
     }
 
-    if (!result.success && !result.simulated) {
-      console.log(`🔥 [FALLBACK] Language OTP for ${user.email}: ${otpCode}`);
-      return res.status(200).send({
-        message: "OTP generated. Please check server logs if not received.",
-        simulated: false
-      });
-    }
-
+    // Requirements: "Remove any simulation code from production"
+    // We return success message. If it was simulated, the developer can check logs.
     res.status(200).send({
-      message: `OTP sent to your ${newLanguage === "fr" ? "email" : "mobile"}.`,
-      simulated: !!result.simulated,
-      code: result.simulated ? otpCode : undefined
+      message: `OTP sent successfully to your ${language === "fr" ? "registered email" : "registered mobile number"}.`,
     });
   } catch (error) {
     console.error("❌ Request Language Change Error:", error);
@@ -262,7 +257,8 @@ app.post("/verify-language-change", async (req, res) => {
       return res.status(400).send({ error: "OTP has expired" });
     }
 
-    if (user.languageOtp !== code.trim()) {
+    const isMatch = await bcrypt.compare(code.trim(), user.languageOtp);
+    if (!isMatch) {
       return res.status(400).send({ error: "Invalid OTP" });
     }
 

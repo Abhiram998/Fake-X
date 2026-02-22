@@ -5,36 +5,95 @@
         "notifications": "Notifications",
         "messages": "Messages",
         "bookmarks": "Signets",
-        "lists": "Listes",
         "profile": "Profil",
         "subscriptions": "Abonnements",
         "more": "Plus",
-        "tweet": "Tweet",
         "post": "Poster",
-        "search": "Rechercher sur Twitter",
-        "what_is_happening": "Quoi de neuf ?",
-        "show_more": "Voir plus",
-        "follow": "Suivre",
-        "following": "Abonnements",
-        "followers": "Abonnés",
-        "joined": "A rejoint",
-        "edit_profile": "Modifier le profil",
-        "save": "Enregistrer",
-        "cancel": "Annuler"
+        "logout": "Se déconnecter",
+        "settings": "Paramètres",
+        "plan": "Forfait",
+        "cancel": "Annuler",
+        "tweet": "tweet"
     },
     "Language": {
         "select": "Choisir la langue",
         "verify": "Vérifier le changement de langue",
-        "otp_sent": "Un OTP a été envoyé à votre {method}. Veuillez le saisir ci-dessous.",
-        "email": "e-mail",
-        "mobile": "mobile",
-        "enter_otp": "Saisir l'OTP",
+        "otp_sent": "Un code de vérification a été envoyé à votre {method}. Veuillez le saisir ci-dessous.",
+        "email": "e-mail enregistré",
+        "mobile": "numéro de mobile enregistré",
         "verify_button": "Vérifier",
-        "success": "Langue mise à jour avec succès !"
+        "Common": {
+            "cancel": "Annuler"
+        }
     },
     "Auth": {
-        "login": "Se connecter",
-        "signup": "S'inscrire",
-        "logout": "Se déconnecter"
+        "login": "Connexion",
+        "signup": "S'inscrire"
+    },
+    "Feed": {
+        "what_happening": "Quoi de neuf ?",
+        "everyone_can_reply": "Tout le monde peut répondre",
+        "for_you": "Pour vous",
+        "following": "Abonnements",
+        "loading": "Chargement...",
+        "audio_tweet": "Tweet audio"
+    },
+    "RightSidebar": {
+        "search": "Rechercher",
+        "subscribe_title": "S'abonner à Premium",
+        "subscribe_desc": "Abonnez-vous pour débloquer de nouvelles fonctionnalités et, si vous êtes éligible, recevez une part des revenus.",
+        "subscribe_button": "S'abonner",
+        "you_might_like": "Vous pourriez aimer",
+        "follow": "Suivre",
+        "show_more": "Voir plus"
+    },
+    "Profile": {
+        "edit_profile": "Modifier le profil",
+        "joined": "A rejoint",
+        "posts_count": "{count} posts",
+        "posts": "Posts",
+        "replies": "Réponses",
+        "highlights": "Points forts",
+        "articles": "Articles",
+        "media": "Médias",
+        "keyword_notifications": "Notifications par mots-clés",
+        "watching_for": "Surveille",
+        "no_posts_title": "Vous n'avez pas encore posté",
+        "no_posts_desc": "Quand vous posterez, cela apparaîtra ici."
+    },
+    "EditProfile": {
+        "title": "Modifier le profil",
+        "save": "Enregistrer",
+        "saving": "Enregistrement...",
+        "name": "Nom",
+        "placeholder_name": "Votre nom d'affichage",
+        "bio": "Bio",
+        "placeholder_bio": "Parlez de vous au monde entier",
+        "location": "Localisation",
+        "placeholder_location": "Où vous situez-vous ?",
+        "website": "Site web",
+        "placeholder_website": "URL de votre site web"
+    },
+    "Subscriptions": {
+        "title": "Abonnements",
+        "subtitle": "Gérez votre forfait de tweets",
+        "current_plan": "Forfait actuel",
+        "tweet_usage": "Utilisation des tweets",
+        "unlimited": "Tweets illimités actifs",
+        "limit_reached": "Limite atteinte. Mettez à niveau pour poster plus.",
+        "remaining": "{count} {posts} restants",
+        "valid_until": "Forfait valide jusqu'au :",
+        "payment_window_title": "Fenêtre de paiement",
+        "payment_window_desc": "Les paiements ne sont acceptés qu'entre <strong>10h00 et 11h00 IST (heure de l'Inde)</strong> tous les jours. La consultation des forfaits est toujours disponible.",
+        "choose_plan": "Choisissez un forfait",
+        "active": "Actif",
+        "month": "/mois",
+        "default_plan": "Forfait par défaut",
+        "current_plan_button": "✓ Forfait actuel",
+        "upgrade_to": "Passer à {plan} — ₹{price}",
+        "processing": "Traitement...",
+        "secure_payments": "Tous les paiements sont traités en toute sécurité via Stripe.",
+        "auto_expire": "Les abonnements expirent automatiquement après 30 jours. Pas de renouvellement automatique.",
+        "invoice_sent": "La facture sera envoyée à votre e-mail enregistré après le paiement."
     }
 }

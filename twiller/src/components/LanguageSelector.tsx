@@ -7,9 +7,7 @@ import {
     Languages,
     Check,
     Loader2,
-    X,
-    ShieldCheck,
-    AlertCircle
+    ShieldCheck
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -43,11 +41,9 @@ export default function LanguageSelector() {
     const currentLocale = useLocale();
 
     const [isOtpOpen, setIsOtpOpen] = useState(false);
-    const [pendingLang, setPendingLang] = useState<string | null>(null);
     const [otp, setOtp] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [otpSentTo, setOtpSentTo] = useState<"email" | "mobile">("email");
-    const [simulatedCode, setSimulatedCode] = useState<string | null>(null);
 
     const handleLanguageSelect = async (langCode: string) => {
         if (langCode === currentLocale) return;
@@ -59,13 +55,7 @@ export default function LanguageSelector() {
         setIsLoading(true);
         try {
             const res = await requestLanguageChange(langCode);
-            setPendingLang(langCode);
             setOtpSentTo(langCode === "fr" ? "email" : "mobile");
-            if (res.simulated && res.code) {
-                setSimulatedCode(res.code);
-            } else {
-                setSimulatedCode(null);
-            }
             setIsOtpOpen(true);
             toast.success(res.message);
         } catch (error: any) {
@@ -84,7 +74,6 @@ export default function LanguageSelector() {
             await verifyLanguageChange(otp);
             setIsOtpOpen(false);
             setOtp("");
-            setPendingLang(null);
         } catch (error: any) {
             toast.error(error.response?.data?.error || "Invalid OTP");
         } finally {
@@ -152,15 +141,6 @@ export default function LanguageSelector() {
                                     autoFocus
                                 />
                             </div>
-
-                            {simulatedCode && (
-                                <div className="bg-blue-500/5 border border-blue-500/20 p-4 rounded-xl flex items-center gap-3 animate-pulse">
-                                    <AlertCircle className="h-5 w-5 text-blue-400 shrink-0" />
-                                    <p className="text-xs text-blue-400 font-medium leading-tight">
-                                        Training Mode: Use simulation code <span className="text-lg font-bold ml-1 font-mono">{simulatedCode}</span>
-                                    </p>
-                                </div>
-                            )}
 
                             <Button
                                 type="submit"

@@ -7,6 +7,7 @@ import TweetComposer from "./TweetComposer";
 import axiosInstance from "@/lib/axiosInstance";
 import { triggerTweetNotification } from "@/lib/notificationService";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslations } from "next-intl";
 
 interface Tweet {
   id: string;
@@ -96,6 +97,8 @@ const Feed = () => {
   const [tweets, setTweets] = useState<any>([]);
   const [loading, setloading] = useState(false);
   const lastProcessedTweetIdRef = React.useRef<string | null>(null);
+  const tCommon = useTranslations('Common');
+  const tFeed = useTranslations('Feed');
 
   const fetchTweets = async (isInitial = false) => {
     try {
@@ -169,7 +172,7 @@ const Feed = () => {
     <div className="min-h-screen">
       <div className="sticky top-0 bg-black/90 backdrop-blur-md border-b border-gray-800 z-10">
         <div className="px-4 py-3">
-          <h1 className="text-xl font-bold text-white">Home</h1>
+          <h1 className="text-xl font-bold text-white">{tCommon('home')}</h1>
         </div>
 
         <Tabs defaultValue="foryou" className="w-full">
@@ -178,13 +181,13 @@ const Feed = () => {
               value="foryou"
               className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-1 data-[state=active]:border-blue-100 data-[state=active]:rounded-none text-gray-400 hover:bg-gray-900/50 py-4 font-semibold"
             >
-              For you
+              {tFeed('for_you')}
             </TabsTrigger>
             <TabsTrigger
               value="following"
               className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-1 data-[state=active]:border-blue-100 data-[state=active]:rounded-none text-gray-400 hover:bg-gray-900/50 py-4 font-semibold"
             >
-              Following
+              {tFeed('following')}
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -196,7 +199,7 @@ const Feed = () => {
             <CardContent className="py-12 text-center">
               <div className="text-gray-400 mb-4">
                 <LoadingSpinner size="lg" className="mx-auto mb-4" />
-                <p>Loading tweets...</p>
+                <p>Loading...</p>
               </div>
             </CardContent>
           </Card>

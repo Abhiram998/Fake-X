@@ -12,6 +12,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslations } from "next-intl";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -105,10 +106,12 @@ export default function ProfilePage() {
   const { user, toggleNotifications } = useAuth();
   const [activeTab, setActiveTab] = useState("posts");
   const [showEditModal, setShowEditModal] = useState(false);
+  const t = useTranslations('Profile');
 
-  if (!user) return null;
   const [tweets, setTweets] = useState<any>([]);
   const [loading, setloading] = useState(false);
+  const [toggleLoading, setToggleLoading] = useState(false);
+
   const fetchTweets = async () => {
     try {
       setloading(true);
@@ -120,15 +123,18 @@ export default function ProfilePage() {
       setloading(false);
     }
   };
+
   useEffect(() => {
     fetchTweets();
   }, []);
+
+  if (!user) return null;
+
   // Filter tweets by current user
   const userTweets = tweets.filter(
     (tweet: any) => tweet.author._id === user._id
   );
 
-  const [toggleLoading, setToggleLoading] = useState(false);
   const handleToggleNotifications = async () => {
     if (!user) return;
     setToggleLoading(true);
@@ -151,7 +157,7 @@ export default function ProfilePage() {
           </Button>
           <div className="min-w-0">
             <h1 className="text-lg sm:text-xl font-bold text-white truncate">{user.displayName}</h1>
-            <p className="text-xs sm:text-sm text-gray-400">{userTweets.length} posts</p>
+            <p className="text-xs sm:text-sm text-gray-400">{t('posts_count', { count: userTweets.length })}</p>
           </div>
         </div>
       </div>
@@ -194,7 +200,7 @@ export default function ProfilePage() {
             className="border-gray-600 text-white bg-gray-950 font-semibold rounded-full px-6"
             onClick={() => setShowEditModal(true)}
           >
-            Edit profile
+            {t('edit_profile')}
           </Button>
         </div>
       </div>
@@ -235,7 +241,7 @@ export default function ProfilePage() {
           <div className="flex items-center space-x-1">
             <Calendar className="h-4 w-4" />
             <span>
-              Joined{" "}
+              {t('joined')}{" "}
               {user.joinedDate &&
                 new Date(user.joinedDate).toLocaleDateString("en-us", {
                   month: "long",
@@ -251,10 +257,10 @@ export default function ProfilePage() {
             <div className="space-y-1">
               <Label className="text-white text-base font-bold flex items-center gap-2">
                 <Bell className="w-5 h-5 text-blue-400" />
-                Keyword Notifications
+                {t('keyword_notifications')}
               </Label>
               <p className="text-sm text-gray-400">
-                Watching for: {keywords.map(k => <span key={k} className="text-blue-300 font-medium mx-1">#{k}</span>)}
+                {t('watching_for')}: {keywords.map(k => <span key={k} className="text-blue-300 font-medium mx-1">#{k}</span>)}
               </p>
             </div>
             <button
@@ -272,7 +278,7 @@ export default function ProfilePage() {
           {user.notificationEnabled && (
             <div className="pt-2 border-t border-gray-800/50">
               <p className="text-[10px] text-gray-500 italic">
-                Mobile Tip: For background alerts, use "Add to Home Screen" (iOS) or keep the tab active (Android).
+                Mobile Tip: For background alerts, use &quot;Add to Home Screen&quot; (iOS) or keep the tab active (Android).
               </p>
             </div>
           )}
@@ -286,31 +292,31 @@ export default function ProfilePage() {
             value="posts"
             className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-gray-400 hover:bg-gray-900/50 py-4 font-semibold"
           >
-            Posts
+            {t('posts')}
           </TabsTrigger>
           <TabsTrigger
             value="replies"
             className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-gray-400 hover:bg-gray-900/50 py-4 font-semibold"
           >
-            Replies
+            {t('replies')}
           </TabsTrigger>
           <TabsTrigger
             value="highlights"
             className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-gray-400 hover:bg-gray-900/50 py-4 font-semibold"
           >
-            Highlights
+            {t('highlights')}
           </TabsTrigger>
           <TabsTrigger
             value="articles"
             className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-gray-400 hover:bg-gray-900/50 py-4 font-semibold"
           >
-            Articles
+            {t('articles')}
           </TabsTrigger>
           <TabsTrigger
             value="media"
             className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-gray-400 hover:bg-gray-900/50 py-4 font-semibold"
           >
-            Media
+            {t('media')}
           </TabsTrigger>
         </TabsList>
 
@@ -321,9 +327,9 @@ export default function ProfilePage() {
                 <CardContent className="py-12 text-center">
                   <div className="text-gray-400">
                     <h3 className="text-2xl font-bold mb-2">
-                      You haven't posted yet
+                      {t('no_posts_title')}
                     </h3>
-                    <p>When you post, it will show up here.</p>
+                    <p>{t('no_posts_desc')}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -340,9 +346,9 @@ export default function ProfilePage() {
             <CardContent className="py-12 text-center">
               <div className="text-gray-400">
                 <h3 className="text-2xl font-bold mb-2">
-                  You haven't replied yet
+                  {t('no_posts_title')}
                 </h3>
-                <p>When you reply to a post, it will show up here.</p>
+                <p>{t('no_posts_desc')}</p>
               </div>
             </CardContent>
           </Card>
@@ -353,9 +359,9 @@ export default function ProfilePage() {
             <CardContent className="py-12 text-center">
               <div className="text-gray-400">
                 <h3 className="text-2xl font-bold mb-2">
-                  Lights, camera … attachments!
+                  {t('highlights')}
                 </h3>
-                <p>When you post photos or videos, they will show up here.</p>
+                <p>{t('no_posts_desc')}</p>
               </div>
             </CardContent>
           </Card>
@@ -366,9 +372,9 @@ export default function ProfilePage() {
             <CardContent className="py-12 text-center">
               <div className="text-gray-400">
                 <h3 className="text-2xl font-bold mb-2">
-                  You haven't written any articles
+                  {t('articles')}
                 </h3>
-                <p>When you write articles, they will show up here.</p>
+                <p>{t('no_posts_desc')}</p>
               </div>
             </CardContent>
           </Card>
@@ -379,9 +385,9 @@ export default function ProfilePage() {
             <CardContent className="py-12 text-center">
               <div className="text-gray-400">
                 <h3 className="text-2xl font-bold mb-2">
-                  Lights, camera … attachments!
+                  {t('media')}
                 </h3>
-                <p>When you post photos or videos, they will show up here.</p>
+                <p>{t('no_posts_desc')}</p>
               </div>
             </CardContent>
           </Card>

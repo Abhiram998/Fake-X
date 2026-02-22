@@ -54,7 +54,7 @@ interface AuthContextType {
   toggleNotifications: (enabled: boolean) => Promise<void>;
   refreshUser: () => Promise<void>;
   updateTweetCount: (newCount: number) => void;
-  requestLanguageChange: (newLang: string) => Promise<{ message: string; simulated?: boolean; code?: string }>;
+  requestLanguageChange: (language: string) => Promise<{ message: string }>;
   verifyLanguageChange: (otp: string) => Promise<void>;
 }
 
@@ -333,11 +333,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUser(updatedUser);
           localStorage.setItem("twitter-user", JSON.stringify(updatedUser));
         },
-        requestLanguageChange: async (newLang: string) => {
+        requestLanguageChange: async (language: string) => {
           if (!user) throw new Error("Not logged in");
           const res = await axiosInstance.post("/request-language-change", {
             email: user.email,
-            newLanguage: newLang,
+            language: language,
           });
           return res.data;
         },

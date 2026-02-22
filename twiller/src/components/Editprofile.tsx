@@ -1,5 +1,6 @@
 import { useAuth } from "@/context/AuthContext";
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Camera, LinkIcon, MapPin, X } from "lucide-react";
@@ -13,11 +14,12 @@ import axios from "axios";
 const Editprofile = ({ isopen, onclose }: any) => {
   const { user, updateProfile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const t = useTranslations('EditProfile');
   const [formData, setFormdata] = useState({
     displayName: user?.displayName || "",
     bio: user?.bio || "",
-    location: "Earth",
-    website: "example.com",
+    location: user?.location || "Earth",
+    website: user?.website || "example.com",
     avatar: user?.avatar || "",
   });
   const [error, setError] = useState<any>({});
@@ -105,7 +107,7 @@ const Editprofile = ({ isopen, onclose }: any) => {
               >
                 <X className="h-5 w-5" />
               </Button>
-              <CardTitle className="text-xl font-bold">Edit profile</CardTitle>
+              <CardTitle className="text-xl font-bold">{t('title')}</CardTitle>
             </div>
             <Button
               type="submit"
@@ -116,10 +118,10 @@ const Editprofile = ({ isopen, onclose }: any) => {
               {isLoading ? (
                 <div className="flex items-center space-x-2">
                   <LoadingSpinner size="sm" />
-                  <span>Saving...</span>
+                  <span>{t('saving')}</span>
                 </div>
               ) : (
-                "Save"
+                t('save')
               )}
             </Button>
           </div>
@@ -183,7 +185,7 @@ const Editprofile = ({ isopen, onclose }: any) => {
               {/* Display Name */}
               <div className="space-y-2">
                 <Label htmlFor="displayName" className="text-white">
-                  Name
+                  {t('name')}
                 </Label>
                 <Input
                   id="displayName"
@@ -193,7 +195,7 @@ const Editprofile = ({ isopen, onclose }: any) => {
                     handleInputChange("displayName", e.target.value)
                   }
                   className="bg-transparent border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
-                  placeholder="Your display name"
+                  placeholder={t('placeholder_name')}
                   maxLength={50}
                   disabled={isLoading}
                 />
@@ -210,14 +212,14 @@ const Editprofile = ({ isopen, onclose }: any) => {
               {/* Bio */}
               <div className="space-y-2">
                 <Label htmlFor="bio" className="text-white">
-                  Bio
+                  {t('bio')}
                 </Label>
                 <Textarea
                   id="bio"
                   value={formData.bio}
                   onChange={(e) => handleInputChange("bio", e.target.value)}
                   className="bg-transparent border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 resize-none min-h-[100px]"
-                  placeholder="Tell the world about yourself"
+                  placeholder={t('placeholder_bio')}
                   maxLength={160}
                   disabled={isLoading}
                 />
@@ -232,7 +234,7 @@ const Editprofile = ({ isopen, onclose }: any) => {
               {/* Location */}
               <div className="space-y-2">
                 <Label htmlFor="location" className="text-white">
-                  Location
+                  {t('location')}
                 </Label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -244,7 +246,7 @@ const Editprofile = ({ isopen, onclose }: any) => {
                       handleInputChange("location", e.target.value)
                     }
                     className="pl-10 bg-transparent border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
-                    placeholder="Where are you located?"
+                    placeholder={t('placeholder_location')}
                     maxLength={30}
                     disabled={isLoading}
                   />
@@ -262,7 +264,7 @@ const Editprofile = ({ isopen, onclose }: any) => {
               {/* Website */}
               <div className="space-y-2">
                 <Label htmlFor="website" className="text-white">
-                  Website
+                  {t('website')}
                 </Label>
                 <div className="relative">
                   <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -274,7 +276,7 @@ const Editprofile = ({ isopen, onclose }: any) => {
                       handleInputChange("website", e.target.value)
                     }
                     className="pl-10 bg-transparent border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
-                    placeholder="Your website URL"
+                    placeholder={t('placeholder_website')}
                     maxLength={100}
                     disabled={isLoading}
                   />
