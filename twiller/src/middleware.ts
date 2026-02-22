@@ -10,9 +10,6 @@ export default createMiddleware({
 });
 
 export const config = {
-    // Match all pathnames except for
-    // - API routes (/api)
-    // - Static files (/_next, /favicon.ico, /manifest.json, /sw.js, etc.)
-    // - Files with extensions (e.g. .svg, .png)
-    matcher: ['/((?!api|_next|static|.*\\..*).*)']
+    // Skip all internal paths and static files, but allow everything else
+    matcher: ['/((?!api|_next|.*\\..*).*)']
 };

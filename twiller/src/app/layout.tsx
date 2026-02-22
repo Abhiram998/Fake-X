@@ -44,7 +44,6 @@ export default async function RootLayout({
   try {
     messages = await getMessages();
   } catch (error) {
-    console.error("Failed to load messages:", error);
     messages = {};
   }
 
@@ -56,18 +55,18 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black`}
       >
         <AuthProvider>
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              style: {
+                background: '#1d9bf0',
+                color: '#fff',
+                fontWeight: 'bold',
+              },
+            }}
+          />
           <NextIntlClientProvider messages={messages} locale={locale}>
             <SwRegistration />
-            <Toaster
-              position="top-center"
-              toastOptions={{
-                style: {
-                  background: '#1d9bf0',
-                  color: '#fff',
-                  fontWeight: 'bold',
-                },
-              }}
-            />
             {children}
           </NextIntlClientProvider>
         </AuthProvider>
