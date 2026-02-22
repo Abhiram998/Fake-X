@@ -18,7 +18,7 @@ import webpush from "web-push";
 import sendPasswordReset from "./utils/sendPasswordReset.js";
 import sendInvoice from "./utils/sendInvoice.js";
 import sendLanguageOTP from "./utils/sendLanguageOTP.js";
-import sendSMS from "./utils/sendSMS.js";
+import { sendSMS } from "./utils/sendSMS.js";
 import Stripe from "stripe";
 import crypto from "crypto";
 
@@ -225,17 +225,23 @@ app.post("/request-language-change", async (req, res) => {
     user.languageOtpExpiry = expiry;
     await user.save();
 
-    let result;
-    if (language === "fr") {
-      // IF language === "fr": Send OTP to user.email (Brevo)
-      result = await sendLanguageOTP(user.email, otpCode);
-    } else {
-      // ELSE: Send OTP to user.mobile (SMS)
-      result = await sendSMS(user.mobile, otpCode);
-    }
-
-    if (!result.success) {
-      return res.status(500).send({ error: "Failed to send verification code. Please try again." });
+    try {
+      if (language === "fr") {
+        // IF language === "fr": Send OTP to user.email (Brevo)
+        const emailResult = await sendLanguageOTP(user.email, otpCode);
+        if (!emailResult.success) throw new Error(emailResult.error || "Failed to send email");
+      } else {
+        // ELSE: Send OTP to user.mobile (Twilio SMS)
+        await sendSMS(
+          user.mobile,
+          `Your Twiller verification code is: ${otpCode}. It will expire in 5 minutes.`
+        );
+      }
+    } catch (deliveryError) {
+      console.error("❌ OTP Delivery Error:", deliveryError);
+      return res.status(500).send({
+        error: `Failed to send verification code via ${language === "fr" ? "email" : "SMS"}. Please try again.`
+      });
     }
 
     // Return appropriate success message based on actual delivery method
