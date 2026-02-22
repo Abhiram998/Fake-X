@@ -454,7 +454,7 @@ app.post("/forgot-password", async (req, res) => {
   }
 });
 
-const checkLoginSecurity = async (user, req, res) => {
+const checkLoginSecurity = async (user, req, res, justCheck = false) => {
   const parser = new UAParser(req.headers["user-agent"]);
   const browser = parser.getBrowser().name || "Unknown";
   const os = parser.getOS().name || "Unknown";
@@ -476,6 +476,8 @@ const checkLoginSecurity = async (user, req, res) => {
   const isEdge = browser.toLowerCase().includes("edge");
 
   if (isEdge) {
+    if (justCheck) return { success: true };
+
     // Save login history ONLY after successful login
     const history = new LoginHistory({
       userId: user._id,
@@ -489,6 +491,16 @@ const checkLoginSecurity = async (user, req, res) => {
     return { success: true };
   } else {
     // Chrome and all other browsers require OTP
+    if (justCheck) {
+      return {
+        otpRequired: true,
+        userId: user._id,
+        email: user.email,
+        needsTrigger: true, // Signal frontend to show a "Click to verify" prompt
+        message: "Session detected. Security verification required."
+      };
+    }
+
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
@@ -747,8 +759,9 @@ app.get("/loggedinuser", async (req, res) => {
     const updatedUser = await checkSubscriptionExpiry(user);
 
     const isLogin = req.query.isLogin === "true" || req.query.isLogin === true;
+    const justCheck = req.query.justCheck === "true" || req.query.justCheck === true;
     if (isLogin) {
-      const securityCheck = await checkLoginSecurity(updatedUser, req, res);
+      const securityCheck = await checkLoginSecurity(updatedUser, req, res, justCheck);
       if (securityCheck.restricted) return res.status(403).send({ error: securityCheck.error });
       if (securityCheck.otpRequired) return res.status(200).send(securityCheck);
     }
@@ -756,6 +769,26 @@ app.get("/loggedinuser", async (req, res) => {
     return res.status(200).send(updatedUser);
   } catch (error) {
     return res.status(400).send({ error: error.message });
+  }
+});
+
+app.post("/trigger-login-otp", async (req, res) => {
+  try {
+    const { email, userId } = req.body;
+    let user;
+    if (userId) {
+      user = await User.findById(userId);
+    } else {
+      user = await User.findOne({ email: email?.trim().toLowerCase() });
+    }
+
+    if (!user) return res.status(404).send({ error: "User not found" });
+
+    const securityCheck = await checkLoginSecurity(user, req, res, false); // Triggers OTP
+    return res.status(200).send(securityCheck);
+  } catch (err) {
+    console.error("❌ Trigger Login OTP Error:", err);
+    res.status(500).send({ error: "Failed to send verification code." });
   }
 });
 

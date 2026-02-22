@@ -61,8 +61,9 @@ interface AuthContextType {
   requestLanguageChange: (language: string) => Promise<{ message: string }>;
   verifyLanguageChange: (otp: string) => Promise<void>;
   verifyLoginOtp: (email: string, otp: string) => Promise<void>;
+  triggerLoginOtp: (email: string, userId?: string) => Promise<void>;
   getLoginHistory: () => Promise<any[]>;
-  pendingOtpInfo: { email: string } | null;
+  pendingOtpInfo: { email: string, needsTrigger?: boolean } | null;
   pendingOtpUser: string | null;
   showOtpModal: boolean;
   setShowOtpModal: (show: boolean) => void;
@@ -82,7 +83,7 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [pendingOtpInfo, setPendingOtpInfo] = useState<{ email: string } | null>(null);
+  const [pendingOtpInfo, setPendingOtpInfo] = useState<{ email: string, needsTrigger?: boolean } | null>(null);
   const [pendingOtpUser, setPendingOtpUser] = useState<string | null>(null);
   const [showOtpModal, setShowOtpModal] = useState(false);
   useEffect(() => {
@@ -99,12 +100,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Check if we need to force an OTP check (e.g., first time this firebase session is seen)
           const needsCheck = !localStorage.getItem("twitter-user");
           const res = await axiosInstance.get("/loggedinuser", {
-            params: { email: firebaseUser.email, isLogin: needsCheck },
+            params: { email: firebaseUser.email, isLogin: needsCheck, justCheck: true },
           });
 
           if (res.data.otpRequired) {
-            console.log("🔒 Background OTP check required, pausing auto-login.");
-            setPendingOtpInfo({ email: firebaseUser.email });
+            console.log("🔒 Background verification check required.");
+            setPendingOtpInfo({
+              email: firebaseUser.email,
+              needsTrigger: res.data.needsTrigger
+            });
             setPendingOtpUser(res.data.userId);
             setShowOtpModal(true);
             setUser(null);
@@ -148,7 +152,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (res.data.otpRequired) {
         toast.success(res.data.message);
-        setPendingOtpInfo({ email: res.data.email });
+        setPendingOtpInfo({ email: res.data.email, needsTrigger: res.data.needsTrigger });
         setPendingOtpUser(res.data.userId);
         setShowOtpModal(true);
         return res.data;
@@ -226,6 +230,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       document.cookie = `NEXT_LOCALE=${res.data.preferredLanguage}; path=/; max-age=31536000`;
       // Refresh to apply locale and update middleware-driven translations
       window.location.reload();
+    }
+  };
+
+  const triggerLoginOtp = async (email: string, userId?: string) => {
+    setIsLoading(true);
+    try {
+      const res = await axiosInstance.post("/trigger-login-otp", { email, userId });
+      if (res.data.otpRequired) {
+        setPendingOtpInfo({ email: res.data.email, needsTrigger: false });
+        toast.success(res.data.message);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to send OTP");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -341,7 +360,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (userData?.otpRequired) {
         toast.success(userData.message);
-        setPendingOtpInfo({ email: userData.email });
+        setPendingOtpInfo({ email: userData.email, needsTrigger: userData.needsTrigger });
         setPendingOtpUser(userData.userId);
         setShowOtpModal(true);
         return userData; // Trigger OTP modal
@@ -436,6 +455,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
         verifyLanguageChange,
         verifyLoginOtp,
+        triggerLoginOtp,
         getLoginHistory,
         pendingOtpInfo,
         pendingOtpUser,

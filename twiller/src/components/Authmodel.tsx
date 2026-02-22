@@ -25,7 +25,7 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'login', initialEmail = '', startAtOtpStep = false }: AuthModalProps) {
-  const { login, signup, verifyLoginOtp, isLoading } = useAuth();
+  const { login, signup, verifyLoginOtp, triggerLoginOtp, isLoading, pendingOtpInfo, pendingOtpUser } = useAuth();
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [isOtpStep, setIsOtpStep] = useState(startAtOtpStep);
   const [otpValue, setOtpValue] = useState('');
@@ -198,57 +198,73 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
         <CardContent className="space-y-6">
           {isOtpStep ? (
             <div className="space-y-6">
-              <div className="text-center">
-                <p className="text-gray-400 text-sm mb-4">
-                  We've sent a 6-digit verification code to
-                  <br />
-                  <span className="text-white font-medium">{formData.email}</span>
-                </p>
-              </div>
-
-              <form onSubmit={handleOtpSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="otp" className="text-white">Verification Code</Label>
-                  <Input
-                    id="otp"
-                    type="text"
-                    placeholder="Enter 6-digit code"
-                    value={otpValue}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, '');
-                      if (val.length <= 6) setOtpValue(val);
-                    }}
-                    className="text-center text-2xl tracking-[10px] bg-transparent border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 h-16"
+              {pendingOtpInfo?.needsTrigger ? (
+                <div className="text-center space-y-4">
+                  <p className="text-gray-400 text-sm">
+                    A previous session was detected. For your security, we need to verify your identity.
+                  </p>
+                  <Button
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-full"
+                    onClick={() => triggerLoginOtp(formData.email, pendingOtpUser || undefined)}
                     disabled={isLoading}
-                    autoFocus
-                  />
+                  >
+                    {isLoading ? <LoadingSpinner size="sm" /> : "Send Verification Code"}
+                  </Button>
                 </div>
+              ) : (
+                <>
+                  <div className="text-center">
+                    <p className="text-gray-400 text-sm mb-4">
+                      We've sent a 6-digit verification code to
+                      <br />
+                      <span className="text-white font-medium">{formData.email}</span>
+                    </p>
+                  </div>
 
-                <Button
-                  type="submit"
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-full text-lg"
-                  disabled={isLoading || otpValue.length !== 6}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center space-x-2">
-                      <LoadingSpinner size="sm" />
-                      <span>Verifying...</span>
+                  <form onSubmit={handleOtpSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="otp" className="text-white">Verification Code</Label>
+                      <Input
+                        id="otp"
+                        type="text"
+                        placeholder="Enter 6-digit code"
+                        value={otpValue}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '');
+                          if (val.length <= 6) setOtpValue(val);
+                        }}
+                        className="text-center text-2xl tracking-[10px] bg-transparent border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 h-16"
+                        disabled={isLoading}
+                        autoFocus
+                      />
                     </div>
-                  ) : (
-                    'Verify and sign in'
-                  )}
-                </Button>
 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full text-blue-400 hover:text-blue-300"
-                  onClick={() => setIsOtpStep(false)}
-                  disabled={isLoading}
-                >
-                  Back to login
-                </Button>
-              </form>
+                    <Button
+                      type="submit"
+                      className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-full text-lg"
+                      disabled={isLoading || otpValue.length !== 6}
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center space-x-2">
+                          <LoadingSpinner size="sm" />
+                          <span>Verifying...</span>
+                        </div>
+                      ) : (
+                        'Verify and sign in'
+                      )}
+                    </Button>
+                  </form>
+                </>
+              )}
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full text-blue-400 hover:text-blue-300"
+                onClick={() => setIsOtpStep(false)}
+                disabled={isLoading}
+              >
+                Back to login
+              </Button>
             </div>
           ) : (
             <>
@@ -422,6 +438,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
           )}
         </CardContent>
       </Card>
-    </div>
+    </div >
   );
 }
