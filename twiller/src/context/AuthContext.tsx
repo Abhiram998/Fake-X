@@ -63,6 +63,9 @@ interface AuthContextType {
   verifyLoginOtp: (email: string, otp: string) => Promise<void>;
   getLoginHistory: () => Promise<any[]>;
   pendingOtpInfo: { email: string } | null;
+  pendingOtpUser: string | null;
+  showOtpModal: boolean;
+  setShowOtpModal: (show: boolean) => void;
   clearPendingOtp: () => void;
 }
 
@@ -80,19 +83,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [pendingOtpInfo, setPendingOtpInfo] = useState<{ email: string } | null>(null);
+  const [pendingOtpUser, setPendingOtpUser] = useState<string | null>(null);
+  const [showOtpModal, setShowOtpModal] = useState(false);
   useEffect(() => {
-    // Check local storage first for persistence
+    // Check local storage but don't set user immediately if we might need verification
     const savedUser = localStorage.getItem("twitter-user");
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-        setIsLoading(false);
-      } catch (e) {
-        console.error("Failed to parse saved user", e);
-      }
+    if (!savedUser) {
+      setIsLoading(false);
     }
 
-    // Secondary check for Firebase session
+    // We will rely on onAuthStateChanged to verify the session and set the user properly.
     const unsubcribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser?.email) {
         try {
@@ -103,10 +103,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
 
           if (res.data.otpRequired) {
-            // If we are in a background sync and OTP is required, 
-            // we DO NOT set the user. The login/googlesignin functions will handle the modal.
-            console.log("🔒 Background OTP check required, skipping auto-login.");
+            console.log("🔒 Background OTP check required, pausing auto-login.");
             setPendingOtpInfo({ email: firebaseUser.email });
+            setPendingOtpUser(res.data.userId);
+            setShowOtpModal(true);
+            setUser(null);
+            localStorage.removeItem("twitter-user");
             setIsLoading(false);
             return;
           }
@@ -114,13 +116,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (res.data && res.data.email) {
             setUser(res.data);
             localStorage.setItem("twitter-user", JSON.stringify(res.data));
+          } else {
+            setUser(null);
+            localStorage.removeItem("twitter-user");
           }
         } catch (err) {
           console.log("Failed to fetch user after Firebase login:", err);
+          setUser(null);
+          localStorage.removeItem("twitter-user");
         }
-      } else if (!localStorage.getItem("twitter-user")) {
-        // Only clear if we don't have a backend session
+      } else {
         setUser(null);
+        localStorage.removeItem("twitter-user");
       }
       setIsLoading(false);
     });
@@ -142,6 +149,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.data.otpRequired) {
         toast.success(res.data.message);
         setPendingOtpInfo({ email: res.data.email });
+        setPendingOtpUser(res.data.userId);
+        setShowOtpModal(true);
         return res.data;
       }
 
@@ -168,11 +177,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const verifyLoginOtp = async (email: string, otp: string) => {
     setIsLoading(true);
     try {
-      const res = await axiosInstance.post("/verify-login-otp", { email, code: otp });
-      if (res.data) {
+      // Use email or userId if available
+      const payload = { email, code: otp };
+      const res = await axiosInstance.post("/verify-login-otp", payload);
+
+      if (res.data && res.data.email) {
         setUser(res.data);
         localStorage.setItem("twitter-user", JSON.stringify(res.data));
         toast.success("Login successful!");
+        setPendingOtpInfo(null);
+        setPendingOtpUser(null);
+        setShowOtpModal(false);
       }
     } catch (error: any) {
       const message = error.response?.data?.error || "Invalid OTP";
@@ -257,6 +272,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setUser(null);
     setPendingOtpInfo(null);
+    setPendingOtpUser(null);
+    setShowOtpModal(false);
     await signOut(auth);
     localStorage.removeItem("twitter-user");
   };
@@ -325,6 +342,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (userData?.otpRequired) {
         toast.success(userData.message);
         setPendingOtpInfo({ email: userData.email });
+        setPendingOtpUser(userData.userId);
+        setShowOtpModal(true);
         return userData; // Trigger OTP modal
       }
 
@@ -419,7 +438,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         verifyLoginOtp,
         getLoginHistory,
         pendingOtpInfo,
-        clearPendingOtp: () => setPendingOtpInfo(null),
+        pendingOtpUser,
+        showOtpModal,
+        setShowOtpModal,
+        clearPendingOtp: () => {
+          setPendingOtpInfo(null);
+          setPendingOtpUser(null);
+          setShowOtpModal(false);
+        },
       }}
     >
       {children}
