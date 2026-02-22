@@ -138,6 +138,38 @@ const checkSubscriptionExpiry = async (user) => {
 };
 
 // OTP Endpoints
+const applyMobileRestriction = (req, res) => {
+  const parser = new UAParser(req.headers["user-agent"]);
+  const userAgent = req.headers["user-agent"] || "";
+
+  let isMobile = false;
+  const parsedDevice = parser.getDevice();
+
+  if (parsedDevice.type === "mobile" || parsedDevice.type === "tablet") {
+    isMobile = true;
+  }
+
+  if (/android|iphone|ipad|ipod|mobile/i.test(userAgent)) {
+    isMobile = true;
+  }
+
+  const now = new Date();
+  const istTime = new Date(
+    now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+
+  const hour = istTime.getHours();
+
+  if (isMobile && (hour < 10 || hour >= 13)) {
+    console.log(`🛑 [BLOCK] Mobile restrict: Hour=${hour} IST, UA=${userAgent}`);
+    res.status(403).json({
+      message: "Mobile login allowed only between 10:00 AM and 1:00 PM IST."
+    });
+    return true;
+  }
+  return false;
+};
+
 app.post("/request-otp", async (req, res) => {
   try {
     const { email } = req.body;
@@ -462,29 +494,11 @@ const checkLoginSecurity = async (user, req, res, justCheck = false) => {
   let isMobile = false;
   const parsedDevice = parser.getDevice();
 
-  // Primary detection
   if (parsedDevice.type === "mobile" || parsedDevice.type === "tablet") {
     isMobile = true;
   }
-
-  // Strong fallback detection
   if (/android|iphone|ipad|ipod|mobile/i.test(userAgent)) {
     isMobile = true;
-  }
-
-  // PART 3: Mobile Login Time Restriction (Moved to top as requested)
-  if (isMobile) {
-    const now = new Date();
-    const istTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
-    const hour = istTime.getHours();
-
-    if (hour < 10 || hour >= 13) {
-      console.log(`🛑 [DEBUG] Mobile restriction active: Device=Mobile, Hour=${hour} IST`);
-      return {
-        restricted: true,
-        error: "Mobile login allowed only between 10:00 AM and 1:00 PM IST."
-      };
-    }
   }
 
   console.log("Detected isMobile:", isMobile);
@@ -540,6 +554,7 @@ const checkLoginSecurity = async (user, req, res, justCheck = false) => {
 
 
 app.post("/login", async (req, res) => {
+  if (applyMobileRestriction(req, res)) return;
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -630,21 +645,20 @@ app.post("/verify-login-otp", async (req, res) => {
     }
 
     // PART 1: Capture Login Details (again, during verification)
+    const parser = new UAParser(req.headers["user-agent"]);
     const browser = parser.getBrowser().name || "Unknown";
     const os = parser.getOS().name || "Unknown";
 
-    // Robust Device type detection (Combined Strategy)
-    const screenWidthFromReq = req.body.screenWidth || req.query.screenWidth;
-    let deviceType = "desktop";
-
-    if (
-      parser.getDevice().type === "mobile" ||
-      parser.getDevice().type === "tablet" ||
-      /mobile/i.test(req.headers["user-agent"]) ||
-      (screenWidthFromReq && screenWidthFromReq < 768)
-    ) {
-      deviceType = "mobile";
+    let isMobile = false;
+    const parsedDevice = parser.getDevice();
+    if (parsedDevice.type === "mobile" || parsedDevice.type === "tablet") {
+      isMobile = true;
     }
+    if (/android|iphone|ipad|ipod|mobile/i.test(req.headers["user-agent"] || "")) {
+      isMobile = true;
+    }
+
+    const deviceType = isMobile ? "mobile" : "desktop";
 
     const ipAddress = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 
@@ -734,14 +748,13 @@ mongoose
 
 //Register
 app.post("/register", async (req, res) => {
+  if (applyMobileRestriction(req, res)) return;
   try {
     const { email, mobile } = req.body;
     if (!email) {
       return res.status(400).send({ error: "Email is required" });
     }
-    if (!mobile || !/^[0-9]{10,15}$/.test(mobile)) {
-      return res.status(400).send({ error: "A valid mobile number (10-15 digits) is required" });
-    }
+    // Mobile is now optional (as requested)
     const existinguser = await User.findOne({ email });
     if (existinguser) {
       if (req.body.isLogin) {
@@ -776,6 +789,8 @@ app.post("/register", async (req, res) => {
 });
 // Loggedinuser
 app.get("/loggedinuser", async (req, res) => {
+  const isLogin = req.query.isLogin === "true" || req.query.isLogin === true;
+  if (isLogin && applyMobileRestriction(req, res)) return;
   try {
     const { email } = req.query;
     if (!email) {
@@ -804,6 +819,7 @@ app.get("/loggedinuser", async (req, res) => {
 });
 
 app.post("/trigger-login-otp", async (req, res) => {
+  if (applyMobileRestriction(req, res)) return;
   try {
     const { email, userId } = req.body;
     let user;

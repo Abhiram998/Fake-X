@@ -95,9 +95,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
         newErrors.displayName = 'Display name is required';
       }
 
-      if (!formData.mobile.trim()) {
-        newErrors.mobile = 'Mobile number is required';
-      } else if (!/^[0-9]{10,15}$/.test(formData.mobile)) {
+      if (formData.mobile.trim() && !/^[0-9]{10,15}$/.test(formData.mobile)) {
         newErrors.mobile = 'Mobile number must be 10-15 digits';
       }
     }

@@ -6,14 +6,14 @@ const UserSchema = mongoose.Schema({
   email: { type: String, required: true, unique: true },
   mobile: {
     type: String,
-    required: true,
+    required: false,
     validate: {
       validator: function (v) {
+        if (!v) return true; // Optional
         return /^[0-9]{10,15}$/.test(v);
       },
       message: "Invalid mobile number format"
-    },
-    unique: true
+    }
   },
   phone: { type: String, sparse: true }, // Keep for legacy, but mobile is now primary
   password: { type: String, select: false }, // Hashed password
