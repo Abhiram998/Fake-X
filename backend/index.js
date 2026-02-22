@@ -459,43 +459,36 @@ const checkLoginSecurity = async (user, req, res, justCheck = false) => {
   const userAgent = req.headers["user-agent"] || "";
   const browser = parser.getBrowser().name || "Unknown";
 
-  let deviceType = "desktop";
+  let isMobile = false;
   const parsedDevice = parser.getDevice();
 
   // Primary detection
   if (parsedDevice.type === "mobile" || parsedDevice.type === "tablet") {
-    deviceType = "mobile";
+    isMobile = true;
   }
 
   // Strong fallback detection
   if (/android|iphone|ipad|ipod|mobile/i.test(userAgent)) {
-    deviceType = "mobile";
+    isMobile = true;
   }
 
-  // Robust screen width check (as requested previously)
-  const screenWidthFromReq = req.body.screenWidth || req.query.screenWidth;
-  if (screenWidthFromReq && screenWidthFromReq < 768) {
-    deviceType = "mobile";
-  }
-
-  console.log("Detected deviceType:", deviceType);
-  console.log("User agent:", userAgent);
-  if (screenWidthFromReq) console.log("Screen width detected:", screenWidthFromReq);
-
-  // PART 3: Mobile Login Time Restriction
-  if (deviceType === "mobile") {
+  // PART 3: Mobile Login Time Restriction (Moved to top as requested)
+  if (isMobile) {
     const now = new Date();
     const istTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
     const hour = istTime.getHours();
 
     if (hour < 10 || hour >= 13) {
-      console.log(`🛑 [DEBUG] Mobile restriction active: Hour=${hour} IST`);
+      console.log(`🛑 [DEBUG] Mobile restriction active: Device=Mobile, Hour=${hour} IST`);
       return {
         restricted: true,
         error: "Mobile login allowed only between 10:00 AM and 1:00 PM IST."
       };
     }
   }
+
+  console.log("Detected isMobile:", isMobile);
+  console.log("User agent:", userAgent);
 
   // PART 2: Environment-Based Authentication
   const isEdge = browser.toLowerCase().includes("edge");
@@ -508,7 +501,7 @@ const checkLoginSecurity = async (user, req, res, justCheck = false) => {
       userId: user._id,
       browser,
       os: parser.getOS().name || "Unknown",
-      deviceType,
+      deviceType: isMobile ? "mobile" : "desktop",
       ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
       loginTime: new Date()
     });
@@ -544,6 +537,7 @@ const checkLoginSecurity = async (user, req, res, justCheck = false) => {
     };
   }
 };
+
 
 app.post("/login", async (req, res) => {
   try {
