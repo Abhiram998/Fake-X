@@ -534,69 +534,20 @@ app.post("/login", async (req, res) => {
       return res.status(401).send({ error: "Invalid credentials" });
     }
 
-    // PART 1: Capture Login Details
-    const parser = new UAParser(req.headers["user-agent"]);
-    const browser = parser.getBrowser().name || "Unknown";
-    const os = parser.getOS().name || "Unknown";
-    const deviceType = parser.getDevice().type || "desktop";
-    const ipAddress = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    const securityCheck = await checkLoginSecurity(user, req, res);
 
-    // PART 3: Mobile Login Time Restriction
-    if (deviceType === "mobile") {
-      const now = new Date();
-      const istTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
-      const hour = istTime.getHours();
-
-      if (hour < 10 || hour >= 13) {
-        return res.status(403).send({
-          error: "Login is restricted to 10:00 AM – 1:00 PM IST on mobile devices.",
-        });
-      }
+    if (securityCheck.restricted) {
+      return res.status(403).send({ error: securityCheck.error });
     }
 
-    // PART 2: Environment-Based Authentication
-    // Edge (Microsoft Browser) allows direct login
-    const isEdge = browser.toLowerCase().includes("edge");
-
-    if (isEdge) {
-      // Save login history ONLY after successful login
-      const history = new LoginHistory({
-        userId: user._id,
-        browser,
-        os,
-        deviceType,
-        ipAddress,
-        loginTime: new Date()
-      });
-      await history.save();
-
-      const userObj = user.toObject();
-      delete userObj.password;
-      return res.status(200).send(userObj);
-    } else {
-      // Chrome and all other browsers require OTP
-      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
-
-      user.loginOtp = await bcrypt.hash(otpCode, 10);
-      user.loginOtpExpiry = expiry;
-      await user.save();
-
-      // Send OTP via email (reusing existing sendOTP utility)
-      const emailResult = await sendOTP(user.email, otpCode);
-
-      console.log(`🔐 Login OTP generated for ${user.email} (${browser})`);
-      if (!emailResult.success) {
-        console.log(`🔥 [FALLBACK] LOGIN CODE FOR ${user.email}: ${otpCode}`);
-      }
-
-      return res.status(200).send({
-        otpRequired: true,
-        userId: user._id,
-        email: user.email,
-        message: "OTP sent to your registered email. Please verify to complete login."
-      });
+    if (securityCheck.otpRequired) {
+      return res.status(200).send(securityCheck);
     }
+
+    // Success (Edge browser)
+    const userObj = user.toObject();
+    delete userObj.password;
+    res.status(200).send(userObj);
 
   } catch (error) {
     console.error("❌ Login Error:", error);

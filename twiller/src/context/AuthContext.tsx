@@ -141,6 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (res.data.otpRequired) {
         toast.success(res.data.message);
+        setPendingOtpInfo({ email: res.data.email });
         return res.data;
       }
 
