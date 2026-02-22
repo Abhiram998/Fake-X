@@ -10,6 +10,10 @@ import {
   Camera,
   Bell,
   Zap,
+  ShieldCheck,
+  Smartphone,
+  Globe,
+  Monitor
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useTranslations } from "next-intl";
@@ -111,6 +115,9 @@ export default function ProfilePage() {
   const [tweets, setTweets] = useState<any>([]);
   const [loading, setloading] = useState(false);
   const [toggleLoading, setToggleLoading] = useState(false);
+  const { getLoginHistory } = useAuth();
+  const [loginHistory, setLoginHistory] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const fetchTweets = async () => {
     try {
@@ -126,7 +133,20 @@ export default function ProfilePage() {
 
   useEffect(() => {
     fetchTweets();
+    fetchLoginHistory();
   }, []);
+
+  const fetchLoginHistory = async () => {
+    try {
+      setHistoryLoading(true);
+      const history = await getLoginHistory();
+      setLoginHistory(history);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
   if (!user) return null;
 
@@ -318,6 +338,12 @@ export default function ProfilePage() {
           >
             {t('media')}
           </TabsTrigger>
+          <TabsTrigger
+            value="security"
+            className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-gray-400 hover:bg-gray-900/50 py-4 font-semibold"
+          >
+            Security
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="posts" className="mt-0">
@@ -391,6 +417,62 @@ export default function ProfilePage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="security" className="mt-0">
+          <div className="p-4 space-y-4">
+            <div className="flex items-center space-x-2 mb-6">
+              <ShieldCheck className="h-6 w-6 text-blue-500" />
+              <h2 className="text-xl font-bold text-white">Login History</h2>
+            </div>
+
+            <div className="space-y-3">
+              {historyLoading ? (
+                <div className="py-10 text-center text-gray-400">Loading history...</div>
+              ) : loginHistory.length === 0 ? (
+                <div className="py-10 text-center text-gray-400">No login records found.</div>
+              ) : (
+                loginHistory.map((login: any) => (
+                  <div
+                    key={login._id}
+                    className="flex items-center justify-between p-4 bg-gray-900/40 border border-gray-800 rounded-xl hover:bg-gray-900 transition-colors"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="p-2 bg-gray-800 rounded-lg">
+                        {login.deviceType === 'mobile' ? (
+                          <Smartphone className="h-5 w-5 text-blue-400" />
+                        ) : login.deviceType === 'desktop' ? (
+                          <Monitor className="h-5 w-5 text-gray-400" />
+                        ) : (
+                          <Globe className="h-5 w-5 text-gray-400" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-white font-medium">
+                          {login.browser} on {login.os}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          IP: {login.ipAddress}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="hidden sm:block text-right">
+                      <p className="text-sm text-gray-400">
+                        {new Date(login.loginTime).toLocaleDateString()}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(login.loginTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <p className="text-[10px] text-gray-600 mt-8 uppercase tracking-widest text-center">
+              End-to-End Session Transparency
+            </p>
+          </div>
         </TabsContent>
       </Tabs>
       <Editprofile

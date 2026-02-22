@@ -60,6 +60,8 @@ interface AuthContextType {
   updateTweetCount: (newCount: number) => void;
   requestLanguageChange: (language: string) => Promise<{ message: string }>;
   verifyLanguageChange: (otp: string) => Promise<void>;
+  verifyLoginOtp: (email: string, otp: string) => Promise<void>;
+  getLoginHistory: () => Promise<any[]>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -121,14 +123,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Step 1: Try backend login first (for password resets)
+      // Step 1: Try backend login
       const res = await axiosInstance.post("/login", { email, password });
 
-      if (res.data) {
+      if (res.data.requiresOtp) {
+        // Multi-Step Auth required
+        toast.success(res.data.message);
+        return res.data; // Return to the component to show OTP input
+      }
+
+      if (res.data && !res.data.requiresOtp) {
         setUser(res.data);
         localStorage.setItem("twitter-user", JSON.stringify(res.data));
 
-        // Step 2: Sync with Firebase in the background (Optional/Silent)
+        // Step 2: Sync with Firebase in the background
         try {
           await signInWithEmailAndPassword(auth, email, password);
         } catch (fbErr) {
@@ -137,22 +145,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error: any) {
       console.error("Login Error:", error);
-      // Fallback to Firebase for existing accounts that haven't reset password
-      try {
-        const usercred = await signInWithEmailAndPassword(auth, email, password);
-        const firebaseuser = usercred.user;
-        const res = await axiosInstance.get("/loggedinuser", {
-          params: { email: firebaseuser.email },
-        });
-        if (res.data) {
-          setUser(res.data);
-          localStorage.setItem("twitter-user", JSON.stringify(res.data));
-        }
-      } catch (fbErr: any) {
-        throw fbErr; // Re-throw to show in UI
-      }
+      const errorMessage = error.response?.data?.error || error.message || "Login failed";
+      throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const verifyLoginOtp = async (email: string, otp: string) => {
+    setIsLoading(true);
+    try {
+      const res = await axiosInstance.post("/verify-login-otp", { email, code: otp });
+      if (res.data) {
+        setUser(res.data);
+        localStorage.setItem("twitter-user", JSON.stringify(res.data));
+        toast.success("Login successful!");
+      }
+    } catch (error: any) {
+      const message = error.response?.data?.error || "Invalid OTP";
+      toast.error(message);
+      throw new Error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getLoginHistory = async () => {
+    if (!user) return [];
+    try {
+      const res = await axiosInstance.get("/login-history", {
+        params: { userId: user._id }
+      });
+      return res.data;
+    } catch (err) {
+      console.error("Failed to fetch login history:", err);
+      return [];
+    }
+  };
+
+  const verifyLanguageChange = async (otp: string) => {
+    if (!user) throw new Error("Not logged in");
+    const res = await axiosInstance.post("/verify-language-change", {
+      email: user.email,
+      code: otp,
+    });
+    if (res.data.preferredLanguage) {
+      const updatedUser = { ...user, preferredLanguage: res.data.preferredLanguage };
+      setUser(updatedUser);
+      localStorage.setItem("twitter-user", JSON.stringify(updatedUser));
+      toast.success("Language updated successfully!");
+      // Set cookie explicitly before reload to ensure middleware picks it up immediately
+      document.cookie = `NEXT_LOCALE=${res.data.preferredLanguage}; path=/; max-age=31536000`;
+      // Refresh to apply locale and update middleware-driven translations
+      window.location.reload();
     }
   };
 
@@ -344,23 +389,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
           return res.data;
         },
-        verifyLanguageChange: async (otp: string) => {
-          if (!user) throw new Error("Not logged in");
-          const res = await axiosInstance.post("/verify-language-change", {
-            email: user.email,
-            code: otp,
-          });
-          if (res.data.preferredLanguage) {
-            const updatedUser = { ...user, preferredLanguage: res.data.preferredLanguage };
-            setUser(updatedUser);
-            localStorage.setItem("twitter-user", JSON.stringify(updatedUser));
-            toast.success("Language updated successfully!");
-            // Set cookie explicitly before reload to ensure middleware picks it up immediately
-            document.cookie = `NEXT_LOCALE=${res.data.preferredLanguage}; path=/; max-age=31536000`;
-            // Refresh to apply locale and update middleware-driven translations
-            window.location.reload();
-          }
-        },
+        verifyLanguageChange,
+        verifyLoginOtp,
+        getLoginHistory,
       }}
     >
       {children}

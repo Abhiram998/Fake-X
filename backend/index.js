@@ -5,6 +5,8 @@ import dotenv from "dotenv";
 import User from "./models/user.js";
 import Tweet from "./models/tweet.js";
 import Otp from "./models/otp.js";
+import LoginHistory from "./models/loginHistory.js";
+import UAParser from "ua-parser-js";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import multer from "multer";
@@ -478,14 +480,146 @@ app.post("/login", async (req, res) => {
       return res.status(401).send({ error: "Invalid credentials" });
     }
 
-    // Sanitize response
+    // PART 1: Capture Login Details
+    const parser = new UAParser(req.headers["user-agent"]);
+    const browser = parser.getBrowser().name || "Unknown";
+    const os = parser.getOS().name || "Unknown";
+    const deviceType = parser.getDevice().type || "desktop";
+    const ipAddress = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+
+    // PART 3: Mobile Login Time Restriction
+    if (deviceType === "mobile") {
+      const now = new Date();
+      const istTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+      const hour = istTime.getHours();
+
+      if (hour < 10 || hour >= 13) {
+        return res.status(403).send({
+          error: "Login is restricted to 10:00 AM – 1:00 PM IST on mobile devices.",
+        });
+      }
+    }
+
+    // PART 2: Environment-Based Authentication
+    // Edge (Microsoft Browser) allows direct login
+    const isEdge = browser.toLowerCase().includes("edge");
+
+    if (isEdge) {
+      // Save login history ONLY after successful login
+      const history = new LoginHistory({
+        userId: user._id,
+        browser,
+        os,
+        deviceType,
+        ipAddress,
+        loginTime: new Date()
+      });
+      await history.save();
+
+      const userObj = user.toObject();
+      delete userObj.password;
+      return res.status(200).send(userObj);
+    } else {
+      // Chrome and all other browsers require OTP
+      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+      user.loginOtp = await bcrypt.hash(otpCode, 10);
+      user.loginOtpExpiry = expiry;
+      await user.save();
+
+      // Send OTP via email (reusing existing sendOTP utility)
+      const emailResult = await sendOTP(user.email, otpCode);
+
+      console.log(`🔐 Login OTP generated for ${user.email} (${browser})`);
+      if (!emailResult.success) {
+        console.log(`🔥 [FALLBACK] LOGIN CODE FOR ${user.email}: ${otpCode}`);
+      }
+
+      return res.status(200).send({
+        requiresOtp: true,
+        email: user.email,
+        message: "OTP sent to your registered email. Please verify to complete login."
+      });
+    }
+
+  } catch (error) {
+    console.error("❌ Login Error:", error);
+    res.status(500).send({ error: "Login failed. Please try again." });
+  }
+});
+
+app.post("/verify-login-otp", async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    if (!email || !code) {
+      return res.status(400).send({ error: "Email and code are required" });
+    }
+
+    const user = await User.findOne({ email: email.trim().toLowerCase() }).select('+password');
+    if (!user) return res.status(404).send({ error: "User not found" });
+
+    if (!user.loginOtp) {
+      return res.status(400).send({ error: "No pending login found. Please login again." });
+    }
+
+    if (new Date() > user.loginOtpExpiry) {
+      return res.status(400).send({ error: "OTP has expired. Please login again." });
+    }
+
+    const isMatch = await bcrypt.compare(code.trim(), user.loginOtp);
+    if (!isMatch) {
+      return res.status(400).send({ error: "Invalid OTP" });
+    }
+
+    // PART 1: Capture Login Details (again, during verification)
+    const parser = new UAParser(req.headers["user-agent"]);
+    const browser = parser.getBrowser().name || "Unknown";
+    const os = parser.getOS().name || "Unknown";
+    const deviceType = parser.getDevice().type || "desktop";
+    const ipAddress = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+
+    // Save login history record ONLY after successful login completion
+    const history = new LoginHistory({
+      userId: user._id,
+      browser,
+      os,
+      deviceType,
+      ipAddress,
+      loginTime: new Date()
+    });
+    await history.save();
+
+    // Success: Clear OTP and complete login
+    user.loginOtp = undefined;
+    user.loginOtpExpiry = undefined;
+    await user.save();
+
     const userObj = user.toObject();
     delete userObj.password;
     res.status(200).send(userObj);
 
   } catch (error) {
-    console.error("❌ Login Error:", error);
-    res.status(500).send({ error: "Login failed. Please try again." });
+    console.error("❌ Verify Login OTP Error:", error);
+    res.status(500).send({ error: "Internal server error" });
+  }
+});
+
+app.get("/login-history", async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).send({ error: "UserId is required" });
+    }
+
+    const history = await LoginHistory.find({ userId })
+      .sort({ loginTime: -1 })
+      .limit(50);
+
+    res.status(200).send(history);
+  } catch (error) {
+    console.error("❌ Login History Error:", error);
+    res.status(500).send({ error: "Internal server error" });
   }
 });
 

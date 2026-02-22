@@ -32,6 +32,8 @@ const UserSchema = mongoose.Schema({
   pendingLanguage: { type: String },
   languageOtp: { type: String },
   languageOtpExpiry: { type: Date },
+  loginOtp: { type: String },
+  loginOtpExpiry: { type: Date },
 });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);
