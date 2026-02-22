@@ -179,6 +179,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
+      setManualLoginInProgress(false);
     }
   };
 
@@ -387,6 +388,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.error(error.response?.data?.message || error.message || "Login failed");
     } finally {
       setIsLoading(false);
+      setManualLoginInProgress(false);
     }
   };
 
