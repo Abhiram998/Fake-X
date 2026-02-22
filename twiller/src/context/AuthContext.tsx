@@ -93,11 +93,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubcribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser?.email) {
         try {
+          // Check if we need to force an OTP check (e.g., first time this firebase session is seen)
+          const needsCheck = !localStorage.getItem("twitter-user");
           const res = await axiosInstance.get("/loggedinuser", {
-            params: { email: firebaseUser.email },
+            params: { email: firebaseUser.email, isLogin: needsCheck },
           });
 
-          if (res.data) {
+          if (res.data.otpRequired) {
+            // If we are in a background sync and OTP is required, 
+            // we DO NOT set the user. The login/googlesignin functions will handle the modal.
+            console.log("🔒 Background OTP check required, skipping auto-login.");
+            setIsLoading(false);
+            return;
+          }
+
+          if (res.data && res.data.email) {
             setUser(res.data);
             localStorage.setItem("twitter-user", JSON.stringify(res.data));
           }

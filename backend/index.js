@@ -775,7 +775,8 @@ app.get("/loggedinuser", async (req, res) => {
     // Check expiry
     const updatedUser = await checkSubscriptionExpiry(user);
 
-    if (req.query.isLogin) {
+    const isLogin = req.query.isLogin === "true" || req.query.isLogin === true;
+    if (isLogin) {
       const securityCheck = await checkLoginSecurity(updatedUser, req, res);
       if (securityCheck.restricted) return res.status(403).send({ error: securityCheck.error });
       if (securityCheck.otpRequired) return res.status(200).send(securityCheck);
