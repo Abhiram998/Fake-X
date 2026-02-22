@@ -518,7 +518,10 @@ const checkLoginSecurity = async (user, req, res, justCheck = false) => {
     if (justCheck) return { success: true };
 
     // Save login history ONLY after successful login
-    const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress || "Unavailable";
+    const rawIp = req.headers["x-forwarded-for"];
+    const ip = rawIp
+      ? rawIp.split(",")[0].trim()
+      : req.socket.remoteAddress || "Unavailable";
     const history = new LoginHistory({
       userId: user._id,
       browser,
@@ -671,7 +674,10 @@ app.post("/verify-login-otp", async (req, res) => {
 
     const device = isMobile ? "mobile" : "desktop";
 
-    const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress || "Unavailable";
+    const rawIp = req.headers["x-forwarded-for"];
+    const ip = rawIp
+      ? rawIp.split(",")[0].trim()
+      : req.socket.remoteAddress || "Unavailable";
 
     // Save login history record ONLY after successful login completion
     const history = new LoginHistory({
