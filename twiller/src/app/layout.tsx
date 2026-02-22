@@ -39,8 +39,14 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = await getLocale();
-  const messages = await getMessages();
+  const locale = await getLocale() || 'en';
+  let messages;
+  try {
+    messages = await getMessages();
+  } catch (error) {
+    console.error("Failed to load messages:", error);
+    messages = {};
+  }
 
   return (
     <html lang={locale} className="dark">
