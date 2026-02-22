@@ -243,9 +243,8 @@ export default function SubscriptionPage() {
                         Premium Benefits
                     </h3>
                 </div>
-
-                {/* Plan Carousel Container */}
-                <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 px-4 pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                {/* Plan Grid Container */}
+                <div className="grid grid-cols-2 gap-4 px-4 pb-2">
                     {PLANS.map((plan) => {
                         const isCurrent = currentPlan === plan.name;
                         const isSelected = viewingPlan === plan.name;
@@ -254,7 +253,7 @@ export default function SubscriptionPage() {
                             <div
                                 key={plan.name}
                                 onClick={() => setViewingPlan(plan.name)}
-                                className={`shrink-0 w-[80vw] sm:w-[260px] snap-start rounded-2xl flex flex-col transition-all cursor-pointer bg-[#16181c] border-2 ${isSelected ? 'border-white' : 'border-[#2f3336] hover:border-gray-500'}`}
+                                className={`rounded-2xl flex flex-col transition-all cursor-pointer bg-[#16181c] border-2 ${isSelected ? 'border-white' : 'border-[#2f3336] hover:border-gray-500'}`}
                             >
                                 <div className="h-28 bg-[url('https://abs.twimg.com/sticky/illustrations/blue_header.png')] bg-cover bg-center rounded-t-xl relative flex items-center justify-center border-b border-[#2f3336] overflow-hidden">
                                     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
