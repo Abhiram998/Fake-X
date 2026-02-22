@@ -1,3 +1,3 @@
-import * as Brevo from '@getbrevo/brevo';
-console.log(typeof Brevo.TransactionalEmailsApi);
-console.log(Brevo);
+import { TransactionalEmailsApi, SendSmtpEmail } from '@getbrevo/brevo';
+const apiInstance = new TransactionalEmailsApi();
+console.log(apiInstance);

@@ -1,14 +1,13 @@
-import * as BrevoPackage from '@getbrevo/brevo';
+import { TransactionalEmailsApi, SendSmtpEmail } from '@getbrevo/brevo';
 
 const sendLanguageOTP = async (identity, otpCode, isEmail = true) => {
-    const Brevo = BrevoPackage.default || BrevoPackage;
     if (isEmail) {
         try {
-            let apiInstance = new Brevo.TransactionalEmailsApi();
+            let apiInstance = new TransactionalEmailsApi();
             let apiKey = apiInstance.authentications['apiKey'];
             apiKey.apiKey = process.env.BREVO_API_KEY;
 
-            let sendSmtpEmail = new Brevo.SendSmtpEmail();
+            let sendSmtpEmail = new SendSmtpEmail();
             sendSmtpEmail.subject = "Language Change Verification";
             sendSmtpEmail.htmlContent = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e1e8ed; border-radius: 12px; background-color: #ffffff;">

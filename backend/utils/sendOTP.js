@@ -1,14 +1,13 @@
-import * as BrevoPackage from '@getbrevo/brevo';
+import { TransactionalEmailsApi, SendSmtpEmail } from '@getbrevo/brevo';
 
 const sendOTP = async (email, otpCode) => {
     try {
-        const Brevo = BrevoPackage.default || BrevoPackage;
-        let apiInstance = new Brevo.TransactionalEmailsApi();
+        let apiInstance = new TransactionalEmailsApi();
 
         let apiKey = apiInstance.authentications['apiKey'];
         apiKey.apiKey = process.env.BREVO_API_KEY;
 
-        let sendSmtpEmail = new Brevo.SendSmtpEmail();
+        let sendSmtpEmail = new SendSmtpEmail();
 
         sendSmtpEmail.subject = "Your Twiller Audio Verification Code";
         sendSmtpEmail.htmlContent = `
