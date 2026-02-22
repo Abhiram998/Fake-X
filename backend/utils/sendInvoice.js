@@ -1,13 +1,13 @@
-import { TransactionalEmailsApi, SendSmtpEmail } from '@getbrevo/brevo';
+import brevo from '@getbrevo/brevo';
 
 const sendInvoice = async (email, invoiceData) => {
     try {
-        let apiInstance = new TransactionalEmailsApi();
+        let apiInstance = new brevo.TransactionalEmailsApi();
 
         let apiKey = apiInstance.authentications['apiKey'];
         apiKey.apiKey = process.env.BREVO_API_KEY;
 
-        let sendSmtpEmail = new SendSmtpEmail();
+        let sendSmtpEmail = new brevo.SendSmtpEmail();
 
         sendSmtpEmail.subject = `Your Twiller Invoice - ${invoiceData.invoiceNumber}`;
         sendSmtpEmail.htmlContent = `

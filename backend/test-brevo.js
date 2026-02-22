@@ -1,3 +1,6 @@
-import { TransactionalEmailsApi, SendSmtpEmail } from '@getbrevo/brevo';
-const apiInstance = new TransactionalEmailsApi();
-console.log(apiInstance);
+import BrevoPackage from '@getbrevo/brevo';
+const Brevo = BrevoPackage.default || BrevoPackage;
+
+const api = new Brevo.TransactionalEmailsApi();
+const email = new Brevo.SendSmtpEmail();
+console.log(api, email);
