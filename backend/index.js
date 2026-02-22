@@ -6,7 +6,7 @@ import User from "./models/user.js";
 import Tweet from "./models/tweet.js";
 import Otp from "./models/otp.js";
 import LoginHistory from "./models/loginHistory.js";
-import UAParser from "ua-parser-js";
+import { UAParser } from "ua-parser-js";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import multer from "multer";
