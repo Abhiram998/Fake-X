@@ -1,4 +1,5 @@
 import { getRequestConfig } from 'next-intl/server';
+import { cookies } from 'next/headers';
 
 const messageLoaders: Record<string, () => Promise<any>> = {
     en: () => import('../messages/en.json'),
@@ -9,8 +10,11 @@ const messageLoaders: Record<string, () => Promise<any>> = {
     fr: () => import('../messages/fr.json'),
 };
 
-export default getRequestConfig(async ({ locale }) => {
-    const currentLocale = locale || 'en';
+export default getRequestConfig(async () => {
+    const cookieStore = await cookies();
+    const locale = cookieStore.get('NEXT_LOCALE')?.value || 'en';
+    const currentLocale = ['en', 'es', 'hi', 'pt', 'zh', 'fr'].includes(locale) ? locale : 'en';
+
     const loadMessages = messageLoaders[currentLocale] || messageLoaders.en;
 
     return {
