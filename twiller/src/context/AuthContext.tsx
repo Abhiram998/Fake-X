@@ -182,8 +182,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error: any) {
       console.error("Login Error:", error);
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || "Login failed";
-      throw new Error(errorMessage);
+      throw error;
     } finally {
       setIsLoading(false);
       setManualLoginInProgress(false);

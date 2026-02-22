@@ -13,6 +13,7 @@ import { Separator } from './ui/separator';
 import { useAuth } from '@/context/AuthContext';
 import TwitterLogo from './Twitterlogo';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
 
 
 
@@ -129,11 +130,15 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
       resetForm();
     } catch (error: any) {
       console.error("Auth Error:", error);
-      const backendError = error.response?.data?.error || error.response?.data?.message || error.message;
+      const backendError = error.response?.data?.error || error.response?.data?.message || error.message || "An unexpected error occurred.";
+
+      if (error.response?.status === 403) {
+        toast.error(backendError);
+        return; // Suppress inline overall/form errors for 403
+      }
+
       setErrors({
-        general: backendError
-          ? `${mode === 'login' ? 'Login' : 'Registration'} failed: ${backendError}`
-          : 'Authentication failed. Please check your connection and try again.'
+        general: `${mode === 'login' ? 'Login' : 'Registration'} failed: ${backendError}`
       });
     }
   };
