@@ -1,28 +1,54 @@
 /**
- * Utility for sending SMS OTPs.
- * Abstracted to support various providers like Twilio.
+ * Utility for sending SMS OTPs using Brevo (formerly Sendinblue) Transactional SMS API.
  */
 const sendSMS = async (mobile, otpCode) => {
     try {
-        // Implementation for SMS provider (e.g., Twilio) would go here.
-        // For now, we simulate the sending process but structure it for real use.
+        if (!process.env.BREVO_API_KEY) {
+            console.warn('⚠️ BREVO_API_KEY is missing. SMS sending will fail.');
+            return { success: false, error: 'SMS configuration missing' };
+        }
 
-        console.log(`📡 [SMS API] Sending OTP ${otpCode} to ${mobile}`);
+        console.log(`📡 [SMS API] Attempting to send OTP ${otpCode} to ${mobile}`);
 
-        // Example Twilio Implementation (commented out):
-        /*
-        const client = require('twilio')(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
-        await client.messages.create({
-            body: `Your Twiller verification code is: ${otpCode}`,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            to: `+${mobile}`
+        // Ensure the mobile number has a country code. 
+        // Most providers (including Brevo) require it.
+        // If the number doesn't start with a '91' and is 10 digits, we assume it's Indian for this demo,
+        // but ideally the user should provide the full international number.
+        let recipient = mobile;
+        if (recipient.length === 10 && !recipient.startsWith('0')) {
+            recipient = '91' + recipient; // Default to India if 10 digits
+        }
+
+        const response = await fetch('https://api.brevo.com/v3/transactionalSMS/sms', {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'api-key': process.env.BREVO_API_KEY,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: 'transactional',
+                sender: 'Twiller',
+                recipient: recipient,
+                content: `Your Twiller verification code is: ${otpCode}. It will expire in 5 minutes.`
+            })
         });
-        */
 
-        // Returning success as if the SMS was sent.
-        return { success: true, provider: 'Simulated/Abstracted' };
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('❌ Brevo SMS API Error:', data);
+            return {
+                success: false,
+                error: data.message || 'Failed to send SMS via Brevo'
+            };
+        }
+
+        console.log(`✅ SMS OTP sent successfully to ${recipient} via Brevo`);
+        return { success: true, messageId: data.messageId };
+
     } catch (error) {
-        console.error('❌ SMS Sending Error:', error);
+        console.error('❌ SMS Sending Exception:', error);
         return { success: false, error: error.message };
     }
 };
