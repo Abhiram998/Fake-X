@@ -350,6 +350,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(updatedUser);
             localStorage.setItem("twitter-user", JSON.stringify(updatedUser));
             toast.success("Language updated successfully!");
+            // Set cookie explicitly before reload to ensure middleware picks it up immediately
+            document.cookie = `NEXT_LOCALE=${res.data.preferredLanguage}; path=/; max-age=31536000`;
             // Refresh to apply locale and update middleware-driven translations
             window.location.reload();
           }
