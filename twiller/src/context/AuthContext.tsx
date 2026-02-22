@@ -178,7 +178,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       // Use email or userId if available
-      const payload = { email, code: otp };
+      const payload = { userId: pendingOtpUser, email, code: otp };
       const res = await axiosInstance.post("/verify-login-otp", payload);
 
       if (res.data && res.data.email) {

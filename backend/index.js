@@ -557,23 +557,43 @@ app.post("/login", async (req, res) => {
 
 app.post("/verify-login-otp", async (req, res) => {
   try {
-    const { email, code } = req.body;
-    if (!email || !code) {
-      return res.status(400).send({ error: "Email and code are required" });
+    const { userId, email, code } = req.body;
+    console.log(`🔍 [DEBUG] OTP Verification started: userId=${userId}, email=${email}, code=${code}`);
+
+    if ((!userId && !email) || !code) {
+      return res.status(400).send({ error: "UserId/Email and code are required" });
     }
 
-    const user = await User.findOne({ email: email.trim().toLowerCase() }).select('+password');
-    if (!user) return res.status(404).send({ error: "User not found" });
+    let user;
+    if (userId) {
+      user = await User.findById(userId).select('+password +loginOtp +loginOtpExpiry');
+    } else {
+      user = await User.findOne({ email: email.trim().toLowerCase() }).select('+password +loginOtp +loginOtpExpiry');
+    }
+
+    if (!user) {
+      console.log(`❌ [DEBUG] User not found for userId=${userId} / email=${email}`);
+      return res.status(404).send({ error: "User not found" });
+    }
+
+    console.log(`📋 [DEBUG] User Found: ${user.email}`);
+    console.log(`🔐 [DEBUG] Stored OTP Hash: ${user.loginOtp ? 'Present' : 'NULL'}`);
+    console.log(`⏰ [DEBUG] Stored Expiry: ${user.loginOtpExpiry}`);
+    console.log(`🕒 [DEBUG] Current Time: ${new Date()}`);
 
     if (!user.loginOtp) {
+      console.log(`⚠️ [DEBUG] No pending login found for user ${user.email}`);
       return res.status(400).send({ error: "No pending login found. Please login again." });
     }
 
     if (new Date() > user.loginOtpExpiry) {
+      console.log(`🛑 [DEBUG] OTP Expired for user ${user.email}`);
       return res.status(400).send({ error: "OTP has expired. Please login again." });
     }
 
     const isMatch = await bcrypt.compare(code.trim(), user.loginOtp);
+    console.log(`🎯 [DEBUG] OTP Match Result: ${isMatch}`);
+
     if (!isMatch) {
       return res.status(400).send({ error: "Invalid OTP" });
     }
