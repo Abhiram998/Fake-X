@@ -449,10 +449,10 @@ export default function ProfilePage() {
                       </div>
                       <div>
                         <p className="text-white font-medium capitalize">
-                          {login.browser || 'Unknown Browser'} on {login.os || 'Unknown OS'} <span className="text-gray-400 font-normal">({login.device || 'Unknown Device'})</span>
+                          {login.browser || 'Unknown Browser'} on {login.os || 'Unknown OS'} <span className="text-gray-400 font-normal">({login.device})</span>
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
-                          IP: {login.ip || 'Unknown IP'}
+                          IP: {login.ip}
                         </p>
                       </div>
                     </div>
