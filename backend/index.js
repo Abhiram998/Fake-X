@@ -26,15 +26,24 @@ import crypto from "crypto";
 
 dotenv.config();
 const app = express();
+const allowedOrigins = [
+  "https://fake-x.vercel.app",
+  "http://localhost:3000"
+];
+
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "*", // Adjust this in production
-    methods: ["GET", "POST", "PATCH", "DELETE"],
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true
   },
 });
 
-app.use(cors());
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 app.use(express.json());
 
 // Cloudinary Config
