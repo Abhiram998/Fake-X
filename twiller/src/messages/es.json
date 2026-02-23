@@ -94,6 +94,9 @@
         "processing": "Procesando...",
         "secure_payments": "Todos los pagos se procesan de forma segura a través de Stripe.",
         "auto_expire": "Las suscripciones caducan automáticamente después de 30 días. Sin renovación automática.",
-        "invoice_sent": "Se enviará una factura a su correo electrónico registrado después del pago."
+        "invoice_sent": "Se enviará una factura a su correo electrónico registrado después del pago.",
+        "premium_benefits": "Beneficios Premium",
+        "start_at": "Desde ₹{price}",
+        "active_badge": "Activo"
     }
 }

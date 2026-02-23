@@ -17,6 +17,8 @@ const TweetComposer = ({ onTweetPosted }: any) => {
   const { navigate } = useNavigation();
   const tCommon = useTranslations('Common');
   const tFeed = useTranslations('Feed');
+  const tAudio = useTranslations('AudioTweet');
+  const tSub = useTranslations('Subscriptions');
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [imageurl, setimageurl] = useState("");
@@ -110,7 +112,7 @@ const TweetComposer = ({ onTweetPosted }: any) => {
                 {currentPlan} · {planLimit === Infinity ? "∞" : `${tweetsUsed}/${planLimit}`} {tCommon('tweet')}
               </span>
               {atLimit && (
-                <span className="text-[10px] text-red-400 font-bold uppercase truncate">Limit reached</span>
+                <span className="text-[10px] text-red-400 font-bold uppercase truncate">{tSub('limit_reached_badge')}</span>
               )}
             </div>
             <form onSubmit={handleSubmit}>
@@ -128,7 +130,7 @@ const TweetComposer = ({ onTweetPosted }: any) => {
                       <Music className="h-4 w-4 text-white" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-blue-100">Audio Tweet Attached</p>
+                      <p className="text-sm font-semibold text-blue-100">{tAudio('attached')}</p>
                       <audio src={audiourl} controls className="h-8 mt-1" />
                     </div>
                   </div>

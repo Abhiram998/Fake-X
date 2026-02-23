@@ -94,6 +94,9 @@
         "processing": "处理中...",
         "secure_payments": "所有款项均通过 Stripe 安全处理。",
         "auto_expire": "订阅在 30 天后自动到期。无自动续订。",
-        "invoice_sent": "付款后，发票将发送到您的注册邮箱。"
+        "invoice_sent": "付款后，发票将发送到您的注册邮箱。",
+        "premium_benefits": "Premium 权益",
+        "start_at": "₹{price} 起",
+        "active_badge": "生效中"
     }
 }

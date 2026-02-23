@@ -17,7 +17,11 @@ const getPlans = (t: any) => [
         icon: <Zap className="h-6 w-6 text-gray-400" />,
         gradient: "from-gray-900 to-gray-800",
         textColor: "text-gray-300",
-        features: ["1 tweet per day", "Basic access", "No payment required"],
+        features: [
+            t('tweets_per_day', { count: 1 }),
+            t('basic_access'),
+            t('no_payment')
+        ],
     },
     {
         name: "Bronze",
@@ -28,7 +32,11 @@ const getPlans = (t: any) => [
         icon: <Star className="h-6 w-6 text-amber-500" />,
         gradient: "from-amber-950 to-gray-900",
         textColor: "text-amber-400",
-        features: ["3 tweets per day", "Standard access", "Valid for 30 days"],
+        features: [
+            t('tweets_per_day', { count: 3 }),
+            t('standard_access'),
+            t('valid_days', { count: 30 })
+        ],
     },
     {
         name: "Silver",
@@ -39,7 +47,11 @@ const getPlans = (t: any) => [
         icon: <Star className="h-6 w-6 text-slate-300" />,
         gradient: "from-slate-900 to-gray-900",
         textColor: "text-slate-300",
-        features: ["5 tweets per day", "Priority access", "Valid for 30 days"],
+        features: [
+            t('tweets_per_day', { count: 5 }),
+            t('priority_access'),
+            t('valid_days', { count: 30 })
+        ],
     },
     {
         name: "Gold",
@@ -50,7 +62,12 @@ const getPlans = (t: any) => [
         icon: <Crown className="h-6 w-6 text-yellow-400" />,
         gradient: "from-yellow-950 to-gray-900",
         textColor: "text-yellow-400",
-        features: ["Unlimited tweets", "Full access", "Valid for 30 days", "Priority support"],
+        features: [
+            t('unlimited_tweets'),
+            t('full_access'),
+            t('valid_days', { count: 30 }),
+            t('priority_support')
+        ],
     },
 ];
 
@@ -261,7 +278,7 @@ export default function SubscriptionPage() {
                                         <h2 className="text-2xl font-black text-white">{plan.name}</h2>
                                         {isCurrent && (
                                             <div className="text-[9px] bg-white text-black px-2 py-0.5 rounded font-bold uppercase tracking-widest leading-none">
-                                                Active
+                                                {t('active_badge') || 'Active'}
                                             </div>
                                         )}
                                     </div>

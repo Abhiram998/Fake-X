@@ -94,6 +94,9 @@
         "processing": "Processando...",
         "secure_payments": "Todos os pagamentos são processados com segurança pelo Stripe.",
         "auto_expire": "As assinaturas expiram automaticamente após 30 dias. Sem renovação automática.",
-        "invoice_sent": "A fatura será enviada para o seu e-mail registrado após o pagamento."
+        "invoice_sent": "A fatura será enviada para o seu e-mail registrado após o pagamento.",
+        "premium_benefits": "Benefícios Premium",
+        "start_at": "A partir de ₹{price}",
+        "active_badge": "Ativo"
     }
 }

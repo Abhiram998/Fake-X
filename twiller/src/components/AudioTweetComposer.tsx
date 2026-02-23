@@ -9,6 +9,7 @@ import { Label } from "./ui/label";
 import { useAuth } from "@/context/AuthContext";
 import axiosInstance from "@/lib/axiosInstance";
 import { DateTime } from "luxon";
+import { useTranslations } from "next-intl";
 
 interface AudioTweetComposerProps {
     onAudioUploaded: (audioUrl: string) => void;
@@ -17,6 +18,9 @@ interface AudioTweetComposerProps {
 
 export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioTweetComposerProps) {
     const { user } = useAuth();
+    const t = useTranslations('AudioTweet');
+    const tLang = useTranslations('Language');
+    const tCommon = useTranslations('Common');
     const [step, setStep] = useState<"otp-request" | "otp-verify" | "upload">("otp-request");
     const [email, setEmail] = useState(user?.email || "");
     const [otp, setOtp] = useState("");
@@ -43,9 +47,9 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
 
     useEffect(() => {
         if (!isTimeAllowed()) {
-            setError("Audio tweets are allowed only between 2:00 PM and 7:00 PM IST.");
+            setError(t('time_restriction'));
         }
-    }, []);
+    }, [t]);
 
     const handleRequestOtp = async () => {
         setIsLoading(true);
@@ -54,7 +58,7 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
             await axiosInstance.post("/request-otp", { email });
             setStep("otp-verify");
         } catch (err: any) {
-            setError(err.response?.data?.error || "Failed to send OTP");
+            setError(err.response?.data?.error || t('otp_failed'));
         } finally {
             setIsLoading(false);
         }
@@ -67,7 +71,7 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
             await axiosInstance.post("/verify-otp", { email, code: otp });
             setStep("upload");
         } catch (err: any) {
-            setError(err.response?.data?.error || "Invalid OTP");
+            setError(err.response?.data?.error || t('invalid_otp'));
         } finally {
             setIsLoading(false);
         }
@@ -85,7 +89,7 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
             mediaRecorder.onstop = () => {
                 const blob = new Blob(chunks, { type: "audio/webm" });
                 if (blob.size > 100 * 1024 * 1024) {
-                    setError("File size exceeds 100MB limit.");
+                    setError(t('limit_exceeded'));
                     return;
                 }
                 setAudioBlob(blob);
@@ -105,7 +109,7 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
                 });
             }, 1000);
         } catch (err) {
-            setError("Microphone permission denied or not found.");
+            setError(t('mic_denied'));
         }
     };
 
@@ -123,7 +127,7 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
         const file = e.target.files?.[0];
         if (file) {
             if (file.size > 100 * 1024 * 1024) {
-                setError("File size exceeds 100MB limit.");
+                setError(t('limit_exceeded'));
                 return;
             }
 
@@ -131,7 +135,7 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
             audio.src = URL.createObjectURL(file);
             audio.onloadedmetadata = () => {
                 if (audio.duration > 300) {
-                    setError("Audio duration exceeds 5 minutes limit.");
+                    setError(t('duration_exceeded'));
                     return;
                 }
                 setAudioBlob(file);
@@ -157,7 +161,7 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
             });
             onAudioUploaded(res.data.audioUrl);
         } catch (err: any) {
-            setError(err.response?.data?.error || "Upload failed");
+            setError(err.response?.data?.error || t('otp_failed'));
         } finally {
             setIsLoading(false);
         }
@@ -174,9 +178,9 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
             <CardContent className="p-6 space-y-4">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold flex items-center gap-2">
-                        <Mic className="text-blue-400" /> Audio Tweet
+                        <Mic className="text-blue-400" /> {t('title')}
                     </h2>
-                    <Button variant="ghost" size="sm" onClick={onCancel} className="text-gray-400">Cancel</Button>
+                    <Button variant="ghost" size="sm" onClick={onCancel} className="text-gray-400">{tCommon('cancel')}</Button>
                 </div>
 
                 {error && (
@@ -187,9 +191,9 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
 
                 {step === "otp-request" && (
                     <div className="space-y-4">
-                        <p className="text-sm text-gray-400">Verify your identity to enable audio features.</p>
+                        <p className="text-sm text-gray-400">{t('verify_identity')}</p>
                         <div className="space-y-2">
-                            <Label>Registered Email</Label>
+                            <Label>{tLang('email')}</Label>
                             <Input
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -203,20 +207,20 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
                             onClick={handleRequestOtp}
                             disabled={isLoading || !isTimeAllowed()}
                         >
-                            {isLoading ? "Sending..." : "Request OTP"}
+                            {isLoading ? t('sending') : t('request_otp')}
                         </Button>
                     </div>
                 )}
 
                 {step === "otp-verify" && (
                     <div className="space-y-4">
-                        <p className="text-sm text-gray-400">Enter the code sent to {email}.</p>
+                        <p className="text-sm text-gray-400">{tLang('otp_sent', { method: tLang('email') })}</p>
                         <div className="space-y-2">
-                            <Label>OTP Code</Label>
+                            <Label>{t('otp_code')}</Label>
                             <Input
                                 value={otp}
                                 onChange={(e) => setOtp(e.target.value)}
-                                placeholder="6-digit code"
+                                placeholder={t('placeholder_code')}
                                 className="bg-black border-gray-700 text-center text-2xl tracking-widest"
                             />
                         </div>
@@ -225,10 +229,10 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
                             onClick={handleVerifyOtp}
                             disabled={isLoading || otp.length < 6}
                         >
-                            Verify OTP
+                            {t('verify_otp')}
                         </Button>
                         <Button variant="link" onClick={() => setStep("otp-request")} className="w-full text-xs text-gray-500">
-                            Resend Code
+                            {t('resend_code')}
                         </Button>
                     </div>
                 )}
@@ -263,7 +267,7 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
                                     <div className="flex items-center gap-3">
                                         <Volume2 className="text-blue-400" />
                                         <div>
-                                            <p className="text-sm font-medium">Recording Ready</p>
+                                            <p className="text-sm font-medium">{t('recording_ready')}</p>
                                             <p className="text-xs text-gray-400">{formatTime(duration)}</p>
                                         </div>
                                     </div>
@@ -277,7 +281,7 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
                                     onClick={handleUploadToBackend}
                                     disabled={isLoading}
                                 >
-                                    <Send className="h-4 w-4" /> {isLoading ? "Uploading..." : "Ready to Post"}
+                                    <Send className="h-4 w-4" /> {isLoading ? t('uploading') : t('ready_to_post')}
                                 </Button>
                             </div>
                         )}
