@@ -138,9 +138,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
         }
       } else {
-        // No Firebase user: ensure local state is cleared
-        setUser(null);
-        localStorage.removeItem("twitter-user");
+        // No Firebase user: DO NOT implicitly clear if a backend session exists 
+        // because password resets make Firebase sync fail while backend login succeeds.
+        if (currentLocalUser) {
+          try {
+            const parsed = JSON.parse(currentLocalUser);
+            // Verify backend session still exists quietly
+            axiosInstance.get("/loggedinuser", {
+              params: {
+                email: parsed.email,
+                isLogin: false,
+                justCheck: true
+              }
+            }).then(res => {
+              if (res.data && res.data.email) {
+                setUser(res.data);
+                localStorage.setItem("twitter-user", JSON.stringify(res.data));
+              } else {
+                setUser(null);
+                localStorage.removeItem("twitter-user");
+              }
+            }).catch(() => {
+              setUser(null);
+              localStorage.removeItem("twitter-user");
+            }).finally(() => {
+              setIsLoading(false);
+            });
+            return; // Wait for the API callback to set isLoading to false
+          } catch (e) {
+            setUser(null);
+            localStorage.removeItem("twitter-user");
+          }
+        } else {
+          setUser(null);
+          localStorage.removeItem("twitter-user");
+        }
       }
       setIsLoading(false);
     });
