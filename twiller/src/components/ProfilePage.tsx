@@ -227,24 +227,24 @@ export default function ProfilePage() {
 
       {/* Profile Info */}
       <div className="px-4 pb-4 mt-12">
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <h1 className="text-2xl font-bold text-white">
+        <div className="flex items-start justify-between mb-3 gap-3">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold text-white truncate lg:whitespace-normal overflow-anywhere">
               {user.displayName}
             </h1>
-            <p className="text-gray-400">@{user.username}</p>
+            <p className="text-gray-400 truncate">@{user.username}</p>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="p-2 rounded-full hover:bg-gray-900"
+            className="p-2 rounded-full hover:bg-gray-900 shrink-0"
           >
             <MoreHorizontal className="h-5 w-5 text-gray-400" />
           </Button>
         </div>
 
         {user.bio && (
-          <p className="text-white mb-3 leading-relaxed">{user.bio}</p>
+          <p className="text-white mb-3 leading-relaxed overflow-anywhere wrap-safe">{user.bio}</p>
         )}
 
         <div className="flex items-center space-x-4 text-gray-400 text-sm mb-3">

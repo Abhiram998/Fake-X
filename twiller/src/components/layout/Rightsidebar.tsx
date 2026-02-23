@@ -38,24 +38,24 @@ const suggestions = [
 export default function RightSidebar() {
   const t = useTranslations('RightSidebar');
   return (
-    <div className="w-80 p-4 space-y-4">
+    <div className="w-full lg:w-80 p-4 space-y-4 min-w-0">
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 shrink-0" />
         <Input
           placeholder={t('search')}
-          className="pl-12 bg-gray-900 border-gray-800 text-white placeholder-gray-400 rounded-full py-3"
+          className="pl-12 bg-gray-900 border-gray-800 text-white placeholder-gray-400 rounded-full py-3 w-full"
         />
       </div>
 
       {/* Subscribe to Premium */}
-      <Card className="bg-gray-900 border-gray-800">
-        <CardContent className="p-4">
-          <h3 className="text-white text-xl font-bold mb-2">{t('subscribe_title')}</h3>
-          <p className="text-gray-400 text-sm mb-4">
+      <Card className="bg-gray-900 border-gray-800 overflow-hidden">
+        <CardContent className="p-4 flex flex-col">
+          <h3 className="text-white text-xl font-bold mb-2 break-words">{t('subscribe_title')}</h3>
+          <p className="text-gray-400 text-sm mb-4 break-words overflow-anywhere">
             {t('subscribe_desc')}
           </p>
-          <Button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-full">
+          <Button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-full w-fit whitespace-normal h-auto py-2 px-4 text-left">
             {t('subscribe_button')}
           </Button>
         </CardContent>

@@ -32,6 +32,8 @@ interface User {
   preferredLanguage?: string;
   phone?: string;
   mobile?: string;
+  followersCount?: number;
+  followingCount?: number;
 }
 
 interface AuthContextType {

@@ -51,8 +51,10 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
 
   return (
     <div className="flex flex-col h-screen w-full border-r border-gray-800 bg-black sticky top-0">
-      <div className="p-4 flex flex-row items-center justify-between">
-        <TwitterLogo size="lg" className="text-white" />
+      <div className="p-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="shrink-0">
+          <TwitterLogo size="lg" className="text-white" />
+        </div>
         <LanguageSelector />
       </div>
 
@@ -63,10 +65,10 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
               <Button
                 variant="ghost"
                 className={`w-full justify-center md:justify-start text-xl py-6 px-4 rounded-full hover:bg-gray-900 ${item.current ? 'font-bold' : 'font-normal'
-                  } text-white hover:text-white transition-all`}
+                  } text-white hover:text-white transition-all h-auto min-h-[56px]`}
                 onClick={() => onNavigate?.(item.page)}
               >
-                <div className="relative">
+                <div className="relative shrink-0">
                   <item.icon className="md:mr-4 h-7 w-7" />
                   {item.badge && (
                     <span className="absolute -top-1 -right-1 md:hidden bg-blue-500 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center">
@@ -74,9 +76,11 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
                     </span>
                   )}
                 </div>
-                <span className="hidden md:inline">{item.name}</span>
+                <span className="hidden md:inline truncate lg:whitespace-normal lg:text-left min-w-0 overflow-hidden text-ellipsis">
+                  {item.name}
+                </span>
                 {item.badge && (
-                  <span className="hidden md:flex ml-auto bg-blue-500 text-white text-xs rounded-full h-5 w-5 items-center justify-center">
+                  <span className="hidden md:flex ml-auto bg-blue-500 text-white text-xs rounded-full h-5 w-5 items-center justify-center shrink-0">
                     3
                   </span>
                 )}

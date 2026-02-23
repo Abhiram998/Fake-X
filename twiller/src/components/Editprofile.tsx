@@ -102,17 +102,17 @@ const Editprofile = ({ isopen, onclose }: any) => {
       <Card className="w-full max-w-2xl bg-black border-gray-800 text-white max-h-[90vh] overflow-y-auto">
         <CardHeader className="relative pb-4 border-b border-gray-800">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 min-w-0 flex-1">
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white bg-black hover:bg-gray-900"
+                className="text-white bg-black hover:bg-gray-900 shrink-0"
                 onClick={onclose}
                 disabled={isLoading}
               >
                 <X className="h-5 w-5" />
               </Button>
-              <CardTitle className="text-xl font-bold">{t('title')}</CardTitle>
+              <CardTitle className="text-xl font-bold truncate">{t('title')}</CardTitle>
             </div>
             <Button
               type="submit"

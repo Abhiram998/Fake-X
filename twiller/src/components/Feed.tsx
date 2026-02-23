@@ -176,18 +176,18 @@ const Feed = () => {
         </div>
 
         <Tabs defaultValue="foryou" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-transparent border-b border-gray-800 rounded-none h-auto">
+          <TabsList className="flex w-full bg-transparent border-b border-gray-800 rounded-none h-auto p-0">
             <TabsTrigger
               value="foryou"
-              className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-1 data-[state=active]:border-blue-100 data-[state=active]:rounded-none text-gray-400 hover:bg-gray-900/50 py-4 font-semibold"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-gray-400 hover:bg-gray-900/50 py-4 font-semibold transition-all min-w-0 px-2"
             >
-              {tFeed('for_you')}
+              <span className="truncate">{tFeed('for_you')}</span>
             </TabsTrigger>
             <TabsTrigger
               value="following"
-              className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-1 data-[state=active]:border-blue-100 data-[state=active]:rounded-none text-gray-400 hover:bg-gray-900/50 py-4 font-semibold"
+              className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-gray-400 hover:bg-gray-900/50 py-4 font-semibold transition-all min-w-0 px-2"
             >
-              {tFeed('following')}
+              <span className="truncate">{tFeed('following')}</span>
             </TabsTrigger>
           </TabsList>
         </Tabs>

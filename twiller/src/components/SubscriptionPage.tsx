@@ -166,9 +166,9 @@ export default function SubscriptionPage() {
                 <div className="px-4 space-y-3">
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex items-start gap-3">
                         <Lock className="h-5 w-5 text-gray-500 shrink-0 mt-0.5" />
-                        <div>
-                            <p className="text-sm font-semibold text-gray-200">{t('payment_window_title')}</p>
-                            <p className="text-xs text-gray-400 mt-1">
+                        <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-gray-200 break-words">{t('payment_window_title')}</p>
+                            <p className="text-xs text-gray-400 mt-1 overflow-anywhere wrap-safe">
                                 {t.rich('payment_window_desc', { strong: (chunks) => <strong className="text-gray-200">{chunks}</strong> })}
                             </p>
                         </div>
@@ -221,7 +221,7 @@ export default function SubscriptionPage() {
                                     <div className="w-full h-full bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full" />
                                 </div>
                             )}
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 overflow-anywhere">
                                 {currentPlan === "Gold"
                                     ? t('unlimited')
                                     : usagePercent >= 100
@@ -239,8 +239,8 @@ export default function SubscriptionPage() {
 
                 {/* Plan Carousel Title */}
                 <div className="px-4">
-                    <h3 className="text-xl font-bold tracking-tight text-white mb-1 flex items-center gap-2">
-                        Premium Benefits
+                    <h3 className="text-xl font-bold tracking-tight text-white mb-1 flex items-center gap-2 flex-wrap overflow-anywhere">
+                        {t('premium_benefits') || 'Premium Benefits'}
                     </h3>
                 </div>
                 {/* Plan Grid Container */}
@@ -267,18 +267,18 @@ export default function SubscriptionPage() {
                                     </div>
                                 </div>
 
-                                <div className="p-4 flex-1 space-y-3">
-                                    <div className="flex items-end gap-1 mb-2">
-                                        <span className="text-2xl font-bold text-white leading-none">{plan.price === 0 ? "Free" : `₹${plan.price}`}</span>
-                                        {plan.price > 0 && <span className="text-xs text-gray-500 font-medium">/ month</span>}
+                                <div className="p-4 flex-1 flex flex-col min-w-0">
+                                    <div className="flex items-baseline flex-wrap gap-1 mb-2">
+                                        <span className="text-2xl font-bold text-white leading-none break-all">{plan.price === 0 ? "Free" : `₹${plan.price}`}</span>
+                                        {plan.price > 0 && <span className="text-xs text-gray-500 font-medium whitespace-nowrap">/ month</span>}
                                     </div>
-                                    <div className="text-[13px] font-bold text-gray-300 uppercase tracking-widest border-b border-gray-800 pb-2 mb-3">
+                                    <div className="text-[13px] font-bold text-gray-300 uppercase tracking-widest border-b border-gray-800 pb-2 mb-3 truncate">
                                         Enhanced Experience
                                     </div>
-                                    <div className="space-y-4 pb-2">
+                                    <div className="space-y-4 pb-2 flex-1">
                                         {plan.features.map((f) => (
-                                            <div key={f} className="flex justify-between items-start gap-4">
-                                                <span className="text-[14px] text-gray-400 leading-tight">{f}</span>
+                                            <div key={f} className="flex justify-between items-start gap-2">
+                                                <span className="text-[14px] text-gray-400 leading-tight overflow-anywhere wrap-safe">{f}</span>
                                                 <svg viewBox="0 0 24 24" aria-hidden="true" className="w-[16px] h-[16px] shrink-0 fill-[#00ba7c] mt-0.5"><g><path d="M12 1.75C6.34 1.75 1.75 6.34 1.75 12S6.34 22.25 12 22.25 22.25 17.66 22.25 12 17.66 1.75 12 1.75zm-.81 14.68l-4.1-3.27 1.25-1.57 2.47 1.98 3.97-5.47 1.62 1.18-5.21 7.15z"></path></g></svg>
                                             </div>
                                         ))}
@@ -302,19 +302,23 @@ export default function SubscriptionPage() {
                         if (plan) handleSubscribe(plan.name, plan.price);
                     }}
                     disabled={loading || viewingPlan === "Free" || currentPlan === viewingPlan}
-                    className={`w-full max-w-sm mx-auto rounded-full py-3.5 text-[16px] font-bold transition-all flex justify-center items-center ${loading ? 'bg-[#333639] text-[#71767b] cursor-wait' : (viewingPlan === "Free" || currentPlan === viewingPlan) ? 'bg-[#333639] text-[#71767b] cursor-not-allowed' : 'bg-white text-black hover:bg-gray-200 active:scale-[0.98]'}`}
+                    className={`w-full max-w-sm mx-auto rounded-full py-3.5 text-[16px] font-bold transition-all flex justify-center items-center px-4 ${loading ? 'bg-[#333639] text-[#71767b] cursor-wait' : (viewingPlan === "Free" || currentPlan === viewingPlan) ? 'bg-[#333639] text-[#71767b] cursor-not-allowed' : 'bg-white text-black hover:bg-gray-200 active:scale-[0.98]'}`}
                 >
                     {loading && viewingPlan === selectedPlan ? (
                         <span className="flex items-center justify-center gap-2">
                             <div className="h-5 w-5 border-2 border-[#71767b] border-t-white rounded-full animate-spin" />
-                            Processing...
+                            <span className="truncate">Processing...</span>
                         </span>
                     ) : currentPlan === viewingPlan ? (
-                        "Current Plan"
+                        <span className="truncate">{t('current_plan_button') || "Current Plan"}</span>
                     ) : viewingPlan === "Free" ? (
-                        "Default Plan"
+                        <span className="truncate">Default Plan</span>
                     ) : (
-                        `Starting at ₹${PLANS.find(p => p.name === viewingPlan)?.price.toFixed(2)}`
+                        <span className="truncate">
+                            {t('start_at', {
+                                price: (PLANS.find(p => p.name === viewingPlan)?.price ?? 0).toFixed(2)
+                            }) || `Starting at ₹${(PLANS.find(p => p.name === viewingPlan)?.price ?? 0).toFixed(2)}`}
+                        </span>
                     )}
                 </button>
             </div>

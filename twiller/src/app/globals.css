@@ -131,3 +131,22 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Fix for long translated words */
+.overflow-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.hyphens-auto {
+  hyphens: auto;
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+.wrap-safe {
+  white-space: normal;
+  overflow-wrap: break-word;
+}

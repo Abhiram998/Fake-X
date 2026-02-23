@@ -105,12 +105,12 @@ const TweetComposer = ({ onTweetPosted }: any) => {
               </div>
             )}
             {/* Plan usage chip */}
-            <div className="flex items-center gap-2 mb-2">
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${atLimit ? "bg-red-500/20 text-red-400" : "bg-gray-800 text-gray-500"}`}>
+            <div className="flex items-center flex-wrap gap-2 mb-2 min-w-0">
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-normal text-center ${atLimit ? "bg-red-500/20 text-red-400" : "bg-gray-800 text-gray-500"}`}>
                 {currentPlan} · {planLimit === Infinity ? "∞" : `${tweetsUsed}/${planLimit}`} {tCommon('tweet')}
               </span>
               {atLimit && (
-                <span className="text-[10px] text-red-400">Limit reached</span>
+                <span className="text-[10px] text-red-400 font-bold uppercase truncate">Limit reached</span>
               )}
             </div>
             <form onSubmit={handleSubmit}>
@@ -193,9 +193,9 @@ const TweetComposer = ({ onTweetPosted }: any) => {
                   </Button>
                 </div>
                 <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
-                  <div className="flex items-center space-x-2">
-                    <Globe className="h-4 w-4 text-blue-400" />
-                    <span className="text-xs sm:text-sm text-blue-400 font-semibold whitespace-nowrap">
+                  <div className="flex items-center space-x-2 min-w-0">
+                    <Globe className="h-4 w-4 text-blue-400 shrink-0" />
+                    <span className="text-xs sm:text-sm text-blue-400 font-semibold truncate hover:whitespace-normal transition-all overflow-anywhere">
                       {tFeed('everyone_can_reply')}
                     </span>
                   </div>
