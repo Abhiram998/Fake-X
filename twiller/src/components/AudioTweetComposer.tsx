@@ -258,7 +258,7 @@ export default function AudioTweetComposer({ onAudioUploaded, onCancel }: AudioT
 
                                 <div className="text-center">
                                     <p className="text-lg font-mono">{formatTime(duration)}</p>
-                                    <p className="text-xs text-gray-500">Max 5:00 / 100MB</p>
+                                    <p className="text-xs text-gray-500">{t('max_limits')}</p>
                                 </div>
                             </div>
                         ) : (

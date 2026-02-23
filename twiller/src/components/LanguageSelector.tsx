@@ -48,7 +48,7 @@ export default function LanguageSelector() {
     const handleLanguageSelect = async (langCode: string) => {
         if (langCode === currentLocale) return;
         if (!user) {
-            toast.error("Please login to change language");
+            toast.error(t("login_required"));
             return;
         }
 
@@ -60,7 +60,7 @@ export default function LanguageSelector() {
             setIsOtpOpen(true);
             toast.success(res.message);
         } catch (error: any) {
-            toast.error(error.response?.data?.error || "Failed to request language change");
+            toast.error(error.response?.data?.error || t("request_failed"));
         } finally {
             setIsLoading(false);
         }
@@ -76,7 +76,7 @@ export default function LanguageSelector() {
             setIsOtpOpen(false);
             setOtp("");
         } catch (error: any) {
-            toast.error(error.response?.data?.error || "Invalid OTP");
+            toast.error(error.response?.data?.error || t("invalid_otp"));
         } finally {
             setIsLoading(false);
         }
@@ -134,7 +134,7 @@ export default function LanguageSelector() {
                             <div className="space-y-2">
                                 <Input
                                     type="text"
-                                    placeholder="Enter 6-digit code"
+                                    placeholder={t("otp_placeholder")}
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                     className="bg-black border-gray-700 focus:border-blue-500 h-14 text-center text-2xl tracking-[0.5em] font-mono rounded-xl transition-all"

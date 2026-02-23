@@ -109,7 +109,7 @@ const TweetComposer = ({ onTweetPosted }: any) => {
             {/* Plan usage chip */}
             <div className="flex items-center flex-wrap gap-2 mb-2 min-w-0">
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-normal text-center ${atLimit ? "bg-red-500/20 text-red-400" : "bg-gray-800 text-gray-500"}`}>
-                {currentPlan} · {planLimit === Infinity ? "∞" : `${tweetsUsed}/${planLimit}`} {tCommon('tweet')}
+                {tSub(`plan_${currentPlan.toLowerCase()}`)} · {planLimit === Infinity ? "∞" : `${tweetsUsed}/${planLimit}`} {tCommon('tweet')}
               </span>
               {atLimit && (
                 <span className="text-[10px] text-red-400 font-bold uppercase truncate">{tSub('limit_reached_badge')}</span>

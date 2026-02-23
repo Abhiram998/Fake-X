@@ -199,7 +199,7 @@ const Feed = () => {
             <CardContent className="py-12 text-center">
               <div className="text-gray-400 mb-4">
                 <LoadingSpinner size="lg" className="mx-auto mb-4" />
-                <p>Loading...</p>
+                <p>{tFeed('loading')}</p>
               </div>
             </CardContent>
           </Card>

@@ -9,7 +9,7 @@ import { useTranslations, useLocale } from "next-intl";
 
 const getPlans = (t: any) => [
     {
-        name: "Free",
+        name: t('plan_free'),
         price: 0,
         limit: 1,
         color: "border-gray-700",
@@ -24,7 +24,7 @@ const getPlans = (t: any) => [
         ],
     },
     {
-        name: "Bronze",
+        name: t('plan_bronze'),
         price: 100,
         limit: 3,
         color: "border-amber-700",
@@ -39,7 +39,7 @@ const getPlans = (t: any) => [
         ],
     },
     {
-        name: "Silver",
+        name: t('plan_silver'),
         price: 300,
         limit: 5,
         color: "border-slate-500",
@@ -54,7 +54,7 @@ const getPlans = (t: any) => [
         ],
     },
     {
-        name: "Gold",
+        name: t('plan_gold'),
         price: 1000,
         limit: Infinity,
         color: "border-yellow-500",
@@ -102,7 +102,7 @@ export default function SubscriptionPage() {
                     });
 
                     if (verifyRes.data.message) {
-                        setSuccess(`🎉 Successfully upgraded to ${planName} plan! Invoice sent to ${user.email}.`);
+                        setSuccess(t('success_upgrade', { plan: planName, email: user.email }));
                         const refreshed = await axiosInstance.get("/loggedinuser", { params: { email: user.email } });
                         if (refreshed.data) {
                             localStorage.setItem("twitter-user", JSON.stringify(refreshed.data));
@@ -113,14 +113,14 @@ export default function SubscriptionPage() {
                         }
                     }
                 } catch (err: any) {
-                    setError(err.response?.data?.error || "Payment verification failed.");
+                    setError(err.response?.data?.error || t('error_verify'));
                 } finally {
                     setLoading(false);
                 }
             };
             verifyPayment();
         } else if (isCanceled) {
-            setError("Payment was canceled.");
+            setError(t('error_cancel'));
             window.history.replaceState({}, document.title, window.location.pathname);
         }
     }, [user]);
@@ -156,7 +156,7 @@ export default function SubscriptionPage() {
             if (url) {
                 window.location.href = url;
             } else {
-                setError("Could not get payment URL. Please try again.");
+                setError(t('error_url'));
                 setLoading(false);
                 setSelectedPlan(null);
             }
@@ -286,11 +286,11 @@ export default function SubscriptionPage() {
 
                                 <div className="p-4 flex-1 flex flex-col min-w-0">
                                     <div className="flex items-baseline flex-wrap gap-1 mb-2">
-                                        <span className="text-2xl font-bold text-white leading-none break-all">{plan.price === 0 ? "Free" : `₹${plan.price}`}</span>
-                                        {plan.price > 0 && <span className="text-xs text-gray-500 font-medium whitespace-nowrap">/ month</span>}
+                                        <span className="text-2xl font-bold text-white leading-none break-all">{plan.price === 0 ? t('free') : `₹${plan.price}`}</span>
+                                        {plan.price > 0 && <span className="text-xs text-gray-500 font-medium whitespace-nowrap">{t('month')}</span>}
                                     </div>
                                     <div className="text-[13px] font-bold text-gray-300 uppercase tracking-widest border-b border-gray-800 pb-2 mb-3 truncate">
-                                        Enhanced Experience
+                                        {t('enhanced_experience')}
                                     </div>
                                     <div className="space-y-4 pb-2 flex-1">
                                         {plan.features.map((f) => (
@@ -324,12 +324,12 @@ export default function SubscriptionPage() {
                     {loading && viewingPlan === selectedPlan ? (
                         <span className="flex items-center justify-center gap-2">
                             <div className="h-5 w-5 border-2 border-[#71767b] border-t-white rounded-full animate-spin" />
-                            <span className="truncate">Processing...</span>
+                            <span className="truncate">{t('processing')}</span>
                         </span>
                     ) : currentPlan === viewingPlan ? (
                         <span className="truncate">{t('current_plan_button') || "Current Plan"}</span>
                     ) : viewingPlan === "Free" ? (
-                        <span className="truncate">Default Plan</span>
+                        <span className="truncate">{t('default_plan')}</span>
                     ) : (
                         <span className="truncate">
                             {t('start_at', {

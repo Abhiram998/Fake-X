@@ -109,11 +109,13 @@ export default function MobileHeader({ currentPage, onNavigate }: MobileHeaderPr
                     </div>
 
                     <div className="flex flex-wrap gap-4 text-sm mb-6 min-w-0">
-                        <div className="text-gray-500 hover:underline cursor-pointer whitespace-nowrap">
-                            <span className="text-white font-bold">{user.followingCount || 0}</span> {t("following") || "Following"}
-                        </div>
-                        <div className="text-gray-500 hover:underline cursor-pointer whitespace-nowrap">
-                            <span className="text-white font-bold">{user.followersCount || 0}</span> {t("followers") || "Followers"}
+                        <div className="flex flex-wrap gap-4 text-sm mb-6 min-w-0">
+                            <div className="text-gray-500 hover:underline cursor-pointer whitespace-nowrap">
+                                <span className="text-white font-bold">{user.followingCount || 0}</span> {t("following")}
+                            </div>
+                            <div className="text-gray-500 hover:underline cursor-pointer whitespace-nowrap">
+                                <span className="text-white font-bold">{user.followersCount || 0}</span> {t("followers")}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -121,19 +123,19 @@ export default function MobileHeader({ currentPage, onNavigate }: MobileHeaderPr
                 <div className="flex-1 overflow-y-auto no-scrollbar">
                     <nav className="flex flex-col">
                         <DrawerItem icon={User} label={t("profile")} onClick={() => handleNavigate("profile")} />
-                        <DrawerItem icon={CreditCard} label="Premium" onClick={() => handleNavigate("subscriptions")} />
-                        <DrawerItem icon={Users} label="Communities" onClick={() => { }} />
+                        <DrawerItem icon={CreditCard} label={t("premium")} onClick={() => handleNavigate("subscriptions")} />
+                        <DrawerItem icon={Users} label={t("communities")} onClick={() => { }} />
                         <DrawerItem icon={Bookmark} label={t("bookmarks")} onClick={() => handleNavigate("bookmarks")} />
-                        <DrawerItem icon={ListOrdered} label="Lists" onClick={() => { }} />
-                        <DrawerItem icon={Mic2} label="Spaces" onClick={() => { }} />
-                        <DrawerItem icon={Briefcase} label="Creator Studio" onClick={() => { }} />
+                        <DrawerItem icon={ListOrdered} label={t("lists")} onClick={() => { }} />
+                        <DrawerItem icon={Mic2} label={t("spaces")} onClick={() => { }} />
+                        <DrawerItem icon={Briefcase} label={t("creator_studio")} onClick={() => { }} />
 
                         <div className="h-px bg-gray-800 my-2 mx-1" />
 
                         <button
                             className="flex justify-between items-center px-4 py-3 text-white hover:bg-gray-900 w-full text-left transition-colors"
                         >
-                            <span className="text-[17px] font-bold">Settings & Support</span>
+                            <span className="text-[17px] font-bold">{t("settings_support")}</span>
                         </button>
 
                         <button
@@ -144,7 +146,7 @@ export default function MobileHeader({ currentPage, onNavigate }: MobileHeaderPr
                             className="flex items-center px-4 py-3 text-red-500 hover:bg-gray-900 w-full text-left transition-colors"
                         >
                             <LogOut className="h-5 w-5 mr-5" />
-                            <span className="text-[17px] font-bold">Logout</span>
+                            <span className="text-[17px] font-bold">{t("logout")}</span>
                         </button>
                     </nav>
                 </div>

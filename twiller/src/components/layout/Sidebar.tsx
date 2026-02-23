@@ -37,6 +37,7 @@ interface SidebarProps {
 export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarProps) {
   const { user, logout } = useAuth();
   const t = useTranslations('Common');
+  const tSub = useTranslations('Subscriptions');
 
   const navigation = [
     { name: t('home'), icon: Home, current: currentPage === 'home', page: 'home' },
@@ -101,7 +102,7 @@ export default function Sidebar({ currentPage = 'home', onNavigate }: SidebarPro
           <div className="mt-6 px-4 hidden md:block">
             <div className="bg-gray-900/50 rounded-2xl p-4 border border-gray-800">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{t('plan')}: {user.subscriptionPlan || 'Free'}</span>
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{tSub('plan')}: {user.subscriptionPlan ? tSub(`plan_${user.subscriptionPlan.toLowerCase()}`) : tSub('default_plan')}</span>
                 <span className="text-[10px] text-blue-400 font-mono">
                   {user.tweetCount || 0}/{user.subscriptionPlan === 'Gold' ? '∞' : (user.subscriptionPlan === 'Silver' ? '5' : (user.subscriptionPlan === 'Bronze' ? '3' : '1'))}
                 </span>

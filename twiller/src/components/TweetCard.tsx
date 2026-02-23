@@ -110,7 +110,7 @@ export default function TweetCard({ tweet }: any) {
               <div className="mb-3 rounded-2xl overflow-hidden">
                 <img
                   src={tweetstate.image}
-                  alt="Tweet image"
+                  alt={t('image_alt')}
                   className="w-full h-auto max-h-96 object-cover"
                 />
               </div>

@@ -14,6 +14,7 @@ import { useAuth } from '@/context/AuthContext';
 import TwitterLogo from './Twitterlogo';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
+import { useTranslations } from 'next-intl';
 
 
 
@@ -26,6 +27,8 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'login', initialEmail = '', startAtOtpStep = false }: AuthModalProps) {
+  const t = useTranslations('Auth');
+  const tLanding = useTranslations('Landing');
   const { login, signup, verifyLoginOtp, triggerLoginOtp, isLoading, pendingOtpInfo, pendingOtpUser } = useAuth();
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [isOtpStep, setIsOtpStep] = useState(startAtOtpStep);
@@ -72,32 +75,32 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
     const newErrors: Record<string, string> = {};
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('error_email_required');
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
+      newErrors.email = t('error_email_invalid');
     }
 
     if (!formData.password.trim()) {
-      newErrors.password = 'Password is required';
+      newErrors.password = t('error_password_required');
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = t('error_password_min');
     }
 
     if (mode === 'signup') {
       if (!formData.username.trim()) {
-        newErrors.username = 'Username is required';
+        newErrors.username = t('error_username_required');
       } else if (formData.username.length < 3) {
-        newErrors.username = 'Username must be at least 3 characters';
+        newErrors.username = t('error_username_min');
       } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-        newErrors.username = 'Username can only contain letters, numbers, and underscores';
+        newErrors.username = t('error_username_invalid');
       }
 
       if (!formData.displayName.trim()) {
-        newErrors.displayName = 'Display name is required';
+        newErrors.displayName = t('error_display_name_required');
       }
 
       if (formData.mobile.trim() && !/^[0-9]{10,15}$/.test(formData.mobile)) {
-        newErrors.mobile = 'Mobile number must be 10-15 digits';
+        newErrors.mobile = t('error_mobile_invalid');
       }
     }
 
@@ -138,7 +141,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
       }
 
       setErrors({
-        general: `${mode === 'login' ? 'Login' : 'Registration'} failed: ${backendError}`
+        general: `${mode === 'login' ? t('login') : t('signup')} failed: ${backendError}`
       });
     }
   };
@@ -193,7 +196,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
               <TwitterLogo size="xl" className="text-white" />
             </div>
             <CardTitle className="text-2xl font-bold">
-              {isOtpStep ? 'Verify your identity' : mode === 'login' ? 'Sign in to X' : 'Create your account'}
+              {isOtpStep ? t('verify_title') : mode === 'login' ? t('login_title') : t('signup_title')}
             </CardTitle>
           </div>
         </CardHeader>
@@ -204,21 +207,21 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
               {pendingOtpInfo?.needsTrigger ? (
                 <div className="text-center space-y-4">
                   <p className="text-gray-400 text-sm">
-                    A previous session was detected. For your security, we need to verify your identity.
+                    {t('otp_previous_session')}
                   </p>
                   <Button
                     className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-full"
                     onClick={() => triggerLoginOtp(formData.email, pendingOtpUser || undefined)}
                     disabled={isLoading}
                   >
-                    {isLoading ? <LoadingSpinner size="sm" /> : "Send Verification Code"}
+                    {isLoading ? <LoadingSpinner size="sm" /> : t('otp_send_code')}
                   </Button>
                 </div>
               ) : (
                 <>
                   <div className="text-center">
                     <p className="text-gray-400 text-sm mb-4">
-                      We've sent a 6-digit verification code to
+                      {t('otp_sent_to')}
                       <br />
                       <span className="text-white font-medium">{formData.email}</span>
                     </p>
@@ -226,11 +229,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
 
                   <form onSubmit={handleOtpSubmit} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="otp" className="text-white">Verification Code</Label>
+                      <Label htmlFor="otp" className="text-white">{t('verify_title')}</Label>
                       <Input
                         id="otp"
                         type="text"
-                        placeholder="Enter 6-digit code"
+                        placeholder={t('placeholder_otp')}
                         value={otpValue}
                         onChange={(e) => {
                           const val = e.target.value.replace(/\D/g, '');
@@ -250,10 +253,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
                       {isLoading ? (
                         <div className="flex items-center space-x-2">
                           <LoadingSpinner size="sm" />
-                          <span>Verifying...</span>
+                          <span>{t('otp_verifying')}</span>
                         </div>
                       ) : (
-                        'Verify and sign in'
+                        t('otp_verify_signin')
                       )}
                     </Button>
                   </form>
@@ -266,7 +269,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
                 onClick={() => setIsOtpStep(false)}
                 disabled={isLoading}
               >
-                Back to login
+                {t('back_to_login')}
               </Button>
             </div>
           ) : (
@@ -281,13 +284,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
                 {mode === 'signup' && (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor="displayName" className="text-white">Display Name</Label>
+                      <Label htmlFor="displayName" className="text-white">{t('label_display_name')}</Label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                         <Input
                           id="displayName"
                           type="text"
-                          placeholder="Your display name"
+                          placeholder={t('placeholder_display_name')}
                           value={formData.displayName}
                           onChange={(e) => handleInputChange('displayName', e.target.value)}
                           className="pl-10 bg-transparent border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
@@ -300,13 +303,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="username" className="text-white">Username</Label>
+                      <Label htmlFor="username" className="text-white">{t('label_username')}</Label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">@</span>
                         <Input
                           id="username"
                           type="text"
-                          placeholder="username"
+                          placeholder={t('placeholder_username')}
                           value={formData.username}
                           onChange={(e) => handleInputChange('username', e.target.value)}
                           className="pl-8 bg-transparent border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
@@ -319,13 +322,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="mobile" className="text-white">Mobile Number</Label>
+                      <Label htmlFor="mobile" className="text-white">{t('label_mobile_number')}</Label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 font-medium">+</span>
                         <Input
                           id="mobile"
                           type="text"
-                          placeholder="10-15 digits"
+                          placeholder={t('placeholder_mobile')}
                           value={formData.mobile}
                           onChange={(e) => {
                             const val = e.target.value.replace(/\D/g, '');
@@ -343,13 +346,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white">Email</Label>
+                  <Label htmlFor="email" className="text-white">{t('label_email')}</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                     <Input
                       id="email"
                       type="email"
-                      placeholder="Enter your email"
+                      placeholder={t('placeholder_email')}
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       className="pl-10 bg-transparent border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
@@ -362,13 +365,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-white">Password</Label>
+                  <Label htmlFor="password" className="text-white">{t('label_password')}</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Enter your password"
+                      placeholder={t('placeholder_password')}
                       value={formData.password}
                       onChange={(e) => handleInputChange('password', e.target.value)}
                       className="pl-10 pr-10 bg-transparent border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
@@ -394,7 +397,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
                         className="text-sm text-blue-400 hover:text-blue-300 hover:underline"
                         onClick={onClose}
                       >
-                        Forgot password?
+                        {t('forgot_password')}
                       </Link>
                     </div>
                   )}
@@ -408,10 +411,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
                   {isLoading ? (
                     <div className="flex items-center space-x-2">
                       <LoadingSpinner size="sm" />
-                      <span>{mode === 'login' ? 'Signing in...' : 'Creating account...'}</span>
+                      <span>{mode === 'login' ? t('signing_in') : t('creating_account')}</span>
                     </div>
                   ) : (
-                    mode === 'login' ? 'Sign in' : 'Create account'
+                    mode === 'login' ? t('signin_button') : t('create_account_button')
                   )}
                 </Button>
               </form>
@@ -419,20 +422,20 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', init
               <div className="relative">
                 <Separator className="bg-gray-700" />
                 <span className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black px-2 text-gray-400 text-sm">
-                  OR
+                  {tLanding('or').toUpperCase()}
                 </span>
               </div>
 
               <div className="text-center">
                 <p className="text-gray-400">
-                  {mode === 'login' ? "Don't have an account?" : "Already have an account?"}
+                  {mode === 'login' ? t('no_account') : t('has_account')}
                   <Button
                     variant="link"
                     className="text-blue-400 hover:text-blue-300 font-semibold pl-1"
                     onClick={switchMode}
                     disabled={isLoading}
                   >
-                    {mode === 'login' ? 'Sign up' : 'Sign in'}
+                    {mode === 'login' ? t('signup') : t('login')}
                   </Button>
                 </p>
               </div>

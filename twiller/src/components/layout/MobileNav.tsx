@@ -3,6 +3,7 @@
 import React from 'react';
 import { Home, Search, Bell, Mail, Plus } from 'lucide-react';
 import { Button } from '../ui/button';
+import { useTranslations } from 'next-intl';
 
 interface MobileNavProps {
     currentPage: string;
@@ -10,12 +11,13 @@ interface MobileNavProps {
 }
 
 export default function MobileNav({ currentPage, onNavigate }: MobileNavProps) {
+    const t = useTranslations('Common');
     const items = [
-        { icon: Home, page: 'home', label: 'Home' },
-        { icon: Search, page: 'explore', label: 'Explore' },
-        { icon: Plus, page: 'post', label: 'Post', isSpecial: true },
-        { icon: Bell, page: 'notifications', label: 'Notifications' },
-        { icon: Mail, page: 'messages', label: 'Messages' },
+        { icon: Home, page: 'home', label: t('home') },
+        { icon: Search, page: 'explore', label: t('explore') },
+        { icon: Plus, page: 'post', label: t('post'), isSpecial: true },
+        { icon: Bell, page: 'notifications', label: t('notifications') },
+        { icon: Mail, page: 'messages', label: t('messages') },
     ];
 
     return (

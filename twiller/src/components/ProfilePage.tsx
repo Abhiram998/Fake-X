@@ -1,6 +1,6 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
+
 import {
   ArrowLeft,
   Calendar,
@@ -16,13 +16,13 @@ import {
   Monitor
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { useTranslations } from "next-intl";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import TweetCard from "./TweetCard";
 import { Card, CardContent } from "./ui/card";
 import Editprofile from "./Editprofile";
+import { useTranslations, useLocale } from "next-intl";
 import axiosInstance from "@/lib/axiosInstance";
 import { requestNotificationPermission, showNotification, keywords } from "@/lib/notificationService";
 import { Label } from "./ui/label";
@@ -111,6 +111,8 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("posts");
   const [showEditModal, setShowEditModal] = useState(false);
   const t = useTranslations('Profile');
+  const tSecurity = useTranslations('Security');
+  const locale = useLocale();
 
   const [tweets, setTweets] = useState<any>([]);
   const [loading, setloading] = useState(false);
@@ -250,12 +252,12 @@ export default function ProfilePage() {
         <div className="flex items-center space-x-4 text-gray-400 text-sm mb-3">
           <div className="flex items-center space-x-1">
             <MapPin className="h-4 w-4" />
-            <span>{user.location ? user.location : "Earth"}</span>
+            <span>{user.location ? user.location : t("placeholder_location")}</span>
           </div>
           <div className="flex items-center space-x-1">
             <LinkIcon className="h-4 w-4" />
             <span className="text-blue-400">
-              {user.website ? user.website : "example.com"}
+              {user.website ? user.website : t("placeholder_website")}
             </span>
           </div>
           <div className="flex items-center space-x-1">
@@ -263,7 +265,7 @@ export default function ProfilePage() {
             <span>
               {t('joined')}{" "}
               {user.joinedDate &&
-                new Date(user.joinedDate).toLocaleDateString("en-us", {
+                new Date(user.joinedDate).toLocaleDateString(locale, {
                   month: "long",
                   year: "numeric",
                 })}
@@ -298,7 +300,7 @@ export default function ProfilePage() {
           {user.notificationEnabled && (
             <div className="pt-2 border-t border-gray-800/50">
               <p className="text-[10px] text-gray-500 italic">
-                Mobile Tip: For background alerts, use &quot;Add to Home Screen&quot; (iOS) or keep the tab active (Android).
+                {t("mobile_tip")}
               </p>
             </div>
           )}
@@ -342,7 +344,7 @@ export default function ProfilePage() {
             value="security"
             className="data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none text-gray-400 hover:bg-gray-900/50 py-4 font-semibold"
           >
-            Security
+            {t("tab_security")}
           </TabsTrigger>
         </TabsList>
 
@@ -423,14 +425,14 @@ export default function ProfilePage() {
           <div className="p-4 space-y-4">
             <div className="flex items-center space-x-2 mb-6">
               <ShieldCheck className="h-6 w-6 text-blue-500" />
-              <h2 className="text-xl font-bold text-white">Login History</h2>
+              <h2 className="text-xl font-bold text-white">{tSecurity('title')}</h2>
             </div>
 
             <div className="space-y-3">
               {historyLoading ? (
-                <div className="py-10 text-center text-gray-400">Loading history...</div>
+                <div className="py-10 text-center text-gray-400">{tSecurity('loading')}</div>
               ) : loginHistory.length === 0 ? (
-                <div className="py-10 text-center text-gray-400">No login records found.</div>
+                <div className="py-10 text-center text-gray-400">{tSecurity('no_records')}</div>
               ) : (
                 loginHistory.map((login: any) => (
                   <div
@@ -449,7 +451,7 @@ export default function ProfilePage() {
                       </div>
                       <div>
                         <p className="text-white font-medium capitalize">
-                          {login.browser || 'Unknown Browser'} on {login.os || 'Unknown OS'} <span className="text-gray-400 font-normal">({login.device})</span>
+                          {login.browser || tSecurity('unknown_browser')} on {login.os || tSecurity('unknown_os')} <span className="text-gray-400 font-normal">({login.device})</span>
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
                           IP: {login.ip}
@@ -458,7 +460,7 @@ export default function ProfilePage() {
                     </div>
                     <div className="text-left sm:text-right shrink-0 ml-14 sm:ml-0">
                       <p className="text-sm text-gray-400">
-                        {login.loginTime ? new Date(login.loginTime).toLocaleDateString() : 'Unknown Date'}
+                        {login.loginTime ? new Date(login.loginTime).toLocaleDateString() : tSecurity('unknown_date')}
                       </p>
                       <p className="text-xs text-gray-500">
                         {login.loginTime ? new Date(login.loginTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
@@ -470,7 +472,7 @@ export default function ProfilePage() {
             </div>
 
             <p className="text-[10px] text-gray-600 mt-8 uppercase tracking-widest text-center">
-              End-to-End Session Transparency
+              {tSecurity('session_transparency')}
             </p>
           </div>
         </TabsContent>

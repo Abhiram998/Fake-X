@@ -13,7 +13,16 @@
         "settings": "Settings",
         "plan": "Plan",
         "cancel": "Cancel",
-        "tweet": "tweet"
+        "tweet": "tweet",
+        "following": "Following",
+        "followers": "Followers",
+        "communities": "Communities",
+        "lists": "Lists",
+        "spaces": "Spaces",
+        "creator_studio": "Creator Studio",
+        "settings_support": "Settings & Support",
+        "premium": "Premium",
+        "post_button": "Post"
     },
     "Language": {
         "select": "Select Language",
@@ -22,13 +31,66 @@
         "email": "registered email",
         "mobile": "registered mobile number",
         "verify_button": "Verify",
+        "login_required": "Please log in to change language",
+        "request_failed": "Failed to request language change",
+        "otp_placeholder": "Enter 6-digit code",
+        "invalid_otp": "Invalid OTP",
         "Common": {
             "cancel": "Cancel"
         }
     },
     "Auth": {
         "login": "Log in",
-        "signup": "Sign up"
+        "signup": "Sign up",
+        "login_title": "Sign in to X",
+        "signup_title": "Create your account",
+        "verify_title": "Verify your identity",
+        "otp_previous_session": "A previous session was detected. For your security, we need to verify your identity.",
+        "otp_send_code": "Send Verification Code",
+        "otp_sent_to": "We've sent a 6-digit verification code to",
+        "otp_verifying": "Verifying...",
+        "otp_verify_signin": "Verify and sign in",
+        "back_to_login": "Back to login",
+        "placeholder_email": "Enter your email",
+        "placeholder_password": "Enter your password",
+        "forgot_password": "Forgot password?",
+        "signin_button": "Sign in",
+        "signing_in": "Signing in...",
+        "create_account_button": "Create account",
+        "creating_account": "Creating account...",
+        "no_account": "Don't have an account?",
+        "has_account": "Already have an account?",
+        "label_display_name": "Display Name",
+        "label_username": "Username",
+        "label_mobile_number": "Mobile Number",
+        "label_email": "Email",
+        "label_password": "Password",
+        "placeholder_display_name": "Your display name",
+        "placeholder_username": "username",
+        "placeholder_mobile": "10-15 digits",
+        "placeholder_otp": "Enter 6-digit code",
+        "error_email_required": "Email is required",
+        "error_email_invalid": "Please enter a valid email",
+        "error_password_required": "Password is required",
+        "error_password_min": "Password must be at least 6 characters",
+        "error_username_required": "Username is required",
+        "error_username_min": "Username must be at least 3 characters",
+        "error_username_invalid": "Username can only contain letters, numbers, and underscores",
+        "error_display_name_required": "Display name is required",
+        "error_mobile_invalid": "Mobile number must be 10-15 digits"
+    },
+    "Landing": {
+        "happening_now": "Happening now",
+        "join_today": "Join today.",
+        "signup_google": "Sign up with Google",
+        "signup_apple": "Sign up with Apple",
+        "or": "or",
+        "create_account": "Create account",
+        "already_have_account": "Already have an account?",
+        "terms_text": "By signing up, you agree to the {terms} and {privacy}, including {cookies}.",
+        "terms_link": "Terms of Service",
+        "privacy_link": "Privacy Policy",
+        "cookie_link": "Cookie Use"
     },
     "Feed": {
         "what_happening": "What's happening?",
@@ -36,7 +98,8 @@
         "for_you": "For you",
         "following": "Following",
         "loading": "Loading...",
-        "audio_tweet": "Audio Tweet"
+        "audio_tweet": "Audio Tweet",
+        "image_alt": "Tweet image"
     },
     "RightSidebar": {
         "search": "Search",
@@ -59,7 +122,11 @@
         "keyword_notifications": "Keyword Notifications",
         "watching_for": "Watching for",
         "no_posts_title": "You haven't posted yet",
-        "no_posts_desc": "When you post, it will show up here."
+        "no_posts_desc": "When you post, it will show up here.",
+        "tab_security": "Security",
+        "mobile_tip": "Mobile Tip: For background alerts, use \"Add to Home Screen\" (iOS) or keep the tab active (Android).",
+        "placeholder_location": "Earth",
+        "placeholder_website": "example.com"
     },
     "EditProfile": {
         "title": "Edit profile",
@@ -72,10 +139,20 @@
         "location": "Location",
         "placeholder_location": "Where are you located?",
         "website": "Website",
-        "placeholder_website": "Your website URL"
+        "placeholder_website": "Your website URL",
+        "mobile": "Mobile Number",
+        "placeholder_mobile": "10-15 digits",
+        "error_name_required": "Display name is required",
+        "error_name_limit": "Display name must be 50 characters or less",
+        "error_bio_limit": "Bio must be 160 characters or less",
+        "error_website_limit": "Website must be 100 characters or less",
+        "error_location_limit": "Location must be 30 characters or less",
+        "error_mobile_invalid": "Mobile number must be 10-15 digits",
+        "error_update_failed": "Failed to update profile. Please try again."
     },
     "Subscriptions": {
         "title": "Subscriptions",
+        "plan": "Plan",
         "subtitle": "Manage your tweet plan",
         "current_plan": "Current Plan",
         "tweet_usage": "Tweet Usage",
@@ -88,6 +165,15 @@
         "choose_plan": "Choose a Plan",
         "active": "Active",
         "month": "/month",
+        "free": "Free",
+        "plan_free": "Free",
+        "plan_bronze": "Bronze",
+        "plan_silver": "Silver",
+        "plan_gold": "Gold",
+        "success_upgrade": "🎉 Successfully upgraded to {plan} plan! Invoice sent to {email}.",
+        "error_verify": "Payment verification failed.",
+        "error_cancel": "Payment was canceled.",
+        "error_url": "Could not get payment URL. Please try again.",
         "default_plan": "Default Plan",
         "current_plan_button": "✓ Current Plan",
         "upgrade_to": "Upgrade to {plan} — ₹{price}",
@@ -128,6 +214,24 @@
         "duration_exceeded": "Audio duration exceeds 5 minutes limit.",
         "mic_denied": "Microphone permission denied or not found.",
         "time_restriction": "Audio tweets are allowed only between 2:00 PM and 7:00 PM IST.",
-        "attached": "Audio Tweet Attached"
+        "attached": "Audio Tweet Attached",
+        "max_limits": "Max 5:00 / 100MB"
+    },
+    "Security": {
+        "title": "Login History",
+        "loading": "Loading history...",
+        "no_records": "No login records found.",
+        "unknown_browser": "Unknown Browser",
+        "unknown_os": "Unknown OS",
+        "unknown_date": "Unknown Date",
+        "session_transparency": "End-to-End Session Transparency"
+    },
+    "Footer": {
+        "terms": "Terms of Service",
+        "privacy": "Privacy Policy",
+        "cookies": "Cookie Policy",
+        "accessibility": "Accessibility",
+        "ads_info": "Ads info",
+        "copyright": "© 2024 Twiller Corp."
     }
 }

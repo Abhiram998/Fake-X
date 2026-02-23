@@ -29,25 +29,25 @@ const Editprofile = ({ isopen, onclose }: any) => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.displayName.trim()) {
-      newErrors.displayName = "Display name is required";
+      newErrors.displayName = t("error_name_required");
     } else if (formData.displayName.length > 50) {
-      newErrors.displayName = "Display name must be 50 characters or less";
+      newErrors.displayName = t("error_name_limit");
     }
 
     if (formData.bio.length > 160) {
-      newErrors.bio = "Bio must be 160 characters or less";
+      newErrors.bio = t("error_bio_limit");
     }
 
     if (formData.website && formData.website.length > 100) {
-      newErrors.website = "Website must be 100 characters or less";
+      newErrors.website = t("error_website_limit");
     }
 
     if (formData.location && formData.location.length > 30) {
-      newErrors.location = "Location must be 30 characters or less";
+      newErrors.location = t("error_location_limit");
     }
 
     if (formData.mobile && !/^[0-9]{10,15}$/.test(formData.mobile)) {
-      newErrors.mobile = "Mobile number must be 10-15 digits";
+      newErrors.mobile = t("error_mobile_invalid");
     }
 
     setError(newErrors);
@@ -63,7 +63,7 @@ const Editprofile = ({ isopen, onclose }: any) => {
       await updateProfile(formData);
       onclose();
     } catch (error) {
-      setError({ general: "Failed to update profile. Please try again." });
+      setError({ general: t("error_update_failed") });
     } finally {
       setIsLoading(false);
     }
@@ -299,7 +299,7 @@ const Editprofile = ({ isopen, onclose }: any) => {
               {/* Mobile Number */}
               <div className="space-y-2">
                 <Label htmlFor="mobile" className="text-white">
-                  Mobile Number
+                  {t('mobile')}
                 </Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 font-medium">+</span>
@@ -312,7 +312,7 @@ const Editprofile = ({ isopen, onclose }: any) => {
                       if (val.length <= 15) handleInputChange("mobile", val);
                     }}
                     className="pl-8 bg-transparent border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
-                    placeholder="10-15 digits"
+                    placeholder={t('placeholder_mobile')}
                     disabled={isLoading}
                   />
                 </div>

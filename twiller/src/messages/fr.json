@@ -13,7 +13,15 @@
         "settings": "Paramètres",
         "plan": "Forfait",
         "cancel": "Annuler",
-        "tweet": "tweet"
+        "tweet": "tweet",
+        "following": "Abonnements",
+        "followers": "Abonnés",
+        "communities": "Communautés",
+        "lists": "Listes",
+        "spaces": "Spaces",
+        "creator_studio": "Studio créateur",
+        "settings_support": "Paramètres et support",
+        "premium": "Premium"
     },
     "Language": {
         "select": "Choisir la langue",
@@ -22,13 +30,66 @@
         "email": "e-mail enregistré",
         "mobile": "numéro de mobile enregistré",
         "verify_button": "Vérifier",
+        "login_required": "Veuillez vous connecter pour changer de langue",
+        "request_failed": "Échec de la demande de changement de langue",
+        "otp_placeholder": "Saisissez le code à 6 chiffres",
+        "invalid_otp": "OTP invalide",
         "Common": {
             "cancel": "Annuler"
         }
     },
     "Auth": {
         "login": "Connexion",
-        "signup": "S'inscrire"
+        "signup": "S'inscrire",
+        "login_title": "Se connecter à X",
+        "signup_title": "Créer votre compte",
+        "verify_title": "Vérifier votre identité",
+        "otp_previous_session": "Une session précédente a été détectée. Pour votre sécurité, nous devons vérifier votre identité.",
+        "otp_send_code": "Envoyer le code de vérification",
+        "otp_sent_to": "Nous avons envoyé un code de vérification à 6 chiffres à",
+        "otp_verifying": "Vérification...",
+        "otp_verify_signin": "Vérifier et se connecter",
+        "back_to_login": "Retour à la connexion",
+        "placeholder_email": "Entrez votre email",
+        "placeholder_password": "Entrez votre mot de passe",
+        "forgot_password": "Mot de passe oublié ?",
+        "signin_button": "Se connecter",
+        "signing_in": "Connexion...",
+        "create_account_button": "Créer un compte",
+        "creating_account": "Création du compte...",
+        "no_account": "Vous n'avez pas de compte ?",
+        "has_account": "Vous avez déjà un compte ?",
+        "label_display_name": "Nom d'affichage",
+        "label_username": "Nom d'utilisateur",
+        "label_mobile_number": "Numéro de mobile",
+        "label_email": "Email",
+        "label_password": "Mot de passe",
+        "placeholder_display_name": "Votre nom d'affichage",
+        "placeholder_username": "nom d'utilisateur",
+        "placeholder_mobile": "10-15 chiffres",
+        "placeholder_otp": "Entrez le code à 6 chiffres",
+        "error_email_required": "L'email est requis",
+        "error_email_invalid": "Veuillez entrer un email valide",
+        "error_password_required": "Le mot de passe est requis",
+        "error_password_min": "Le mot de passe doit contenir au moins 6 caractères",
+        "error_username_required": "Le nom d'utilisateur est requis",
+        "error_username_min": "Le nom d'utilisateur doit contenir au moins 3 caractères",
+        "error_username_invalid": "Le nom d'utilisateur ne peut contenir que des lettres, des chiffres et des traits de soulignement",
+        "error_display_name_required": "Le nom d'affichage est requis",
+        "error_mobile_invalid": "Le numéro de mobile doit comporter entre 10 et 15 chiffres"
+    },
+    "Landing": {
+        "happening_now": "Ça se passe maintenant",
+        "join_today": "Rejoignez-nous aujourd'hui.",
+        "signup_google": "S'inscrire avec Google",
+        "signup_apple": "S'inscrire avec Apple",
+        "or": "ou",
+        "create_account": "Créer un compte",
+        "already_have_account": "Vous avez déjà un compte ?",
+        "terms_text": "En vous inscrivant, vous acceptez les {terms} et la {privacy}, y compris l'{cookies}.",
+        "terms_link": "Conditions d'utilisation",
+        "privacy_link": "Politique de confidentialité",
+        "cookie_link": "Utilisation des cookies"
     },
     "Feed": {
         "what_happening": "Quoi de neuf ?",
@@ -36,7 +97,8 @@
         "for_you": "Pour vous",
         "following": "Abonnements",
         "loading": "Chargement...",
-        "audio_tweet": "Tweet audio"
+        "audio_tweet": "Tweet audio",
+        "image_alt": "Image du tweet"
     },
     "RightSidebar": {
         "search": "Rechercher",
@@ -59,7 +121,11 @@
         "keyword_notifications": "Notifications par mots-clés",
         "watching_for": "Surveille",
         "no_posts_title": "Vous n'avez pas encore posté",
-        "no_posts_desc": "Quand vous posterez, cela apparaîtra ici."
+        "no_posts_desc": "Quand vous posterez, cela apparaîtra ici.",
+        "tab_security": "Sécurité",
+        "mobile_tip": "Conseil mobile : Pour les alertes en arrière-plan, utilisez \"Ajouter à l'écran d'accueil\" (iOS) ou gardez l'onglet actif (Android).",
+        "placeholder_location": "Terre",
+        "placeholder_website": "exemple.com"
     },
     "EditProfile": {
         "title": "Modifier le profil",
@@ -72,10 +138,20 @@
         "location": "Localisation",
         "placeholder_location": "Où vous situez-vous ?",
         "website": "Site web",
-        "placeholder_website": "URL de votre site web"
+        "placeholder_website": "URL de votre site web",
+        "mobile": "Numéro de mobile",
+        "placeholder_mobile": "10-15 chiffres",
+        "error_name_required": "Le nom d'affichage est requis",
+        "error_name_limit": "Le nom d'affichage doit comporter 50 caractères ou moins",
+        "error_bio_limit": "La bio doit comporter 160 caractères ou moins",
+        "error_website_limit": "Le site web doit comporter 100 caractères ou moins",
+        "error_location_limit": "La localisation doit comporter 30 caractères ou moins",
+        "error_mobile_invalid": "Le numéro de mobile doit comporter entre 10 et 15 chiffres",
+        "error_update_failed": "Échec de la mise à jour du profil. Veuillez réessayer."
     },
     "Subscriptions": {
         "title": "Abonnements",
+        "plan": "Forfait",
         "subtitle": "Gérez votre forfait de tweets",
         "current_plan": "Forfait actuel",
         "tweet_usage": "Utilisation des tweets",
@@ -88,6 +164,15 @@
         "choose_plan": "Choisissez un forfait",
         "active": "Actif",
         "month": "/mois",
+        "free": "Gratuit",
+        "plan_free": "Gratuit",
+        "plan_bronze": "Bronze",
+        "plan_silver": "Argent",
+        "plan_gold": "Or",
+        "success_upgrade": "🎉 Mise à niveau vers le forfait {plan} réussie ! Facture envoyée à {email}.",
+        "error_verify": "La vérification du paiement a échoué.",
+        "error_cancel": "Le paiement a été annulé.",
+        "error_url": "Impossible d'obtenir l'URL de paiement. Veuillez réessayer.",
         "default_plan": "Forfait par défaut",
         "current_plan_button": "✓ Forfait actuel",
         "upgrade_to": "Passer à {plan} — ₹{price}",
@@ -128,6 +213,24 @@
         "duration_exceeded": "La durée de l'audio dépasse la limite de 5 minutes.",
         "mic_denied": "Permission du microphone refusée ou introuvable.",
         "time_restriction": "Les tweets audio sont autorisés uniquement entre 14h00 et 19h00 IST (heure de l'Inde).",
-        "attached": "Tweet audio joint"
+        "attached": "Tweet audio joint",
+        "max_limits": "Max 5:00 / 100Mo"
+    },
+    "Security": {
+        "title": "Historique des connexions",
+        "loading": "Chargement de l'historique...",
+        "no_records": "Aucun enregistrement de connexion trouvé.",
+        "unknown_browser": "Navigateur inconnu",
+        "unknown_os": "Système d'exploitation inconnu",
+        "unknown_date": "Date inconnue",
+        "session_transparency": "Transparence des sessions de bout en bout"
+    },
+    "Footer": {
+        "terms": "Conditions d'utilisation",
+        "privacy": "Politique de confidentialité",
+        "cookies": "Politique relative aux cookies",
+        "accessibility": "Accessibilité",
+        "ads_info": "Infos publicités",
+        "copyright": "© 2024 Twiller Corp."
     }
 }

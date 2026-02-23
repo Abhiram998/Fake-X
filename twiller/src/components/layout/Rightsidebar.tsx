@@ -37,6 +37,7 @@ const suggestions = [
 
 export default function RightSidebar() {
   const t = useTranslations('RightSidebar');
+  const tFooter = useTranslations('Footer');
   return (
     <div className="w-full lg:w-80 p-4 space-y-4 min-w-0">
       {/* Search */}
@@ -107,13 +108,13 @@ export default function RightSidebar() {
       {/* Footer */}
       <div className="p-4 text-xs text-gray-500 space-y-2">
         <div className="flex flex-wrap gap-x-3 gap-y-1">
-          <a href="#" className="hover:underline">Terms of Service</a>
-          <a href="#" className="hover:underline">Privacy Policy</a>
-          <a href="#" className="hover:underline">Cookie Policy</a>
-          <a href="#" className="hover:underline">Accessibility</a>
-          <a href="#" className="hover:underline">Ads info</a>
+          <a href="#" className="hover:underline">{tFooter('terms')}</a>
+          <a href="#" className="hover:underline">{tFooter('privacy')}</a>
+          <a href="#" className="hover:underline">{tFooter('cookies')}</a>
+          <a href="#" className="hover:underline">{tFooter('accessibility')}</a>
+          <a href="#" className="hover:underline">{tFooter('ads_info')}</a>
         </div>
-        <div>© 2024 Twiller Corp.</div>
+        <div>{tFooter('copyright')}</div>
       </div>
     </div>
   );
